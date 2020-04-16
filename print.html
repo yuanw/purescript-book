@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="chapter1.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="chapter2.html"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="chapter3.html"><strong aria-hidden="true">3.</strong> Functions and Records</a></li><li class="chapter-item expanded "><a href="chapter4.html"><strong aria-hidden="true">4.</strong> Recursion, Maps And Folds</a></li><li class="chapter-item expanded "><a href="chapter5.html"><strong aria-hidden="true">5.</strong> Pattern Matching</a></li><li class="chapter-item expanded "><a href="chapter6.html"><strong aria-hidden="true">6.</strong> Type Classes</a></li><li class="chapter-item expanded "><a href="chapter7.html"><strong aria-hidden="true">7.</strong> Applicative Validation</a></li><li class="chapter-item expanded "><a href="chapter8.html"><strong aria-hidden="true">8.</strong> The Effect and Aff Monads</a></li><li class="chapter-item expanded "><a href="chapter9.html"><strong aria-hidden="true">9.</strong> Canvas Graphics</a></li><li class="chapter-item expanded "><a href="chapter10.html"><strong aria-hidden="true">10.</strong> The Foreign Function Interface</a></li><li class="chapter-item expanded "><a href="chapter11.html"><strong aria-hidden="true">11.</strong> Monadic Adventures</a></li><li class="chapter-item expanded "><a href="chapter12.html"><strong aria-hidden="true">12.</strong> Callback Hell</a></li><li class="chapter-item expanded "><a href="chapter13.html"><strong aria-hidden="true">13.</strong> Generative Testing</a></li><li class="chapter-item expanded "><a href="chapter14.html"><strong aria-hidden="true">14.</strong> Domain-Specific Languages</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../index.html">Foreword</a></li><li class="chapter-item expanded "><a href="chapter1.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="chapter2.html"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="chapter3.html"><strong aria-hidden="true">3.</strong> Functions and Records</a></li><li class="chapter-item expanded "><a href="chapter4.html"><strong aria-hidden="true">4.</strong> Recursion, Maps And Folds</a></li><li class="chapter-item expanded "><a href="chapter5.html"><strong aria-hidden="true">5.</strong> Pattern Matching</a></li><li class="chapter-item expanded "><a href="chapter6.html"><strong aria-hidden="true">6.</strong> Type Classes</a></li><li class="chapter-item expanded "><a href="chapter7.html"><strong aria-hidden="true">7.</strong> Applicative Validation</a></li><li class="chapter-item expanded "><a href="chapter8.html"><strong aria-hidden="true">8.</strong> The Effect and Aff Monads</a></li><li class="chapter-item expanded "><a href="chapter9.html"><strong aria-hidden="true">9.</strong> Canvas Graphics</a></li><li class="chapter-item expanded "><a href="chapter10.html"><strong aria-hidden="true">10.</strong> The Foreign Function Interface</a></li><li class="chapter-item expanded "><a href="chapter11.html"><strong aria-hidden="true">11.</strong> Monadic Adventures</a></li><li class="chapter-item expanded "><a href="chapter12.html"><strong aria-hidden="true">12.</strong> Callback Hell</a></li><li class="chapter-item expanded "><a href="chapter13.html"><strong aria-hidden="true">13.</strong> Generative Testing</a></li><li class="chapter-item expanded "><a href="chapter14.html"><strong aria-hidden="true">14.</strong> Domain-Specific Languages</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -149,7 +149,34 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#introduction" id="introduction">Introduction</a></h1>
+                        <h1><a class="header" href="#purescript-by-example" id="purescript-by-example">PureScript by Example</a></h1>
+<p>This repository contains a community fork of <em>PureScript by Example</em> by Phil Freeman, also known as &quot;the PureScript book&quot;. This version differs from the original in that it has been updated so that the code and exercises work with up-to-date versions of the compiler, libraries, and tools.</p>
+<p>If you enjoyed the book or found it useful, please consider buying a copy of <a href="https://leanpub.com/purescript">the original on Leanpub</a>.</p>
+<h2><a class="header" href="#status" id="status">Status</a></h2>
+<p>This book is being continuously updated as the language evolves, so please report any issues you notice with the material. The following chapters are still being updated for purescript 0.13:</p>
+<ul>
+<li>Chapter 12</li>
+</ul>
+<h2><a class="header" href="#about-the-book" id="about-the-book">About the Book</a></h2>
+<p>PureScript is a small strongly, statically typed programming language with expressive types, written in and inspired by Haskell, and compiling to Javascript.</p>
+<p>Functional programming in JavaScript has seen quite a lot of popularity recently, but large-scale application development is hindered by the lack of a disciplined environment in which to write code. PureScript aims to solve that problem by bringing the power of strongly-typed functional programming to the world of JavaScript development.</p>
+<p>This book will show you how to get started with the PureScript programming language, from the basics (setting up a development environment) to the advanced.</p>
+<p>Each chapter will be motivated by a particular problem, and in the course of solving that problem, new functional programming tools and techniques will be introduced. Here are some examples of problems that will be solved in this book:</p>
+<ul>
+<li>Transforming data structures with maps and folds</li>
+<li>Form field validation using applicative functors</li>
+<li>Testing code with QuickCheck</li>
+<li>Using the canvas</li>
+<li>Domain specific language implementation</li>
+<li>Working with the DOM</li>
+<li>JavaScript interoperability</li>
+<li>Dealing with callback hell</li>
+</ul>
+<h2><a class="header" href="#license" id="license">License</a></h2>
+<p>Copyright (c) 2014-2017 Phil Freeman.</p>
+<p>The text of this book is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License: <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/deed.en_US">https://creativecommons.org/licenses/by-nc-sa/3.0/deed.en_US</a>.</p>
+<p>The exercises are licensed under the MIT license.</p>
+<h1><a class="header" href="#introduction" id="introduction">Introduction</a></h1>
 <h2><a class="header" href="#functional-javascript" id="functional-javascript">Functional JavaScript</a></h2>
 <p>Functional programming techniques have been making appearances in JavaScript for some time now:</p>
 <ul>
