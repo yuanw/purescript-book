@@ -1908,7 +1908,7 @@ LT
 <p>Define <code>Show</code> and <code>Eq</code> instances for <code>Complex</code>.</p>
 </li>
 </ol>
-<h2><a class="header" href="#type-annotations" id="type-annotations">Type Annotations</a></h2>
+<h2><a class="header" href="#type-class-constraints" id="type-class-constraints">Type Class Constraints</a></h2>
 <p>Types of functions can be constrained by using type classes. Here is an example: suppose we want to write a function which tests if three values are equal, by using equality defined using an <code>Eq</code> type class instance.</p>
 <pre><code class="language-haskell">threeAreEqual :: forall a. Eq a =&gt; a -&gt; a -&gt; a -&gt; Boolean
 threeAreEqual a1 a2 a3 = a1 == a2 &amp;&amp; a2 == a3
