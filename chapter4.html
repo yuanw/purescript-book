@@ -484,8 +484,8 @@ lengthTailRec arr = length' arr 0
     length' :: Array a -&gt; Int -&gt; Int
     length' arr' acc =
       if null arr'
-        then 0
-        else length' (fromMaybe [] $ tail arr') acc + 1
+        then acc
+        else length' (fromMaybe [] $ tail arr') (acc + 1)
 </code></pre>
 <p>In this case, we delegate to the helper function <code>length'</code>, which is tail recursive - its only recursive call is in the last case, and is in tail position. This means that the generated code will be a <em>while loop</em>, and will not blow the stack for large inputs.</p>
 <p>To understand the implementation of <code>lengthTailRec</code>, note that the helper function <code>length'</code> essentially uses the accumulator parameter to maintain an additional piece of state - the partial result. It starts out at 0, and grows by adding 1 for every element in the input array.</p>
