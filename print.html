@@ -2127,6 +2127,7 @@ instance monoidMultiply :: Monoid Multiply where
 <p>This monoid acts on strings by repeating an input string some number of times. Write an instance which implements this action:</p>
 <pre><code class="language-haskell">instance repeatAction :: Action Multiply String
 </code></pre>
+<p><em>Hint</em>: Search Pursuit for a helper-function with the signature <code>String -&gt; Int -&gt; String</code>. Note that <code>String</code> might appear as a more generic type.</p>
 <p>Does this instance satisfy the laws listed above?</p>
 </li>
 <li>
