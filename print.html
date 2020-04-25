@@ -2778,7 +2778,7 @@ countThrows n = do
 <pre><code class="language-text">&gt; countThrows 10
 [[4,6],[5,5],[6,4]]
 
-&gt; countThrows 12  
+&gt; countThrows 12
 [[6,6]]
 </code></pre>
 <p>In the last chapter, we formed an intuition for the <code>Maybe</code> applicative functor, embedding PureScript functions into a larger programming language supporting <em>optional values</em>. In the same way, we can form an intuition for the <em>array monad</em>, embedding PureScript functions into a larger programming language supporting <em>non-deterministic choice</em>.</p>
@@ -3020,7 +3020,7 @@ lift2 f a b = f &lt;$&gt; a &lt;*&gt; b
 <p>The only way in which side-effects managed by the <code>Effect</code> monad will be presented is to run a computation of type <code>Effect a</code> from JavaScript.</p>
 <p>The Spago build tool (and other tools) provide a shortcut, by generating additional JavaScript to invoke the <code>main</code> computation when the application starts. <code>main</code> is required to be a computation in the <code>Effect</code> monad.</p>
 <h2><a class="header" href="#the-effect-monad" id="the-effect-monad">The Effect Monad</a></h2>
-<p>The goal of the <code>Effect</code> monad is to provide a well-typed API for computations with side-effects, while at the same time generating efficient JavaScript. </p>
+<p>The goal of the <code>Effect</code> monad is to provide a well-typed API for computations with side-effects, while at the same time generating efficient JavaScript.</p>
 <p>Here is an example. It uses the <code>random</code> package, which defines functions for generating random numbers:</p>
 <pre><code class="language-haskell">module Main where
 
@@ -3041,17 +3041,191 @@ main = do
 </code></pre>
 <p>Running this command, you will see a randomly chosen number between <code>0</code> and <code>1</code> printed to the console.</p>
 <p>This program uses do notation to combine two native effects provided by the JavaScript runtime: random number generation and console IO.</p>
-<p>As mentioned previously, the <code>Effect</code> monad is of central importance to PureScript. The reason why it's central is because it is the conventional way to interoperate with PureScript's <code>Foreign Function Interface</code>, which provides the mechanism to execute a program and perform side effects. While it's desireable to avoid using the <code>Foreign Function Interface</code>, it's fairly critical to understand how it works and how to use it, so I recommend reading that chapter before doing any serious PureScript work. That said, the <code>Effect</code> monad is fairly simple. It has a few helper functions, but aside from that it doesn't do much except encapsulate side effects. </p>
+<p>As mentioned previously, the <code>Effect</code> monad is of central importance to PureScript. The reason why it's central is because it is the conventional way to interoperate with PureScript's <code>Foreign Function Interface</code>, which provides the mechanism to execute a program and perform side effects. While it's desireable to avoid using the <code>Foreign Function Interface</code>, it's fairly critical to understand how it works and how to use it, so I recommend reading that chapter before doing any serious PureScript work. That said, the <code>Effect</code> monad is fairly simple. It has a few helper functions, but aside from that it doesn't do much except encapsulate side effects.</p>
+<h2><a class="header" href="#exceptions" id="exceptions">Exceptions</a></h2>
+<p>Let's examine a function from the <code>node-fs</code> package that involves two <em>native</em> side effects: reading mutable state, and exceptions:</p>
+<pre><code class="language-haskell">readTextFile :: Encoding → String → Effect String
+</code></pre>
+<p>If we attempt to read a file that does not exist:</p>
+<pre><code class="language-haskell">import Node.Encoding (Encoding(..))
+import Node.FS.Sync (readTextFile)
+
+main :: Effect Unit
+main = do
+  lines &lt;- readTextFile UTF8 &quot;iDoNotExist.md&quot;
+  log lines
+</code></pre>
+<p>We encounter the following exception:</p>
+<pre><code>    throw err;
+    ^
+Error: ENOENT: no such file or directory, open 'iDoNotExist.md'
+...
+  errno: -2,
+  syscall: 'open',
+  code: 'ENOENT',
+  path: 'iDoNotExist.md'
+</code></pre>
+<p>To manage this exception gracefully, we can wrap the potentially problematic code in <code>try</code> to handle either outcome:</p>
+<pre><code class="language-haskell">main :: Effect Unit
+main = do
+  result &lt;- try $ readTextFile UTF8 &quot;iDoNotExist.md&quot;
+  case result of
+    Right lines -&gt; log $ &quot;Contents: \n&quot; &lt;&gt; lines
+    Left error -&gt; log $ &quot;Couldn't open file. Error was: &quot; &lt;&gt; message error
+</code></pre>
+<p><code>try</code> runs an <code>Effect</code> and returns eventual exceptions as a <code>Left</code> value. If the computation succeeds, the result gets wrapped in a <code>Right</code>:</p>
+<pre><code class="language-haskell">try :: forall a. Effect a -&gt; Effect (Either Error a)
+</code></pre>
+<p>We can also generate our own exceptions. Here is an alternative implementation of <code>Data.List.head</code> which throws an exception if the list is empty, rather than returing a <code>Maybe</code> value of <code>Nothing</code>.</p>
+<pre><code>exceptionHead :: List Int -&gt; Effect Int
+exceptionHead l = case l of
+  x : _ -&gt; pure x
+  Nil -&gt; throwException $ error &quot;empty list&quot;
+</code></pre>
+<p>That was a somewhat impractical example, as it is usually better to avoid generating exceptions in PureScript code instead and use non-native effects such as <code>Either</code> and <code>Maybe</code> to manage errors and missing values.</p>
+<h2><a class="header" href="#mutable-state" id="mutable-state">Mutable State</a></h2>
+<p>There is another effect defined in the core libraries: the <code>ST</code> effect.</p>
+<p>The <code>ST</code> effect is used to manipulate mutable state. As pure functional programmers, we know that shared mutable state can be problematic. However, the <code>ST</code> effect uses the type system to restrict sharing in such a way that only safe <em>local</em> mutation is allowed.</p>
+<p>The <code>ST</code> effect is defined in the <code>Control.Monad.ST</code> module. To see how it works, we need to look at the types of its actions:</p>
+<pre><code class="language-haskell">new :: forall a r. a -&gt; ST r (STRef r a)
+
+read :: forall a r. STRef r a -&gt; ST r a
+
+write :: forall a r. a -&gt; STRef r a -&gt; ST r a
+
+modify :: forall r a. (a -&gt; a) -&gt; STRef r a -&gt; ST r a
+</code></pre>
+<p><code>new</code> is used to create a new mutable reference cell of type <code>STRef r a</code>, which can be read using the <code>read</code> action, and modified using the <code>write</code> and <code>modify</code> actions. The type <code>a</code> is the type of the value stored in the cell, and the type <code>r</code> is used to indicate a <em>memory region</em> (or <em>heap</em>) in the type system.</p>
+<p>Here is an example. Suppose we want to simulate the movement of a particle falling under gravity by iterating a simple update function over a large number of small time steps.</p>
+<p>We can do this by creating a mutable reference cell to hold the position and velocity of the particle, and then using a <code>for</code> loop to update the value stored in that cell:</p>
+<pre><code class="language-haskell">import Prelude
+
+import Control.Monad.ST.Ref (modify, new, read)
+import Control.Monad.ST (ST, for, run)
+
+simulate :: forall r. Number -&gt; Number -&gt; Int -&gt; ST r Number
+simulate x0 v0 time = do
+  ref &lt;- new { x: x0, v: v0 }
+  for 0 (time * 1000) \_ -&gt;
+    modify
+      ( \o -&gt;
+          { v: o.v - 9.81 * 0.001
+          , x: o.x + o.v * 0.001
+          }
+      )
+      ref
+  final &lt;- read ref
+  pure final.x
+</code></pre>
+<p>At the end of the computation, we read the final value of the reference cell, and return the position of the particle.</p>
+<p>Note that even though this function uses mutable state, it is still a pure function, so long as the reference cell <code>ref</code> is not allowed to be used by other parts of the program. We will see that this is exactly what the <code>ST</code> effect disallows.</p>
+<p>To run a computation with the <code>ST</code> effect, we have to use the <code>run</code> function:</p>
+<pre><code class="language-haskell">run :: forall a. (forall r. ST r a) -&gt; a
+</code></pre>
+<p>The thing to notice here is that the region type <code>r</code> is quantified <em>inside the parentheses</em> on the left of the function arrow. That means that whatever action we pass to <code>run</code> has to work with <em>any region</em> <code>r</code> whatsoever.</p>
+<p>However, once a reference cell has been created by <code>new</code>, its region type is already fixed, so it would be a type error to try to use the reference cell outside the code delimited by <code>run</code>.  This is what allows <code>run</code> to safely remove the <code>ST</code> effect, and turn <code>simulate</code> into a pure function!</p>
+<pre><code class="language-haskell">simulate' :: Number -&gt; Number -&gt; Int -&gt; Number
+simulate' x0 v0 time = run (simulate x0 v0 time)
+</code></pre>
+<p>You can even try running this function in PSCi:</p>
+<pre><code class="language-text">&gt; import Main
+
+&gt; simulate' 100.0 0.0 0
+100.00
+
+&gt; simulate' 100.0 0.0 1
+95.10
+
+&gt; simulate' 100.0 0.0 2
+80.39
+
+&gt; simulate' 100.0 0.0 3
+55.87
+
+&gt; simulate' 100.0 0.0 4
+21.54
+</code></pre>
+<p>In fact, if we inline the definition of <code>simulate</code> at the call to <code>run</code>, as follows:</p>
+<pre><code class="language-haskell">simulate :: Number -&gt; Number -&gt; Int -&gt; Number
+simulate x0 v0 time =
+  run do
+    ref &lt;- new { x: x0, v: v0 }
+    for 0 (time * 1000) \_ -&gt;
+      modify
+        ( \o -&gt;
+            { v: o.v - 9.81 * 0.001
+            , x: o.x + o.v * 0.001
+            }
+        )
+        ref
+    final &lt;- read ref
+    pure final.x
+</code></pre>
+<p>then the compiler will notice that the reference cell is not allowed to escape its scope, and can safely turn <code>ref</code> into a <code>var</code>. Here is the generated JavaScript for <code>simulate</code> inlined with <code>run</code>:</p>
+<pre><code class="language-javascript">var simulate = function (x0) {
+  return function (v0) {
+    return function (time) {
+      return (function __do() {
+
+        var ref = { value: { x: x0, v: v0 } };
+
+        Control_Monad_ST_Internal[&quot;for&quot;](0)(time * 1000 | 0)(function (v) {
+          return Control_Monad_ST_Internal.modify(function (o) {
+            return {
+              v: o.v - 9.81 * 1.0e-3,
+              x: o.x + o.v * 1.0e-3
+            };
+          })(ref);
+        })();
+
+        return ref.value.x;
+
+      })();
+    };
+  };
+};
+</code></pre>
+<p>Note that this resulting JavaScript is not as optimal as it could be. See <a href="https://github.com/purescript/purescript-st/issues/33">this issue</a> for more details. The above snippet should be updated once that issue is resolved.</p>
+<p>For comparison, this is the generated JavaScript of the non-inlined form:</p>
+<pre><code class="language-js">var simulate = function (x0) {
+  return function (v0) {
+    return function (time) {
+      return function __do() {
+
+        var ref = Control_Monad_ST_Internal[&quot;new&quot;]({ x: x0, v: v0 })();
+
+        Control_Monad_ST_Internal[&quot;for&quot;](0)(time * 1000 | 0)(function (v) {
+          return Control_Monad_ST_Internal.modify(function (o) {
+            return {
+              v: o.v - 9.81 * 1.0e-3,
+              x: o.x + o.v * 1.0e-3
+            };
+          })(ref);
+        })();
+
+        var $$final = Control_Monad_ST_Internal.read(ref)();
+        return $$final.x;
+      };
+    };
+  };
+};
+</code></pre>
+<p>The <code>ST</code> effect is a good way to generate short JavaScript when working with locally-scoped mutable state, especially when used together with actions like <code>for</code>, <code>foreach</code>, and <code>while</code> which generate efficient loops.</p>
+<h2><a class="header" href="#exercises-20" id="exercises-20">Exercises</a></h2>
+<ol>
+<li>(Medium) Rewrite the <code>safeDivide</code> function to throw an exception using <code>throwException</code> if the denominator is zero.</li>
+<li>(Skip) There is no exercise for <code>ST</code> yet. Feel free to propose one.</li>
+</ol>
 <h2><a class="header" href="#the-aff-monad" id="the-aff-monad">The Aff Monad</a></h2>
-<p>The <code>Aff</code> monad is an asynchronous effect monad and threading model for PureScipt. </p>
-<p>Asynchrony is typically achieved in JavaScript with callbacks, for example: </p>
+<p>The <code>Aff</code> monad is an asynchronous effect monad and threading model for PureScipt.</p>
+<p>Asynchrony is typically achieved in JavaScript with callbacks, for example:</p>
 <pre><code class="language-javascript">function asyncFunction(onSuccess, onError){ ... }
 </code></pre>
-<p>The same thing can be modeled with the <code>Effect</code> monad: </p>
-<pre><code class="language-haskell">asyncFunction :: forall success error. (success -&gt; Effect Unit) -&gt; (error -&gt; Effect Unit) -&gt; Effect Unit 
+<p>The same thing can be modeled with the <code>Effect</code> monad:</p>
+<pre><code class="language-haskell">asyncFunction :: forall success error. (success -&gt; Effect Unit) -&gt; (error -&gt; Effect Unit) -&gt; Effect Unit
 asyncFunction onSuccess onError = ...
 </code></pre>
-<p>But as is true in JavaScript, this can quickly get out of hand and result in &quot;callback hell&quot;. </p>
+<p>But as is true in JavaScript, this can quickly get out of hand and result in &quot;callback hell&quot;.</p>
 <p>The <code>Aff</code> monad solves this problem similar to how <code>Promise</code> solves it in JavaScript, and there is a great library called <code>aff-promise</code> that provides interop with JavaScript <code>Promise</code>.</p>
 <h2><a class="header" href="#effect-to-aff-and-aff-to-effect" id="effect-to-aff-and-aff-to-effect">Effect to Aff and Aff to Effect</a></h2>
 <p>Any synchronous <code>Effect</code> can by lifted into an asynchronous <code>Aff</code> with <code>liftEffect</code>. Similarly, any <code>Aff</code> can be converted to an <code>Effect Unit</code> with <code>launchAff_</code>. Below is the code that prints a random number in terms of <code>Aff</code>, written in a few different styles:</p>
@@ -3069,7 +3243,7 @@ printRandomStyle1a :: Aff Unit
 printRandomStyle1a = liftEffect doRandom
   where
     doRandom :: Effect Unit
-    doRandom = do 
+    doRandom = do
       n &lt;- random
       logShow n
 
@@ -3097,16 +3271,16 @@ main = launchAff_  do
   printRandomStyle3
 
 </code></pre>
-<p><code>printRandomStyle1a</code> and <code>printRandomStyle1b</code> are nearly the same, but the types more explicit in <code>printRandomStyle1a</code> to add additional clarity. In both, the <code>do</code> block results in something with type <code>Effect Unit</code> and is lifted to <code>Aff</code> outside of the <code>do</code> block. In <code>printRandomStyle2</code>, both <code>random</code> and <code>logShow</code> are lifted to <code>Aff</code> inside the <code>do</code> block, which results in an <code>Aff</code>. Often while writing PureScript, you'll encounter cases where <code>Aff</code> and <code>Effect</code> need to be mixed, so style 2 is the more common case. Finally in <code>printRandomStyle3</code>, the <code>liftEffect</code> function has been moved to the right with <code>#</code>, which applies an argument to a function instead of the regular function call with arguments. The purpose of this style is to make the intent of the statement more clear by moving the <em>boilerplate</em> out of the way to the right. </p>
+<p><code>printRandomStyle1a</code> and <code>printRandomStyle1b</code> are nearly the same, but the types more explicit in <code>printRandomStyle1a</code> to add additional clarity. In both, the <code>do</code> block results in something with type <code>Effect Unit</code> and is lifted to <code>Aff</code> outside of the <code>do</code> block. In <code>printRandomStyle2</code>, both <code>random</code> and <code>logShow</code> are lifted to <code>Aff</code> inside the <code>do</code> block, which results in an <code>Aff</code>. Often while writing PureScript, you'll encounter cases where <code>Aff</code> and <code>Effect</code> need to be mixed, so style 2 is the more common case. Finally in <code>printRandomStyle3</code>, the <code>liftEffect</code> function has been moved to the right with <code>#</code>, which applies an argument to a function instead of the regular function call with arguments. The purpose of this style is to make the intent of the statement more clear by moving the <em>boilerplate</em> out of the way to the right.</p>
 <h1><a class="header" href="#launchaff_-vs-launchaff" id="launchaff_-vs-launchaff">launchAff_ vs launchAff</a></h1>
-<p><code>Aff</code> has two similar functions for converting from an <code>Aff</code> to an <code>Effect</code>: </p>
+<p><code>Aff</code> has two similar functions for converting from an <code>Aff</code> to an <code>Effect</code>:</p>
 <pre><code class="language-haskell">launchAff_ :: forall a. Aff a -&gt; Effect Unit
 </code></pre>
 <pre><code class="language-haskell">launchAff :: forall a. Aff a -&gt; Effect (Fiber a)
 </code></pre>
-<p><code>launchAff</code> gives back a <code>Fiber</code> wrapped in an <code>Effect</code>. A <code>Fiber</code> is a <em>forked</em> computation that can be <em>joined</em> back into an <code>Aff</code>. You can read more about <code>Fiber</code> in Pursuit, PureScript's library and documentation hub. The important thing to note is that there is no direct way to get the contained value in an <code>Aff</code> once it's been converted to an <code>Effect</code>. For this reason it makes sense to write most of your program in terms of <code>Aff</code> instead of <code>Effect</code> if you intend to perform asynchronous effects. This may sound limiting, but in practice it is not. Your programs are typically started in the <code>main</code> function by wiring up event handlers and listeners, which typically results in a <code>Unit</code> and can be run with <code>launchAff_</code>. </p>
+<p><code>launchAff</code> gives back a <code>Fiber</code> wrapped in an <code>Effect</code>. A <code>Fiber</code> is a <em>forked</em> computation that can be <em>joined</em> back into an <code>Aff</code>. You can read more about <code>Fiber</code> in Pursuit, PureScript's library and documentation hub. The important thing to note is that there is no direct way to get the contained value in an <code>Aff</code> once it's been converted to an <code>Effect</code>. For this reason it makes sense to write most of your program in terms of <code>Aff</code> instead of <code>Effect</code> if you intend to perform asynchronous effects. This may sound limiting, but in practice it is not. Your programs are typically started in the <code>main</code> function by wiring up event handlers and listeners, which typically results in a <code>Unit</code> and can be run with <code>launchAff_</code>.</p>
 <h1><a class="header" href="#monaderror" id="monaderror">MonadError</a></h1>
-<p><code>Aff</code> has an instance of <code>MonadError</code>, a type class for clean error handling. <code>MonadError</code> is covered in more detail in the <em>Monadic Adventures</em> chapter, so below is just a motivating example. </p>
+<p><code>Aff</code> has an instance of <code>MonadError</code>, a type class for clean error handling. <code>MonadError</code> is covered in more detail in the <em>Monadic Adventures</em> chapter, so below is just a motivating example.</p>
 <p>Imagine you wished to write a <code>quickCheckout</code> function by combining several preexisting functions. Without utilizing <code>MonadError</code> the code might look like the following:</p>
 <pre><code class="language-haskell">module Main where
 
@@ -3150,7 +3324,7 @@ quickCheckout item userInfo = do
             Right itemInBasket -&gt; purchaseBasket user itemInBasket
 
 </code></pre>
-<p>All of the data types and functions (aside from <code>quickCheckout</code>) are stubs, and meant to be ignored aside from their types. Note that <code>quickCheckout</code> is pretty ugly and the error checking is deeply nested. This is because there is a monad (<code>Either</code>) inside of a monad (<code>Aff</code>). Monads don't nicely compose so, we've got to step down into each <code>Aff</code> and check each <code>Either</code>. It's a bit annoying. This is where <code>MonadError</code> can help. </p>
+<p>All of the data types and functions (aside from <code>quickCheckout</code>) are stubs, and meant to be ignored aside from their types. Note that <code>quickCheckout</code> is pretty ugly and the error checking is deeply nested. This is because there is a monad (<code>Either</code>) inside of a monad (<code>Aff</code>). Monads don't nicely compose so, we've got to step down into each <code>Aff</code> and check each <code>Either</code>. It's a bit annoying. This is where <code>MonadError</code> can help.</p>
 <p>Take a look at the alternate implementation below.</p>
 <pre><code class="language-haskell">module Main where
 
@@ -3318,7 +3492,7 @@ translate dx dy shape = shape
 <pre><code class="language-text">$ spago bundle-app --main Example.Shapes --to dist/Main.js
 </code></pre>
 <p>and open <code>html/index.html</code> again to see the result. You should see the three different types of shapes rendered to the canvas.</p>
-<h2><a class="header" href="#exercises-20" id="exercises-20">Exercises</a></h2>
+<h2><a class="header" href="#exercises-21" id="exercises-21">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Experiment with the <code>strokePath</code> and <code>setStrokeStyle</code> functions in each of the examples so far.</p>
@@ -3480,7 +3654,7 @@ Type -&gt; Type
 <pre><code class="language-text">$ spago bundle-app --main Example.Refs --to dist/Main.js
 </code></pre>
 <p>and open the <code>html/index.html</code> file. If you click the canvas repeatedly, you should see a green rectangle rotating around the center of the canvas.</p>
-<h2><a class="header" href="#exercises-21" id="exercises-21">Exercises</a></h2>
+<h2><a class="header" href="#exercises-22" id="exercises-22">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a higher-order function which strokes and fills a path simultaneously. Rewrite the <code>Random.purs</code> example using your function.</li>
 <li>(Medium) Use <code>Random</code> and <code>Dom</code> to create an application which renders a circle with random position, color and radius to the canvas when the mouse is clicked.</li>
@@ -3616,7 +3790,7 @@ interpret state R = pure $ state { theta = state.theta + Math.tau / 6.0 }
 <pre><code class="language-text">$ spago bundle-app --main Example.LSystem --to dist/Main.js
 </code></pre>
 <p>and open <code>html/index.html</code>. You should see the Koch curve rendered to the canvas.</p>
-<h2><a class="header" href="#exercises-22" id="exercises-22">Exercises</a></h2>
+<h2><a class="header" href="#exercises-23" id="exercises-23">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Modify the L-system example above to use <code>fillPath</code> instead of <code>strokePath</code>. <em>Hint</em>: you will need to include a call to <code>closePath</code>, and move the call to <code>moveTo</code> outside of the <code>interpret</code> function.</p>
@@ -3822,7 +3996,7 @@ shout a = show a &lt;&gt; &quot;!!!&quot;
 <p>We can call this function from JavaScript by passing an explicit type class dictionary from <code>Data.Show</code> as the first parameter:</p>
 <pre><code class="language-javascript">shout(require('Data.Show').showNumber)(42);
 </code></pre>
-<h2><a class="header" href="#exercises-23" id="exercises-23">Exercises</a></h2>
+<h2><a class="header" href="#exercises-24" id="exercises-24">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) What are the runtime representations of these types?</p>
@@ -4013,7 +4187,7 @@ foreign import setItem :: String -&gt; String -&gt; Effect Unit
 <p><code>setItem</code> takes a key and a value (both strings), and returns a computation which stores the value in local storage at the specified key.</p>
 <p>The type of <code>getItem</code> is more interesting. It takes a key, and attempts to retrieve the associated value from local storage. However, since the <code>getItem</code> method on <code>window.localStorage</code> can return <code>null</code>, the return type is not <code>String</code>, but <code>Foreign</code> which is defined by the <code>foreign</code> package in the <code>Foreign</code> module.</p>
 <p><code>Foreign</code> provides a way to work with <em>untyped data</em>, or more generally, data whose runtime representation is uncertain.</p>
-<h2><a class="header" href="#exercises-24" id="exercises-24">Exercises</a></h2>
+<h2><a class="header" href="#exercises-25" id="exercises-25">Exercises</a></h2>
 <ol>
 <li>(Medium) Write a wrapper for the <code>confirm</code> method on the JavaScript <code>Window</code> object, and add your foreign function to the <code>Effect.Alert</code> module.</li>
 <li>(Medium) Write a wrapper for the <code>removeItem</code> method on the <code>localStorage</code> object, and add your foreign function to the <code>Effect.Storage</code> module.</li>
@@ -4121,7 +4295,7 @@ instance decodeFormData :: Decode FormData where
 </ul>
 <p>Try out the code, by running <code>spago bundle-app --to dist/Main.js</code>, and then opening the browser to <code>html/index.html</code>. You should be able to see what's going on in the console.</p>
 <p><em>Note</em>: You may need to serve the HTML and JavaScript files from a HTTP server locally in order to avoid certain browser-specific issues.</p>
-<h2><a class="header" href="#exercises-25" id="exercises-25">Exercises</a></h2>
+<h2><a class="header" href="#exercises-26" id="exercises-26">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Use <code>decodeJSON</code> to parse a JSON document representing a two-dimensional JavaScript array of integers, such as <code>[[1, 2, 3], [4, 5], [6]]</code>. What if the elements are allowed to be null? What if the arrays themselves are allowed to be null?</p>
@@ -4250,7 +4424,7 @@ runState  :: forall s a. State s a -&gt; s -&gt; Tuple a s
 … ^D
 21
 </code></pre>
-<h2><a class="header" href="#exercises-26" id="exercises-26">Exercises</a></h2>
+<h2><a class="header" href="#exercises-27" id="exercises-27">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) What is the result of replacing <code>execState</code> with <code>runState</code> or <code>evalState</code> in our example above?</p>
@@ -4309,7 +4483,7 @@ createUserAsAdmin = runAsAdmin createUser
 <p>To run a computation in the <code>Reader</code> monad, the <code>runReader</code> function can be used to provide the global configuration:</p>
 <pre><code class="language-haskell">runReader :: forall r a. Reader r a -&gt; r -&gt; a
 </code></pre>
-<h2><a class="header" href="#exercises-27" id="exercises-27">Exercises</a></h2>
+<h2><a class="header" href="#exercises-28" id="exercises-28">Exercises</a></h2>
 <p>In these exercises, we will use the <code>Reader</code> monad to build a small library for rendering documents with indentation. The &quot;global configuration&quot; will be a number indicating the current indentation level:</p>
 <pre><code class="language-haskell">type Level = Int
 
@@ -4394,7 +4568,7 @@ runWriter  :: forall w a. Writer w a -&gt; Tuple a w
 &gt; runWriter (gcdLog 21 15)
 Tuple 3 [&quot;gcdLog 21 15&quot;,&quot;gcdLog 6 15&quot;,&quot;gcdLog 6 9&quot;,&quot;gcdLog 6 3&quot;,&quot;gcdLog 3 3&quot;]
 </code></pre>
-<h2><a class="header" href="#exercises-28" id="exercises-28">Exercises</a></h2>
+<h2><a class="header" href="#exercises-29" id="exercises-29">Exercises</a></h2>
 <ol>
 <li>
 <p>(Medium) Rewrite the <code>sumArray</code> function above using the <code>Writer</code> monad and the <code>Additive Int</code> monoid from the <code>monoid</code> package.</p>
@@ -4537,7 +4711,7 @@ split = do
 <p>This is because of the way in which the side-effects provided by the <code>ExceptT</code> monad transformer interact with the side-effects provided by the <code>WriterT</code> monad transformer. We can address this by changing the order in which the monad transformer stack is composed. If we move the <code>ExceptT</code> transformer to the top of the stack, then the log will contain all messages written up until the first error, as we saw earlier when we transformed <code>Writer</code> with <code>ExceptT</code>.</p>
 <p>One problem with this code is that we have to use the <code>lift</code> function multiple times to lift computations over multiple monad transformers: for example, the call to <code>throwError</code> has to be lifted twice, once over <code>WriterT</code> and a second time over <code>StateT</code>. This is fine for small monad transformer stacks, but quickly becomes inconvenient.</p>
 <p>Fortunately, as we will see, we can use the automatic code generation provided by type class inference to do most of this &quot;heavy lifting&quot; for us.</p>
-<h2><a class="header" href="#exercises-29" id="exercises-29">Exercises</a></h2>
+<h2><a class="header" href="#exercises-30" id="exercises-30">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Use the <code>ExceptT</code> monad transformer over the <code>Identity</code> functor to write a function <code>safeDivide</code> which divides two numbers, throwing an error if the denominator is zero.</p>
@@ -4666,7 +4840,7 @@ lower = do
               ]))
 </code></pre>
 <p>Again, this illustrates the power of reusability that monad transformers bring - we were able to write a backtracking parser in a declarative style with only a few lines of code, by reusing standard abstractions!</p>
-<h2><a class="header" href="#exercises-30" id="exercises-30">Exercises</a></h2>
+<h2><a class="header" href="#exercises-31" id="exercises-31">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Remove the calls to the <code>lift</code> function from your implementation of the <code>string</code> parser. Verify that the new implementation type checks, and convince yourself that it should.</p>
@@ -4819,7 +4993,7 @@ lineHandler currentState input = do
 <pre><code class="language-haskell">  RL.setLineHandler interface $ lineHandler initialGameState
   RL.prompt interface
 </code></pre>
-<h2><a class="header" href="#exercises-31" id="exercises-31">Exercises</a></h2>
+<h2><a class="header" href="#exercises-32" id="exercises-32">Exercises</a></h2>
 <ol>
 <li>
 <p>(Medium) Implement a new command <code>cheat</code>, which moves all game items from the game grid into the user's inventory.</p>
@@ -4852,7 +5026,7 @@ lineHandler currentState input = do
 <p>Here, the <code>gameEnvironment</code> function, which has the type <code>PlayerName -&gt; Boolean -&gt; GameEnvironment</code>, is lifted over <code>Y</code>. The two arguments specify how to read the player name and debug flag from the command line options. The first argument describes the player name option, which is specified by the <code>-p</code> or <code>--player</code> options, and the second describes the debug mode flag, which is turned on using the <code>-d</code> or <code>--debug</code> options.</p>
 <p>This demonstrates two basic functions defined in the <code>Node.Yargs.Applicative</code> module: <code>yarg</code>, which defines a command line option which takes an optional argument (of type <code>String</code>, <code>Number</code> or <code>Boolean</code>), and <code>flag</code> which defines a command line flag of type <code>Boolean</code>.</p>
 <p>Notice how we were able to use the notation afforded by the applicative operators to give a compact, declarative specification of our command line interface. In addition, it is simple to add new command line arguments, simply by adding a new function argument to <code>runGame</code>, and then using <code>&lt;*&gt;</code> to lift <code>runGame</code> over an additional argument in the definition of <code>env</code>.</p>
-<h2><a class="header" href="#exercises-32" id="exercises-32">Exercises</a></h2>
+<h2><a class="header" href="#exercises-33" id="exercises-33">Exercises</a></h2>
 <ol>
 <li>(Medium) Add a new Boolean-valued property <code>cheatMode</code> to the <code>GameEnvironment</code> record. Add a new command line flag <code>-c</code> to the <code>yargs</code> configuration which enables cheat mode. The <code>cheat</code> command from the previous exercise should be disallowed if cheat mode is not enabled.</li>
 </ol>
@@ -5062,7 +5236,7 @@ main =
     (copyFileCont &quot;/tmp/1.txt&quot; &quot;/tmp/2.txt&quot;)
     logShow
 </code></pre>
-<h2><a class="header" href="#exercises-33" id="exercises-33">Exercises</a></h2>
+<h2><a class="header" href="#exercises-34" id="exercises-34">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Use <code>readFileCont</code> and <code>writeFileCont</code> to write a function which concatenates two text files.</p>
@@ -5110,7 +5284,7 @@ copyFileContEx src dest = do
   content &lt;- readFileContEx src
   writeFileContEx dest content
 </code></pre>
-<h2><a class="header" href="#exercises-34" id="exercises-34">Exercises</a></h2>
+<h2><a class="header" href="#exercises-35" id="exercises-35">Exercises</a></h2>
 <ol>
 <li>(Medium) Modify your solution which concatenated two files, using <code>ExceptT</code> to handle any errors.</li>
 <li>(Medium) Write a function <code>concatenateMany</code> to concatenate multiple text files, given an array of input file names. <em>Hint</em>: use <code>traverse</code>.</li>
@@ -5158,7 +5332,7 @@ foreign import getImpl
 get req = ContT \k -&gt;
   runFn3 getImpl req (k &lt;&lt;&lt; Right) (k &lt;&lt;&lt; Left)
 </code></pre>
-<h2><a class="header" href="#exercises-35" id="exercises-35">Exercises</a></h2>
+<h2><a class="header" href="#exercises-36" id="exercises-36">Exercises</a></h2>
 <ol>
 <li>(Easy) Use <code>runContT</code> to test <code>get</code> in PSCi, printing the result to the console.</li>
 <li>(Medium) Use <code>ExceptT</code> to write a function <code>getEx</code> which wraps <code>get</code>, as we did previously for <code>readFileCont</code> and <code>writeFileCont</code>.</li>
@@ -5194,7 +5368,7 @@ main = flip runContT logShow do
 <p>Note that, since <code>readFileCont</code> returns a value of type <code>Either ErrorCode String</code>, we need to lift the <code>append</code> function over the <code>Either</code> type constructor using <code>lift2</code> to form our combining function.</p>
 <p>Because applicative functors support lifting of functions of arbitrary arity, we can perform more computations in parallel by using the applicative combinators. We can also benefit from all of the standard library functions which work with applicative functors, such as <code>traverse</code> and <code>sequence</code>!</p>
 <p>We can also combine parallel computations with sequential portions of code, by using applicative combinators in a do notation block, or vice versa, using <code>parallel</code> and <code>sequential</code> to change type constructors where appropriate.</p>
-<h2><a class="header" href="#exercises-36" id="exercises-36">Exercises</a></h2>
+<h2><a class="header" href="#exercises-37" id="exercises-37">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Use <code>parallel</code> and <code>sequential</code> to make two HTTP requests and collect their response bodies in parallel. Your combining function should concatenate the two response bodies, and your continuation should use <code>print</code> to print the result to the console.</p>
@@ -5286,7 +5460,7 @@ not equal to expected:
 [-888285,-822215,-196136,-116841,618343,887447]
 </code></pre>
 <p>Notice how the input <code>xs</code> and <code>ys</code> were generated as arrays of randomly-selected integers.</p>
-<h2><a class="header" href="#exercises-37" id="exercises-37">Exercises</a></h2>
+<h2><a class="header" href="#exercises-38" id="exercises-38">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a property which asserts that merging an array with the empty array does not modify the original array. <em>Note</em>: This new property is redundant, since this situation is already covered by our existing property. We're just trying to give you readers a simple way to practice using quickCheck.</li>
 <li>(Easy) Add an appropriate error message to the remaining property for <code>merge</code>.</li>
@@ -5316,7 +5490,7 @@ ints = id
   eq (ints $ mergePoly (sort xs) (sort ys)) (sort $ xs &lt;&gt; ys)
 </code></pre>
 <p>Here, <code>xs</code> and <code>ys</code> both have type <code>Array Int</code>, since the <code>ints</code> function has been used to disambiguate the unknown type.</p>
-<h2><a class="header" href="#exercises-38" id="exercises-38">Exercises</a></h2>
+<h2><a class="header" href="#exercises-39" id="exercises-39">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a function <code>bools</code> which forces the types of <code>xs</code> and <code>ys</code> to be <code>Array Boolean</code>, and add additional properties which test <code>mergePoly</code> at that type.</li>
 <li>(Medium) Choose a pure function from the core libraries (for example, from the <code>arrays</code> package), and write a QuickCheck property for it, including an appropriate error message. Your property should use a helper function to fix any polymorphic type arguments to either <code>Int</code> or <code>Boolean</code>.</li>
@@ -5386,7 +5560,7 @@ false
   member a $ insert a $ treeOfInt t
 </code></pre>
 <p>Here, the argument <code>t</code> is a randomly-generated tree of type <code>Tree Int</code>, where the type argument disambiguated by the identity function <code>treeOfInt</code>.</p>
-<h2><a class="header" href="#exercises-39" id="exercises-39">Exercises</a></h2>
+<h2><a class="header" href="#exercises-40" id="exercises-40">Exercises</a></h2>
 <ol>
 <li>(Medium) Create a newtype for <code>String</code> with an associated <code>Arbitrary</code> instance which generates collections of randomly-selected characters in the range <code>a-z</code>. <em>Hint</em>: use the <code>elements</code> and <code>arrayOf</code> functions from the <code>Test.QuickCheck.Gen</code> module.</li>
 <li>(Difficult) Write a property which asserts that a value inserted into a tree is still a member of that tree after arbitrarily many more insertions.</li>
@@ -5478,7 +5652,7 @@ Success : Success : ...
 </code></pre>
 <p><code>quickCheckPure</code> takes three arguments: the random seed, the number of test cases to generate, and the property to test. If all tests pass, you should see an array of <code>Success</code> data constructors printed to the console.</p>
 <p><code>quickCheckPure</code> might be useful in other situations, such as generating random input data for performance benchmarks, or generating sample form data for web applications.</p>
-<h2><a class="header" href="#exercises-40" id="exercises-40">Exercises</a></h2>
+<h2><a class="header" href="#exercises-41" id="exercises-41">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Write <code>Coarbitrary</code> instances for the <code>Byte</code> and <code>Sorted</code> type constructors.</p>
@@ -5701,7 +5875,7 @@ height = AttributeKey &quot;height&quot;
 unit
 </code></pre>
 <p>Note, however, that no changes had to be made to the <code>render</code> function, because the underlying data representation never changed. This is one of the benefits of the smart constructors approach - it allows us to separate the internal data representation for a module from the representation which is perceived by users of its external API.</p>
-<h2><a class="header" href="#exercises-41" id="exercises-41">Exercises</a></h2>
+<h2><a class="header" href="#exercises-42" id="exercises-42">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Use the <code>Data.DOM.Smart</code> module to experiment by creating new HTML documents using <code>render</code>.</p>
@@ -5780,7 +5954,7 @@ height = AttributeKey &quot;height&quot;
 &lt;img src=&quot;cat.jpg&quot; width=&quot;100&quot; height=&quot;200&quot; /&gt;
 unit
 </code></pre>
-<h2><a class="header" href="#exercises-42" id="exercises-42">Exercises</a></h2>
+<h2><a class="header" href="#exercises-43" id="exercises-43">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Create a data type which represents either pixel or percentage lengths. Write an instance of <code>IsValue</code> for your type. Modify the <code>width</code> and <code>height</code> attributes to use your new type.</p>
@@ -5935,7 +6109,7 @@ render = execWriter &lt;&lt;&lt; renderElement
 &lt;p&gt;&lt;img src=&quot;cat.jpg&quot; /&gt;A cat&lt;/p&gt;
 unit
 </code></pre>
-<h2><a class="header" href="#exercises-43" id="exercises-43">Exercises</a></h2>
+<h2><a class="header" href="#exercises-44" id="exercises-44">Exercises</a></h2>
 <ol>
 <li>(Medium) Add a new data constructor to the <code>ContentF</code> type to support a new action <code>comment</code>, which renders a comment in the generated HTML. Implement the new action using <code>liftF</code>. Update the interpretation <code>renderContentItem</code> to interpret your new constructor appropriately.</li>
 </ol>
@@ -6027,7 +6201,7 @@ render e = evalState (execWriterT (renderElement e)) 0
 unit
 </code></pre>
 <p>You can verify that multiple calls to <code>newName</code> do in fact result in unique names.</p>
-<h2><a class="header" href="#exercises-44" id="exercises-44">Exercises</a></h2>
+<h2><a class="header" href="#exercises-45" id="exercises-45">Exercises</a></h2>
 <ol>
 <li>
 <p>(Medium) We can simplify the API further by hiding the <code>Element</code> type from its users. Make these changes in the following steps:</p>
