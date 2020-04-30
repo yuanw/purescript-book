@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>The Effect and Aff Monads - PureScript by Example</title>
+        <title>The Effect Monad - PureScript by Example</title>
         
 
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
@@ -81,7 +81,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../index.html">Foreword</a></li><li class="chapter-item expanded "><a href="chapter1.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="chapter2.html"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="chapter3.html"><strong aria-hidden="true">3.</strong> Functions and Records</a></li><li class="chapter-item expanded "><a href="chapter4.html"><strong aria-hidden="true">4.</strong> Recursion, Maps And Folds</a></li><li class="chapter-item expanded "><a href="chapter5.html"><strong aria-hidden="true">5.</strong> Pattern Matching</a></li><li class="chapter-item expanded "><a href="chapter6.html"><strong aria-hidden="true">6.</strong> Type Classes</a></li><li class="chapter-item expanded "><a href="chapter7.html"><strong aria-hidden="true">7.</strong> Applicative Validation</a></li><li class="chapter-item expanded "><a href="chapter8.html" class="active"><strong aria-hidden="true">8.</strong> The Effect and Aff Monads</a></li><li class="chapter-item expanded "><a href="chapter9.html"><strong aria-hidden="true">9.</strong> Canvas Graphics</a></li><li class="chapter-item expanded "><a href="chapter10.html"><strong aria-hidden="true">10.</strong> The Foreign Function Interface</a></li><li class="chapter-item expanded "><a href="chapter11.html"><strong aria-hidden="true">11.</strong> Monadic Adventures</a></li><li class="chapter-item expanded "><a href="chapter12.html"><strong aria-hidden="true">12.</strong> Callback Hell</a></li><li class="chapter-item expanded "><a href="chapter13.html"><strong aria-hidden="true">13.</strong> Generative Testing</a></li><li class="chapter-item expanded "><a href="chapter14.html"><strong aria-hidden="true">14.</strong> Domain-Specific Languages</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../index.html">Foreword</a></li><li class="chapter-item expanded "><a href="chapter1.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="chapter2.html"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="chapter3.html"><strong aria-hidden="true">3.</strong> Functions and Records</a></li><li class="chapter-item expanded "><a href="chapter4.html"><strong aria-hidden="true">4.</strong> Recursion, Maps And Folds</a></li><li class="chapter-item expanded "><a href="chapter5.html"><strong aria-hidden="true">5.</strong> Pattern Matching</a></li><li class="chapter-item expanded "><a href="chapter6.html"><strong aria-hidden="true">6.</strong> Type Classes</a></li><li class="chapter-item expanded "><a href="chapter7.html"><strong aria-hidden="true">7.</strong> Applicative Validation</a></li><li class="chapter-item expanded "><a href="chapter8.html" class="active"><strong aria-hidden="true">8.</strong> The Effect Monad</a></li><li class="chapter-item expanded "><a href="chapter9.html"><strong aria-hidden="true">9.</strong> Canvas Graphics</a></li><li class="chapter-item expanded "><a href="chapter10.html"><strong aria-hidden="true">10.</strong> The Foreign Function Interface</a></li><li class="chapter-item expanded "><a href="chapter11.html"><strong aria-hidden="true">11.</strong> Monadic Adventures</a></li><li class="chapter-item expanded "><a href="chapter12.html"><strong aria-hidden="true">12.</strong> Callback Hell</a></li><li class="chapter-item expanded "><a href="chapter13.html"><strong aria-hidden="true">13.</strong> Generative Testing</a></li><li class="chapter-item expanded "><a href="chapter14.html"><strong aria-hidden="true">14.</strong> Domain-Specific Languages</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -730,22 +730,16 @@ mkAddressBookApp =
 <pre><code class="language-haskell">mkAddressBookApp :: Effect (ReactComponent {})
 mkAddressBookApp = do
   component &quot;AddressBookApp&quot; \props -&gt; R.do
-    let
-      Person p@{ homeAddress: Address a } = examplePerson
-    Tuple firstName setFirstName &lt;- useState p.firstName
-    Tuple lastName setLastName &lt;- useState p.lastName
+    Tuple person setPerson &lt;- useState examplePerson
 </code></pre>
-<p>Recall from Chapter 5 that the <code>@</code> symbol describes &quot;Named Patterns&quot;. This allows use to more conveniently access the <code>examplePerson</code>'s inner records of <code>Person</code> and <code>Address</code> as <code>p</code> and <code>a</code>:</p>
-<pre><code class="language-hs">Person p@{ homeAddress: Address a } = examplePerson
+<p>We track <code>person</code> as a piece of state with the <code>useState</code> hook.</p>
+<pre><code class="language-haskell">Tuple person setPerson &lt;- useState examplePerson
 </code></pre>
-<p>Another way to structure this app is by just using records for <code>Person</code> and <code>Address</code>, rather than wrapping with <code>newtype</code>. This provides more convenient record updates, but, comes at the cost of type safety. This simplification is up for <a href="https://github.com/purescript-contrib/purescript-book/issues/118">consideration</a>.</p>
-<p>Each form field is tracked as a separate piece of state with the <code>useState</code> hook. For example:</p>
-<pre><code class="language-haskell">Tuple firstName setFirstName &lt;- useState p.firstName
-</code></pre>
+<p>Note that you are free to break-up component state into multiple pieces of state with multiple calls to <code>useState</code>. For example, we could rewrite this app to use a separate piece of state for each record field of <code>Person</code>, but that happens to result in a slightly less convenient architecture in this case.</p>
 <p>In other examples, you may encounter the <code>/\</code> infix operator for <code>Tuple</code>. This is equivalent to the above line:</p>
 <pre><code class="language-hs">firstName /\ setFirstName &lt;- useState p.firstName
 </code></pre>
-<p><code>useState</code> takes a default initial value and returns the current value and a way to update the value. We can check the type of <code>useState</code> to gain more insight the types of <code>firstName</code> and <code>setFirstName</code>:</p>
+<p><code>useState</code> takes a default initial value and returns the current value and a way to update the value. We can check the type of <code>useState</code> to gain more insight the types of <code>person</code> and <code>setPerson</code>:</p>
 <pre><code class="language-hs">useState ::
   forall state.
   state -&gt;
@@ -753,27 +747,18 @@ mkAddressBookApp = do
 </code></pre>
 <p>We can strip the <code>Hook (UseState state)</code> wrapper off of the return value because <code>useState</code> is called within an <code>R.do</code> block. We'll elaborate on <code>R.do</code> later.</p>
 <p>So now we can observe the following signatures:</p>
-<pre><code class="language-hs">firstName :: state
-setFirstName :: (state -&gt; state) -&gt; Effect Unit
+<pre><code class="language-hs">person :: state
+setPerson :: (state -&gt; state) -&gt; Effect Unit
 </code></pre>
-<p>The specific type of <code>state</code> is determined by our initial default value. For this first <code>useState</code> hook, we pass in <code>p.firstName</code> which is <code>&quot;John&quot;</code> (a <code>String</code>) from our <code>examplePerson</code>.</p>
-<p><code>firstName</code> is how we access the current state at each rerender.</p>
-<p><code>setFirstName</code> is how we update the state. We simply provide a function that describes how to transform the current state to the new state. In many situations we can write an update function which ignores the state input argument as we either:</p>
-<ul>
-<li>Completely overwrite the state, e.g.:</li>
-</ul>
-<pre><code class="language-hs">setFirstName (\_ -&gt; &quot;Natasha&quot;)
+<p>The specific type of <code>state</code> is determined by our initial default value. <code>Person</code> <code>Record</code> in this case because that is the type of <code>examplePerson</code>.</p>
+<p><code>person</code> is how we access the current state at each rerender.</p>
+<p><code>setPerson</code> is how we update the state. We simply provide a function that describes how to transform the current state to the new state. The record update syntax is perfect for this when the type of <code>state</code> happens to be a <code>Record</code>, for example:</p>
+<pre><code class="language-hs">setPerson (\currentPerson -&gt; currentPerson {firstName = &quot;NewName&quot;})
 </code></pre>
-<ul>
-<li>Already have access to the current state via the first <code>Tuple</code> value, e.g.:</li>
-</ul>
-<pre><code class="language-hs">setFirstName (\_ -&gt; &quot;The Honerable &quot; &lt;&gt; firstName)
+<p>or as shorthand:</p>
+<pre><code class="language-hs">setPerson _ {firstName = &quot;NewName&quot;}
 </code></pre>
-<p>In other situations where we want to modify the state, but don't have access to the latest value (such as with a timed event), we need to use the state input.</p>
-<pre><code class="language-hs">setCount (c -&gt; c + 1)
--- equivalent to:
-setCount (_ + 1)
-</code></pre>
+<p>Non-<code>Record</code> states can also follow this update pattern. See <a href="https://github.com/spicydonuts/purescript-react-basic-hooks/pull/24#issuecomment-620300541">this guide</a> for more details on best practices.</p>
 <p>Recall that <code>useState</code> is used within an <code>R.do</code> block. <code>R.do</code> is a special react hooks variant of <code>do</code>. The <code>R.</code> prefix &quot;qualifies&quot; this as coming from <code>React.Basic.Hooks</code>, and means we use their hooks-compatible version of <code>bind</code> in the <code>R.do</code> block. This is known as a &quot;qualified do&quot;. It lets us ignore the <code>Hook (UseState state)</code> wrapping and bind the inner <code>Tuple</code> of values to variables.</p>
 <p>Another possible state management strategy is with <code>useReducer</code>, but that is outside the scope of this chapter.</p>
 <p>Rendering <code>JSX</code> occurs here:</p>
@@ -787,15 +772,20 @@ setCount (_ + 1)
                   , children:
                       [ D.form_
                           $ [ D.h3_ [ D.text &quot;Basic Information&quot; ]
-                            , formField &quot;First Name&quot; &quot;First Name&quot; firstName setFirstName
-                            , formField &quot;Last Name&quot; &quot;Last Name&quot; lastName setLastName
+                            , formField &quot;First Name&quot; &quot;First Name&quot; person.firstName \s -&gt;
+                                setPerson _ { firstName = s }
+                            , formField &quot;Last Name&quot; &quot;Last Name&quot; person.lastName \s -&gt;
+                                setPerson _ { lastName = s }
                             , D.h3_ [ D.text &quot;Address&quot; ]
-                            , formField &quot;Street&quot; &quot;Street&quot; street setStreet
-                            , formField &quot;City&quot; &quot;City&quot; city setCity
-                            , formField &quot;State&quot; &quot;State&quot; state setState
+                            , formField &quot;Street&quot; &quot;Street&quot; person.homeAddress.street \s -&gt;
+                                setPerson _ { homeAddress { street = s } }
+                            , formField &quot;City&quot; &quot;City&quot; person.homeAddress.city \s -&gt;
+                                setPerson _ { homeAddress { city = s } }
+                            , formField &quot;State&quot; &quot;State&quot; person.homeAddress.state \s -&gt;
+                                setPerson _ { homeAddress { state = s } }
                             , D.h3_ [ D.text &quot;Contact Information&quot; ]
                             ]
-                          &lt;&gt; mapWithIndex renderPhoneNumber phoneNumbers
+                          &lt;&gt; renderPhoneNumbers
                       ]
                   }
               ]
@@ -828,7 +818,7 @@ renderValidationErrors xs =
 <pre><code class="language-hs">className: &quot;alert alert-danger row&quot;
 </code></pre>
 <p>A second helper function is <code>formField</code>, which creates a text input for a single form field:</p>
-<pre><code class="language-hs">formField :: String -&gt; String -&gt; String -&gt; ((String -&gt; String) -&gt; Effect Unit) -&gt; R.JSX
+<pre><code class="language-hs">formField :: String -&gt; String -&gt; String -&gt; (String -&gt; Effect Unit) -&gt; R.JSX
 formField name placeholder value setValue =
   D.label
     { className: &quot;form-group row&quot;
@@ -847,7 +837,8 @@ formField name placeholder value setValue =
                     , onChange:
                         let
                           handleValue :: Maybe String -&gt; Effect Unit
-                          handleValue (Just v) = setValue (\_ -&gt; v)
+                          handleValue (Just v) = setValue v
+
                           handleValue Nothing = pure unit
                         in
                           handler targetValue handleValue
@@ -861,30 +852,27 @@ formField name placeholder value setValue =
 <p>The <code>onChange</code> attribute allows us to describe how to respond to user input. We use the <code>handler</code> function, which has the following type:</p>
 <pre><code class="language-haskell">handler :: forall a. EventFn SyntheticEvent a -&gt; (a -&gt; Effect Unit) -&gt; EventHandler
 </code></pre>
-<p>For the first argument (<code>EventFn SyntheticEvent a</code>) we use <code>targetValue</code>. The type variable <code>a</code> in this case is <code>Maybe String</code>.</p>
+<p>For the first argument to <code>hander</code> we use we use <code>targetValue</code>, which provides the value of the text within the HTML <code>input</code> element. It matches the signature expected by <code>handler</code> where the type variable <code>a</code> in this case is <code>Maybe String</code>:</p>
 <pre><code class="language-hs">targetValue :: EventFn SyntheticEvent (Maybe String)
 </code></pre>
 <p>In JavaScript, the <code>input</code> element's <code>onChange</code> event is actually accompanied by a <code>String</code> value, but since strings in JavaScript can be null, <code>Maybe</code> is used for safety.</p>
 <p>The second argument to <code>handler</code>, <code>(a -&gt; Effect Unit)</code>, must therefore have this signature:</p>
 <pre><code class="language-hs">Maybe String -&gt; Effect Unit
 </code></pre>
-<p>It is a function that describes how to convert this <code>Maybe String</code> value into our desired effect. We create this <code>handleValue</code> function and pass it to <code>handler</code> as follows:</p>
+<p>It is a function that describes how to convert this <code>Maybe String</code> value into our desired effect. We define a custom <code>handleValue</code> function for this purpose and pass it to <code>handler</code> as follows:</p>
 <pre><code class="language-haskell">onChange:
   let
     handleValue :: Maybe String -&gt; Effect Unit
-    handleValue (Just v) = setValue (\_ -&gt; v)
+    handleValue (Just v) = setValue v
     handleValue Nothing = pure unit
   in
     handler targetValue handleValue
 </code></pre>
-<p><code>setValue</code> is a function that has the same signature as the second tuple value returned by <code>useState</code> hook. In most cases we pass that function through to <code>formField</code> from the hook as-is. For phone numbers, a custom <code>setPhoneNumber</code> function is used to update the phone number at a particular index.</p>
-<p>Note that <code>handleValue</code> can be substituted as this:</p>
-<pre><code class="language-hs">onChange: handler targetValue $ traverse_ \v -&gt; setValue \_ -&gt; v
+<p><code>setValue</code> is the function we provided to each <code>formField</code> call that takes a string and makes the appropriate record-update call to the <code>setPerson</code> hook.</p>
+<p>Note that <code>handleValue</code> can be substituted as:</p>
+<pre><code class="language-hs">onChange: handler targetValue $ traverse_ setValue
 </code></pre>
-<p>Or even this:</p>
-<pre><code class="language-hs">onChange: handler targetValue $ traverse_ $ setValue &lt;&lt;&lt; const
-</code></pre>
-<p>Feel free to investigate the definitions of <code>traverse_</code> and <code>const</code> to see how these three forms are indeed equivalent.</p>
+<p>Feel free to investigate the definition of <code>traverse_</code> to see how both forms are indeed equivalent.</p>
 <p>That covers the basics of our component implementation. However, you should read the source accompanying this chapter in order to get a full understanding of the way the component works.</p>
 <p>Obviously, this user interface can be improved in a number of ways. The exercises will explore some ways in which we can make the application more usable.</p>
 <h2><a class="header" href="#exercises-2" id="exercises-2">Exercises</a></h2>
