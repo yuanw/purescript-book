@@ -476,7 +476,6 @@ exports.alert = function(msg) {
         window.alert(msg);
     };
 };
-
 </code></pre>
 <p>The <code>alert</code> action is very similar to the <code>log</code> action from the <code>Effect.Console</code> module. The only difference is that the <code>alert</code> action uses the <code>window.alert</code> method, whereas the <code>log</code> action uses the <code>console.log</code> method. As such, <code>alert</code> can only be used in environments where <code>window.alert</code> is defined, such as a web browser.</p>
 <p>Note that, as in the case of <code>log</code>, the <code>alert</code> function uses a function of no arguments to represent the computation of type <code>Effect Unit</code>.</p>
@@ -486,10 +485,54 @@ exports.alert = function(msg) {
 
 foreign import setItem :: String -&gt; String -&gt; Effect Unit
 </code></pre>
-<p>The interested reader can inspect the source code for this module to see the definitions of these actions.</p>
+<p>Here is the corresponding JavaScript implementation of these functions in <code>Effect/Storage.js</code>:</p>
+<pre><code class="language-js">exports.setItem = function(key) {
+    return function(value) {
+        return function() {
+            window.localStorage.setItem(key, value);
+        };
+    };
+};
+
+exports.getItem = function(key) {
+    return function() {
+        return window.localStorage.getItem(key);
+    }
+};
+</code></pre>
 <p><code>setItem</code> takes a key and a value (both strings), and returns a computation which stores the value in local storage at the specified key.</p>
 <p>The type of <code>getItem</code> is more interesting. It takes a key, and attempts to retrieve the associated value from local storage. However, since the <code>getItem</code> method on <code>window.localStorage</code> can return <code>null</code>, the return type is not <code>String</code>, but <code>Foreign</code> which is defined by the <code>foreign</code> package in the <code>Foreign</code> module.</p>
 <p><code>Foreign</code> provides a way to work with <em>untyped data</em>, or more generally, data whose runtime representation is uncertain.</p>
+<h2><a class="header" href="#modern-javascript-for-curried-functions" id="modern-javascript-for-curried-functions">Modern JavaScript for Curried Functions</a></h2>
+<p>We may rewrite our <code>setItem</code> and <code>getItem</code> functions in ES6 style as follows:</p>
+<pre><code class="language-js">exports.setItem = key =&gt; value =&gt; () =&gt; {
+    window.localStorage.setItem(key, value);
+};
+
+exports.getItem = key =&gt; () =&gt;
+    window.localStorage.getItem(key);
+</code></pre>
+<p>Note that in the original <code>setItem</code>, there is no inner <code>return</code> statement, which means the function returns nothing (technically it returns <code>undefined</code>). We preserve this lack of returned value in the new ES6 version by surrounding the expression to the right of the last arrow (<code>=&gt;</code>) with curly braces (<code>{}</code>).
+Contrast this with <code>getItem</code> where we return a value, and so that expression is simply placed directly after the last arrow.
+In practice however, writing <code>setItem</code> in the style of <code>getItem</code> (without curly braces) will still work for two reasons:</p>
+<ol>
+<li>The return value of <code>window.localStorage.setItem</code> also happens to be <code>undefined</code>.</li>
+<li>If PureScript expects an <code>undefined</code> value to be returned, then an erroneously-returned non-<code>undefined</code> value will simply be ignored.</li>
+</ol>
+<p>Also, recall the generated <code>curriedAdd</code> function from earlier:</p>
+<pre><code class="language-js">var curriedAdd = function (n) {
+    return function (m) {
+        return m + n | 0;
+    };
+};
+</code></pre>
+<p>Here's its ES6 representation:</p>
+<pre><code class="language-js">var curriedAdd = n =&gt; m =&gt; m + n | 0;
+</code></pre>
+<p>The PureScript compiler generates the more verbose ES5-style curried functions, but if you find the ES6-style arrow-notation more readable, you may transform the <code>output</code> directory with a tool like <a href="https://github.com/lebab/lebab">lebab</a>:</p>
+<pre><code class="language-sh">npm i -g lebab
+lebab --replace output/ --transform arrow,arrow-return
+</code></pre>
 <h2><a class="header" href="#exercises-1" id="exercises-1">Exercises</a></h2>
 <ol>
 <li>(Medium) Write a wrapper for the <code>confirm</code> method on the JavaScript <code>Window</code> object, and add your foreign function to the <code>Effect.Alert</code> module.</li>
