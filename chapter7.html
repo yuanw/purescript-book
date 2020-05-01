@@ -170,7 +170,7 @@
 <pre><code class="language-text">&gt; import Data.AddressBook
 
 &gt; address &quot;123 Fake St.&quot; &quot;Faketown&quot; &quot;CA&quot;
-Address { street: &quot;123 Fake St.&quot;, city: &quot;Faketown&quot;, state: &quot;CA&quot; }
+{ street: &quot;123 Fake St.&quot;, city: &quot;Faketown&quot;, state: &quot;CA&quot; }
 </code></pre>
 <p>However, suppose we did not necessarily have a street, city, or state, and wanted to use the <code>Maybe</code> type to indicate a missing value in each of the three cases.</p>
 <p>In one case, we might have a missing city. If we try to apply our function directly, we will receive an error from the type checker:</p>
@@ -195,7 +195,7 @@ Nothing
 <p>In this case, the result is <code>Nothing</code>, because one of the arguments (the city) was missing. If we provide all three arguments using the <code>Just</code> constructor, then the result will contain a value as well:</p>
 <pre><code class="language-text">&gt; lift3 address (Just &quot;123 Fake St.&quot;) (Just &quot;Faketown&quot;) (Just &quot;CA&quot;)
 
-Just (Address { street: &quot;123 Fake St.&quot;, city: &quot;Faketown&quot;, state: &quot;CA&quot; })
+Just ({ street: &quot;123 Fake St.&quot;, city: &quot;Faketown&quot;, state: &quot;CA&quot; })
 </code></pre>
 <p>The name of the function <code>lift3</code> indicates that it can be used to lift functions of 3 arguments. There are similar functions defined in <code>Control.Apply</code> for functions of other numbers of arguments.</p>
 <h2><a class="header" href="#lifting-arbitrary-functions" id="lifting-arbitrary-functions">Lifting Arbitrary Functions</a></h2>
@@ -243,13 +243,13 @@ lift3 f x y z = f &lt;$&gt; x &lt;*&gt; y &lt;*&gt; z
 <p>It is left as an exercise for the reader to verify the types involved in this expression.</p>
 <p>As an example, we can try lifting the address function over <code>Maybe</code>, directly using the <code>&lt;$&gt;</code> and <code>&lt;*&gt;</code> functions:</p>
 <pre><code class="language-text">&gt; address &lt;$&gt; Just &quot;123 Fake St.&quot; &lt;*&gt; Just &quot;Faketown&quot; &lt;*&gt; Just &quot;CA&quot;
-Just (Address { street: &quot;123 Fake St.&quot;, city: &quot;Faketown&quot;, state: &quot;CA&quot; })
+Just ({ street: &quot;123 Fake St.&quot;, city: &quot;Faketown&quot;, state: &quot;CA&quot; })
 
 &gt; address &lt;$&gt; Just &quot;123 Fake St.&quot; &lt;*&gt; Nothing &lt;*&gt; Just &quot;CA&quot;
 Nothing
 </code></pre>
 <p>Try lifting some other functions of various numbers of arguments over <code>Maybe</code> in this way.</p>
-<p>Alternatively <em>applicative do notation</em> can be used for the same purpose in a way that looks similar to the familiar <em>do notation</em>. Here is <code>lift3</code> using <em>applicative do notation</em>. Note <code>ado</code> is used instead of <code>do</code>, and <code>in</code> is used on the final line to denote the yielded value: </p>
+<p>Alternatively <em>applicative do notation</em> can be used for the same purpose in a way that looks similar to the familiar <em>do notation</em>. Here is <code>lift3</code> using <em>applicative do notation</em>. Note <code>ado</code> is used instead of <code>do</code>, and <code>in</code> is used on the final line to denote the yielded value:</p>
 <pre><code class="language-haskell">lift3 :: forall a b c d f
        . Apply f
       =&gt; (a -&gt; b -&gt; c -&gt; d)
@@ -303,7 +303,7 @@ Nothing
 <p>or with <em>applicative do</em></p>
 <pre><code class="language-text">&gt; import Data.Maybe
 
-&gt; :paste… 
+&gt; :paste…
 … ado
 …   f &lt;- Just &quot;Phillip&quot;
 …   m &lt;- Just &quot;A&quot;
@@ -340,7 +340,7 @@ Nothing
 </code></pre>
 <p>or with <em>applicative do</em></p>
 <pre><code class="language-text">&gt; :paste
-… fullNameEither first middle last = ado 
+… fullNameEither first middle last = ado
 …  f &lt;- first  `withError` &quot;First name was missing&quot;
 …  m &lt;- middle `withError` &quot;Middle name was missing&quot;
 …  l &lt;- last   `withError` &quot;Last name was missing&quot;
@@ -425,24 +425,22 @@ examplePerson =
 <pre><code class="language-text">&gt; import Data.AddressBook
 
 &gt; examplePerson
-Person
-  { firstName: &quot;John&quot;,
-  , lastName: &quot;Smith&quot;,
-  , address: Address
-      { street: &quot;123 Fake St.&quot;
-      , city: &quot;FakeTown&quot;
-      , state: &quot;CA&quot;
-      },
-  , phones: [ PhoneNumber
-                { type: HomePhone
-                , number: &quot;555-555-5555&quot;
-                }
-            , PhoneNumber
-                { type: CellPhone
-                , number: &quot;555-555-0000&quot;
-                }
-            ]
-  }  
+{ firstName: &quot;John&quot;
+, lastName: &quot;Smith&quot;
+, address:
+    { street: &quot;123 Fake St.&quot;
+    , city: &quot;FakeTown&quot;
+    , state: &quot;CA&quot;
+    }
+, phones:
+    [ { type: HomePhone
+      , number: &quot;555-555-5555&quot;
+      }
+    , { type: CellPhone
+      , number: &quot;555-555-0000&quot;
+      }
+    ]
+}
 </code></pre>
 <p>We saw in a previous section how we could use the <code>Either String</code> functor to validate a data structure of type <code>Person</code>. For example, provided functions to validate the two names in the structure, we might validate the entire data structure as follows:</p>
 <pre><code class="language-haskell">nonEmpty :: String -&gt; Either String Unit
@@ -450,18 +448,18 @@ nonEmpty &quot;&quot; = Left &quot;Field cannot be empty&quot;
 nonEmpty _  = Right unit
 
 validatePerson :: Person -&gt; Either String Person
-validatePerson (Person o) =
-  person &lt;$&gt; (nonEmpty o.firstName *&gt; pure o.firstName)
-         &lt;*&gt; (nonEmpty o.lastName  *&gt; pure o.lastName)
-         &lt;*&gt; pure o.address
-         &lt;*&gt; pure o.phones
+validatePerson p =
+  person &lt;$&gt; (nonEmpty p.firstName *&gt; pure p.firstName)
+         &lt;*&gt; (nonEmpty p.lastName  *&gt; pure p.lastName)
+         &lt;*&gt; pure p.address
+         &lt;*&gt; pure p.phones
 </code></pre>
 <p>or with <em>applicative do</em></p>
 <pre><code class="language-haskell">validatePersonAdo :: Person -&gt; Either String Person
-validatePersonAdo (Person o) = ado
-  f &lt;- nonEmpty o.firstName *&gt; pure o.firstName
-  l &lt;- nonEmpty o.lastName *&gt; pure o.firstName
-  in person f l o.address o.phones
+validatePersonAdo p = ado
+  f &lt;- nonEmpty p.firstName *&gt; pure p.firstName
+  l &lt;- nonEmpty p.lastName *&gt; pure p.firstName
+  in person f l p.address p.phones
 </code></pre>
 <p>In the first two lines, we use the <code>nonEmpty</code> function to validate a non-empty string. <code>nonEmpty</code> returns an error (indicated with the <code>Left</code> constructor) if its input is empty, or a successful empty value (<code>unit</code>) using the <code>Right</code> constructor otherwise. We use the sequencing operator <code>*&gt;</code> to indicate that we want to perform two validations, returning the result from the validator on the right. In this case, the validator on the right simply uses <code>pure</code> to return the input unchanged.</p>
 <p>The final lines do not perform any validation but simply provide the <code>address</code> and <code>phones</code> fields to the <code>person</code> function as the remaining arguments.</p>
@@ -486,17 +484,17 @@ lengthIs _     _   _     =
   pure unit
 
 validateAddress :: Address -&gt; V Errors Address
-validateAddress (Address o) =
-  address &lt;$&gt; (nonEmpty &quot;Street&quot; o.street *&gt; pure o.street)
-          &lt;*&gt; (nonEmpty &quot;City&quot;   o.city   *&gt; pure o.city)
-          &lt;*&gt; (lengthIs &quot;State&quot; 2 o.state *&gt; pure o.state)
+validateAddress a =
+  address &lt;$&gt; (nonEmpty &quot;Street&quot; a.street *&gt; pure a.street)
+          &lt;*&gt; (nonEmpty &quot;City&quot;   a.city   *&gt; pure a.city)
+          &lt;*&gt; (lengthIs &quot;State&quot; 2 a.state *&gt; pure a.state)
 </code></pre>
 <p>or with <em>applicative do</em></p>
 <pre><code class="language-haskell">validateAddressAdo :: Address -&gt; V Errors Address
-validateAddressAdo (Address o) = ado
-  street  &lt;- (nonEmpty &quot;Street&quot; o.street *&gt; pure o.street)
-  city    &lt;- (nonEmpty &quot;City&quot;   o.city   *&gt; pure o.city)
-  state   &lt;- (lengthIs &quot;State&quot; 2 o.state *&gt; pure o.state)
+validateAddressAdo a = ado
+  street  &lt;- (nonEmpty &quot;Street&quot; a.street *&gt; pure a.street)
+  city    &lt;- (nonEmpty &quot;City&quot;   a.city   *&gt; pure a.city)
+  state   &lt;- (lengthIs &quot;State&quot; 2 a.state *&gt; pure a.state)
   in address street city state
 </code></pre>
 <p><code>validateAddress</code> validates an <code>Address</code> structure. It checks that the <code>street</code> and <code>city</code> fields are non-empty, and checks that the string in the <code>state</code> field has length 2.</p>
@@ -528,20 +526,20 @@ matches field _     _     =
 <p>Again, notice how <code>pure</code> is used to indicate successful validation, and <code>invalid</code> is used to signal an array of errors.</p>
 <p><code>validatePhoneNumber</code> is built from the <code>matches</code> function in the same way as before:</p>
 <pre><code class="language-haskell">validatePhoneNumber :: PhoneNumber -&gt; V Errors PhoneNumber
-validatePhoneNumber (PhoneNumber o) =
-  phoneNumber &lt;$&gt; pure o.&quot;type&quot;
-              &lt;*&gt; (matches &quot;Number&quot; phoneNumberRegex o.number *&gt; pure o.number)
+validatePhoneNumber pn =
+  phoneNumber &lt;$&gt; pure pn.&quot;type&quot;
+              &lt;*&gt; (matches &quot;Number&quot; phoneNumberRegex pn.number *&gt; pure pn.number)
 </code></pre>
 <p>or with <em>applicative do</em></p>
 <pre><code class="language-haskell">validatePhoneNumberAdo :: PhoneNumber -&gt; V Errors PhoneNumber
-validatePhoneNumberAdo (PhoneNumber o) = ado
-  tpe     &lt;-  pure o.&quot;type&quot;
-  number  &lt;-  (matches &quot;Number&quot; phoneNumberRegex o.number *&gt; pure o.number)
+validatePhoneNumberAdo pn = ado
+  tpe     &lt;-  pure pn.&quot;type&quot;
+  number  &lt;-  (matches &quot;Number&quot; phoneNumberRegex pn.number *&gt; pure pn.number)
   in phoneNumber tpe number
 </code></pre>
 <p>Again, try running this validator against some valid and invalid inputs in PSCi:</p>
 <pre><code class="language-text">&gt; validatePhoneNumber $ phoneNumber HomePhone &quot;555-555-5555&quot;
-Valid (PhoneNumber { type: HomePhone, number: &quot;555-555-5555&quot; })
+Valid ({ type: HomePhone, number: &quot;555-555-5555&quot; })
 
 &gt; validatePhoneNumber $ phoneNumber HomePhone &quot;555.555.5555&quot;
 Invalid ([&quot;Field 'Number' did not match the required format&quot;])
@@ -560,25 +558,21 @@ arrayNonEmpty _     _  =
   pure unit
 
 validatePerson :: Person -&gt; V Errors Person
-validatePerson (Person o) =
-  person &lt;$&gt; (nonEmpty &quot;First Name&quot; o.firstName *&gt;
-              pure o.firstName)
-         &lt;*&gt; (nonEmpty &quot;Last Name&quot;  o.lastName  *&gt;
-              pure o.lastName)
-	       &lt;*&gt; validateAddress o.address
-         &lt;*&gt; (arrayNonEmpty &quot;Phone Numbers&quot; o.phones *&gt;
-              traverse validatePhoneNumber o.phones)
+validatePerson p =
+  person &lt;$&gt; (nonEmpty &quot;First Name&quot; p.firstName *&gt; pure p.firstName)
+         &lt;*&gt; (nonEmpty &quot;Last Name&quot;  p.lastName  *&gt; pure p.lastName)
+         &lt;*&gt; validateAddress p.address
+         &lt;*&gt; (arrayNonEmpty &quot;Phone Numbers&quot; p.phones *&gt;
+              traverse validatePhoneNumber p.phones)
 </code></pre>
 <p>or with <em>applicative do</em></p>
 <pre><code class="language-haskell">validatePersonAdo :: Person -&gt; V Errors Person
-validatePersonAdo (Person o) = ado
-  firstName   &lt;- (nonEmpty &quot;First Name&quot; o.firstName *&gt; 
-                  pure o.firstName)
-  lastName    &lt;- (nonEmpty &quot;Last Name&quot;  o.lastName  *&gt; 
-                  pure o.lastName)
-  address     &lt;- validateAddress o.address
-  numbers     &lt;- (arrayNonEmpty &quot;Phone Numbers&quot; o.phones *&gt; 
-                  traverse validatePhoneNumber o.phones)
+validatePersonAdo p = ado
+  firstName   &lt;- (nonEmpty &quot;First Name&quot; p.firstName *&gt; pure p.firstName)
+  lastName    &lt;- (nonEmpty &quot;Last Name&quot;  p.lastName  *&gt; pure p.lastName)
+  address     &lt;- validateAddress p.address
+  numbers     &lt;- (arrayNonEmpty &quot;Phone Numbers&quot; p.phones *&gt;
+                  traverse validatePhoneNumber p.phones)
   in person firstName lastName address numbers
 </code></pre>
 <p>There is one more interesting function here, which we haven't seen yet - <code>traverse</code>, which appears in the final line.</p>
