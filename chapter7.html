@@ -608,15 +608,16 @@ traverse f (Cons x xs) = Cons &lt;$&gt; f x &lt;*&gt; traverse f xs
 <p>But there are more examples of traversable functors than just arrays and lists. The <code>Maybe</code> type constructor we saw earlier also has an instance for <code>Traversable</code>. We can try it in PSCi:</p>
 <pre><code class="language-text">&gt; import Data.Maybe
 &gt; import Data.Traversable
+&gt; import Data.AddressBook.Validation
 
 &gt; traverse (nonEmpty &quot;Example&quot;) Nothing
-(Valid Nothing)
+pure (Nothing)
 
 &gt; traverse (nonEmpty &quot;Example&quot;) (Just &quot;&quot;)
-(Invalid [&quot;Field 'Example' cannot be empty&quot;])
+invalid ([&quot;Field 'Example' cannot be empty&quot;])
 
 &gt; traverse (nonEmpty &quot;Example&quot;) (Just &quot;Testing&quot;)
-(Valid (Just unit))
+pure ((Just unit))
 </code></pre>
 <p>These examples show that traversing the <code>Nothing</code> value returns <code>Nothing</code> with no validation, and traversing <code>Just x</code> uses the validation function to validate <code>x</code>. That is, <code>traverse</code> takes a validation function for type <code>a</code> and returns a validation function for <code>Maybe a</code>, i.e. a validation function for optional values of type <code>a</code>.</p>
 <p>Other traversable functors include <code>Array</code>, and <code>Tuple a</code> and <code>Either a</code> for any type <code>a</code>. Generally, most &quot;container&quot; data type constructors have <code>Traversable</code> instances. As an example, the exercises will include writing a <code>Traversable</code> instance for a type of binary trees.</p>
