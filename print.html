@@ -298,17 +298,14 @@ main = log &quot;Hello, World!&quot;
 </ul>
 <p>The rest of the chapter will guide you through installing and configuring these tools.</p>
 <h2><a class="header" href="#installing-purescript" id="installing-purescript">Installing PureScript</a></h2>
-<p>The recommended approach to installing the PureScript compiler is to download a binary release for your platform from the <a href="https://www.purescript.org">PureScript website</a>.</p>
-<p>You should verify that the PureScript compiler executables are available on your path. Try running the PureScript compiler on the command line to verify this:</p>
+<p>You will need to install <code>Node.js</code> and <code>npm</code>. We recommend installing <a href="https://docs.npmjs.com/getting-started/installing-node">Node.js and npm via a &quot;node version manager&quot;</a> to avoid issues with installing packages gloablly. If you choose to install it manually, you might experience the <a href="https://docs.npmjs.com/getting-started/fixing-npm-permissions#option-1-change-the-permission-to-npm-s-default-directory"><code>EACCES</code> error when installing packages globally</a>.</p>
+<p>Install the Purescript compiler (<code>purs</code>) with npm:</p>
+<pre><code>npm install -g purescript
+</code></pre>
+<p>Try running the PureScript compiler on the command line to verify that the PureScript compiler executables are available on your path:</p>
 <pre><code class="language-text">$ purs
 </code></pre>
-<p>Other options for installing the PureScript compiler include:</p>
-<ul>
-<li>Via NPM: <code>npm install -g purescript</code>.</li>
-<li>Building the compiler from source. Instructions can be found on the PureScript website.</li>
-</ul>
 <h2><a class="header" href="#installing-tools" id="installing-tools">Installing Tools</a></h2>
-<p>If you do not have a working installation of <a href="https://nodejs.org">NodeJS</a>, you should install it. This should also install the <code>npm</code> package manager on your system. Make sure you have <code>npm</code> installed and available on your path.</p>
 <p>Spago is a PureScript build tool and package manager. You will need to install it using <code>npm</code>, as follows:</p>
 <pre><code class="language-text">$ npm install -g spago
 </code></pre>
