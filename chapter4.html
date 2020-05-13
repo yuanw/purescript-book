@@ -153,7 +153,7 @@
 <p>We will also cover some standard functions from PureScript's standard libraries. We will see the <code>map</code> and <code>fold</code> functions, as well as some useful special cases, like <code>filter</code> and <code>concatMap</code>.</p>
 <p>The motivating example for this chapter is a library of functions for working with a virtual filesystem. We will apply the techniques learned in this chapter to write functions which compute properties of the files represented by a model of a filesystem.</p>
 <h2><a class="header" href="#project-setup" id="project-setup">Project Setup</a></h2>
-<p>The source code for this chapter is contained in <code>src/Data/Path.purs</code> and <code>test/Solutions.purs</code>. The <code>Data.Path</code> module contains a model of a virtual filesystem. You do not need to modify the contents of this module. Implement your solutions to the exercises in the <code>Test.Solutions</code> module.</p>
+<p>The source code for this chapter is contained in <code>src/Data/Path.purs</code> and <code>test/Solutions.purs</code>. The <code>Data.Path</code> module contains a model of a virtual filesystem. You do not need to modify the contents of this module. Implement your solutions to the exercises in the <code>Test.Solutions</code> module. Enable accompanying tests in the <code>Test.Main</code> module as you complete each exercise and check your work by running <code>spago test</code>.</p>
 <p>The project has the following dependencies:</p>
 <ul>
 <li><code>maybe</code>, which defines the <code>Maybe</code> type constructor</li>
@@ -551,7 +551,7 @@ true
 &gt; ls root
 [/bin/,/etc/,/home/]
 </code></pre>
-<p>The <code>FileOperations</code> module defines functions which use the <code>Data.Path</code> API. You do not need to modify the <code>Data.Path</code> module, or understand its implementation. We will work entirely in the <code>FileOperations</code> module.</p>
+<p>The <code>Test.Solutions</code> module defines functions which use the <code>Data.Path</code> API. You do not need to modify the <code>Data.Path</code> module, or understand its implementation. We will work entirely in the <code>Test.Solutions</code> module.</p>
 <h2><a class="header" href="#listing-all-files" id="listing-all-files">Listing All Files</a></h2>
 <p>Let's write a function which performs a deep enumeration of all files inside a directory. This function will have the following type:</p>
 <pre><code class="language-haskell">allFiles :: Path -&gt; Array Path
@@ -562,7 +562,7 @@ true
 </code></pre>
 <p><em>Note</em>: the cons operator <code>:</code> actually has poor performance on immutable arrays, so it is not recommended in general. Performance can be improved by using other data structures, such as linked lists and sequences.</p>
 <p>Let's try this function in PSCi:</p>
-<pre><code class="language-text">&gt; import FileOperations
+<pre><code class="language-text">&gt; import Test.Solutions
 &gt; import Data.Path
 
 &gt; allFiles root
