@@ -200,6 +200,17 @@
 &gt; show (Just &quot;testing&quot;)
 &quot;(Just \&quot;testing\&quot;)&quot;
 </code></pre>
+<p>The output of <code>show</code> should be a string that you can paste back into the repl (or <code>.purs</code> file) to recreate the item being shown. Here we'll use <code>logShow</code>, which just calls <code>show</code> then <code>log</code>, to render the string without quotes. Ignore the <code>unit</code> print - that will covered in Chapter 8 when we examine <code>Effect</code>s, like <code>log</code>.</p>
+<pre><code class="language-text">&gt; import Effect.Console
+
+&gt; logShow (Tuple 1 true)
+(Tuple 1 true)
+unit
+
+&gt; logShow (Just &quot;testing&quot;)
+(Just &quot;testing&quot;)
+unit
+</code></pre>
 <p>If we try to show a value of type <code>Data.Either</code>, we get an interesting error message:</p>
 <pre><code class="language-text">&gt; import Data.Either
 &gt; show (Left 10)
