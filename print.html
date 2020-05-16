@@ -269,6 +269,7 @@ main = log &quot;Hello, World!&quot;
 <p>If you get stuck at any point, there are a number of resources available online for learning PureScript:</p>
 <ul>
 <li>The <code>#purescript</code> and <code>#purescript-beginners</code> FP Slack channels are a great place to chat about issues you may be having. <a href="https://fpchat-invite.herokuapp.com/">Use this link</a> to gain access the Slack chatrooms.</li>
+<li>The <a href="https://discourse.purescript.org/">Purescript Discourse Forum</a> is another good place to search for solutions to common problems. Questions you ask here will be available to help future readers, whereas on Slack, message history is only kept for approximately 2 weeks.</li>
 <li><a href="https://github.com/jordanmartinez/purescript-jordans-reference">PureScript: Jordan's Reference</a>  is an alternative learning resource that goes into great depth. If a concept in this book is difficult to understand, consider reading the corresponding section in that reference.</li>
 <li><a href="https://pursuit.purescript.org">Pursuit</a> is a searchable database of PureScript types and functions. Read Pursuit's help page to <a href="https://pursuit.purescript.org/help/users">learn what kinds of searches you can do</a>.</li>
 <li>The <a href="https://github.com/purescript/documentation">PureScript documentation repository</a> collects articles and examples on a wide variety of topics, written by PureScript developers and users.</li>
@@ -2704,7 +2705,7 @@ validatePersonAdo p = ado
 <pre><code class="language-haskell">traverse :: forall a b f. Applicative f =&gt; (a -&gt; f b) -&gt; Array a -&gt; f (Array b)
 </code></pre>
 <p>Intuitively, given any applicative functor <code>f</code>, and a function which takes a value of type <code>a</code> and returns a value of type <code>b</code> (with side-effects tracked by <code>f</code>), we can apply the function to each element of an array of type <code>Array a</code> to obtain a result of type <code>Array b</code> (with side-effects tracked by <code>f</code>).</p>
-<p>Still not clear? Let's specialize further to the case where <code>m</code> is the <code>V Errors</code> applicative functor above. Now, we have a function of type</p>
+<p>Still not clear? Let's specialize further to the case where <code>f</code> is the <code>V Errors</code> applicative functor above. Now, we have a function of type</p>
 <pre><code class="language-haskell">traverse :: forall a b. (a -&gt; V Errors b) -&gt; Array a -&gt; V Errors (Array b)
 </code></pre>
 <p>This type signature says that if we have a validation function <code>f</code> for a type <code>a</code>, then <code>traverse f</code> is a validation function for arrays of type <code>Array a</code>. But that's exactly what we need to be able to validate the <code>phones</code> field of the <code>Person</code> data structure! We pass <code>validatePhoneNumber</code> to <code>traverse</code> to create a validation function which validates each element successively.</p>

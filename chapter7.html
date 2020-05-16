@@ -587,7 +587,7 @@ validatePersonAdo p = ado
 <pre><code class="language-haskell">traverse :: forall a b f. Applicative f =&gt; (a -&gt; f b) -&gt; Array a -&gt; f (Array b)
 </code></pre>
 <p>Intuitively, given any applicative functor <code>f</code>, and a function which takes a value of type <code>a</code> and returns a value of type <code>b</code> (with side-effects tracked by <code>f</code>), we can apply the function to each element of an array of type <code>Array a</code> to obtain a result of type <code>Array b</code> (with side-effects tracked by <code>f</code>).</p>
-<p>Still not clear? Let's specialize further to the case where <code>m</code> is the <code>V Errors</code> applicative functor above. Now, we have a function of type</p>
+<p>Still not clear? Let's specialize further to the case where <code>f</code> is the <code>V Errors</code> applicative functor above. Now, we have a function of type</p>
 <pre><code class="language-haskell">traverse :: forall a b. (a -&gt; V Errors b) -&gt; Array a -&gt; V Errors (Array b)
 </code></pre>
 <p>This type signature says that if we have a validation function <code>f</code> for a type <code>a</code>, then <code>traverse f</code> is a validation function for arrays of type <code>Array a</code>. But that's exactly what we need to be able to validate the <code>phones</code> field of the <code>Person</code> data structure! We pass <code>validatePhoneNumber</code> to <code>traverse</code> to create a validation function which validates each element successively.</p>
