@@ -2515,8 +2515,8 @@ Nothing
 <p>We will see the <code>combineList</code> function again later, when we consider <code>Traversable</code> functors.</p>
 <h2><a class="header" href="#exercises-16" id="exercises-16">Exercises</a></h2>
 <ol>
-<li>(Easy) Use <code>lift2</code> to write lifted versions of the numeric operators <code>+</code>, <code>-</code>, <code>*</code> and <code>/</code> which work with optional arguments.</li>
-<li>(Medium) Convince yourself that the definition of <code>lift3</code> given above in terms of <code>&lt;$&gt;</code> and <code>&lt;*&gt;</code> does type check.</li>
+<li>(Medium) Write versions of the numeric operators <code>+</code>, <code>-</code>, <code>*</code> and <code>/</code> which work with optional arguments (i.e. arguments wrapped in <code>Maybe</code>) and return a value wrapped in <code>Maybe</code>. Name these functions <code>addMaybe</code>, <code>subMaybe</code>, <code>mulMaybe</code>, and <code>divMaybe</code>. <em>Hint</em>: Use <code>lift2</code>.</li>
+<li>(Medium) Extend the above exercise to work with all <code>Apply</code> types (not just <code>Maybe</code>). Name these new functions <code>addApply</code>, <code>subApply</code>, <code>mulApply</code>, and <code>divApply</code>.</li>
 <li>(Difficult) Write a function <code>combineMaybe</code> which has type <code>forall a f. Applicative f =&gt; Maybe (f a) -&gt; f (Maybe a)</code>. This function takes an optional computation with side-effects, and returns a side-effecting computation which has an optional result.</li>
 </ol>
 <h2><a class="header" href="#applicative-validation-1" id="applicative-validation-1">Applicative Validation</a></h2>
@@ -2664,8 +2664,9 @@ Invalid ([&quot;Field 'Number' did not match the required format&quot;])
 </code></pre>
 <h2><a class="header" href="#exercises-17" id="exercises-17">Exercises</a></h2>
 <ol>
-<li>(Easy) Use a regular expression validator to ensure that the <code>state</code> field of the <code>Address</code> type contains two alphabetic characters. <em>Hint</em>: see the source code for <code>phoneNumberRegex</code>.</li>
-<li>(Medium) Using the <code>matches</code> validator, write a validation function which checks that a string is not entirely whitespace. Use it to replace <code>nonEmpty</code> where appropriate.</li>
+<li>(Easy) Write a regular expression <code>stateRegex :: Regex</code> to check that a string only contains two alphabetic characters. <em>Hint</em>: see the source code for <code>phoneNumberRegex</code>.</li>
+<li>(Medium) Write a regular expression <code>nonEmptyRegex :: Regex</code> to check that a string is not entirely whitespace. <em>Hint</em>: If you need help developing this regex expression, check out <a href="https://regexr.com">RegExr</a> which has a great cheatsheet and interactive test environment.</li>
+<li>(Medium) Write a function <code>validateAddressImproved</code> that is similar to <code>validateAddress</code>, but uses the above <code>stateRegex</code> to validate the <code>state</code> field and <code>nonEmptyRegex</code> to validate the <code>street</code> and <code>city</code> fields. <em>Hint</em>: see the source for <code>validatePhoneNumber</code> for an example of how to use <code>matches</code>.</li>
 </ol>
 <h2><a class="header" href="#traversable-functors" id="traversable-functors">Traversable Functors</a></h2>
 <p>The remaining validator is <code>validatePerson</code>, which combines the validators we have seen so far to validate an entire <code>Person</code> structure:</p>
@@ -2696,33 +2697,34 @@ validatePersonAdo p = ado
 <p>There is one more interesting function here, which we haven't seen yet - <code>traverse</code>, which appears in the final line.</p>
 <p><code>traverse</code> is defined in the <code>Data.Traversable</code> module, in the <code>Traversable</code> type class:</p>
 <pre><code class="language-haskell">class (Functor t, Foldable t) &lt;= Traversable t where
-  traverse :: forall a b f. Applicative f =&gt; (a -&gt; f b) -&gt; t a -&gt; f (t b)
-  sequence :: forall a f. Applicative f =&gt; t (f a) -&gt; f (t a)
+  traverse :: forall a b m. Applicative m =&gt; (a -&gt; m b) -&gt; t a -&gt; m (t b)
+  sequence :: forall a m. Applicative m =&gt; t (m a) -&gt; m (t a)
 </code></pre>
 <p><code>Traversable</code> defines the class of <em>traversable functors</em>. The types of its functions might look a little intimidating, but <code>validatePerson</code> provides a good motivating example.</p>
 <p>Every traversable functor is both a <code>Functor</code> and <code>Foldable</code> (recall that a <em>foldable functor</em> was a type constructor which supported a fold operation, reducing a structure to a single value). In addition, a traversable functor provides the ability to combine a collection of side-effects which depend on its structure.</p>
 <p>This may sound complicated, but let's simplify things by specializing to the case of arrays. The array type constructor is traversable, which means that there is a function:</p>
-<pre><code class="language-haskell">traverse :: forall a b f. Applicative f =&gt; (a -&gt; f b) -&gt; Array a -&gt; f (Array b)
+<pre><code class="language-haskell">traverse :: forall a b m. Applicative m =&gt; (a -&gt; m b) -&gt; Array a -&gt; m (Array b)
 </code></pre>
-<p>Intuitively, given any applicative functor <code>f</code>, and a function which takes a value of type <code>a</code> and returns a value of type <code>b</code> (with side-effects tracked by <code>f</code>), we can apply the function to each element of an array of type <code>Array a</code> to obtain a result of type <code>Array b</code> (with side-effects tracked by <code>f</code>).</p>
-<p>Still not clear? Let's specialize further to the case where <code>f</code> is the <code>V Errors</code> applicative functor above. Now, we have a function of type</p>
+<p>Intuitively, given any applicative functor <code>m</code>, and a function which takes a value of type <code>a</code> and returns a value of type <code>b</code> (with side-effects tracked by <code>m</code>), we can apply the function to each element of an array of type <code>Array a</code> to obtain a result of type <code>Array b</code> (with side-effects tracked by <code>m</code>).</p>
+<p>Still not clear? Let's specialize further to the case where <code>m</code> is the <code>V Errors</code> applicative functor above. Now, we have a function of type</p>
 <pre><code class="language-haskell">traverse :: forall a b. (a -&gt; V Errors b) -&gt; Array a -&gt; V Errors (Array b)
 </code></pre>
-<p>This type signature says that if we have a validation function <code>f</code> for a type <code>a</code>, then <code>traverse f</code> is a validation function for arrays of type <code>Array a</code>. But that's exactly what we need to be able to validate the <code>phones</code> field of the <code>Person</code> data structure! We pass <code>validatePhoneNumber</code> to <code>traverse</code> to create a validation function which validates each element successively.</p>
+<p>This type signature says that if we have a validation function <code>m</code> for a type <code>a</code>, then <code>traverse m</code> is a validation function for arrays of type <code>Array a</code>. But that's exactly what we need to be able to validate the <code>phones</code> field of the <code>Person</code> data structure! We pass <code>validatePhoneNumber</code> to <code>traverse</code> to create a validation function which validates each element successively.</p>
 <p>In general, <code>traverse</code> walks over the elements of a data structure, performing computations with side-effects and accumulating a result.</p>
 <p>The type signature for <code>Traversable</code>'s other function <code>sequence</code> might look more familiar:</p>
-<pre><code class="language-haskell">sequence :: forall a f. Applicative f =&gt; t (f a) -&gt; f (t a)
+<pre><code class="language-haskell">sequence :: forall a m. Applicative m =&gt; t (m a) -&gt; m (t a)
 </code></pre>
 <p>In fact, the <code>combineList</code> function that we wrote earlier is just a special case of the <code>sequence</code> function from the <code>Traversable</code> type class. Setting <code>t</code> to be the type constructor <code>List</code>, we recover the type of the <code>combineList</code> function:</p>
 <pre><code class="language-haskell">combineList :: forall f a. Applicative f =&gt; List (f a) -&gt; f (List a)
 </code></pre>
 <p>Traversable functors capture the idea of traversing a data structure, collecting a set of effectful computations, and combining their effects. In fact, <code>sequence</code> and <code>traverse</code> are equally important to the definition of <code>Traversable</code> - each can be implemented in terms of each other. This is left as an exercise for the interested reader.</p>
 <p>The <code>Traversable</code> instance for lists is given in the <code>Data.List</code> module. The definition of <code>traverse</code> is given here:</p>
-<pre><code class="language-haskell">-- traverse :: forall a b f. Applicative f =&gt; (a -&gt; f b) -&gt; List a -&gt; f (List b)
+<pre><code class="language-haskell">instance traversableList :: Traversable List where
+-- traverse :: forall a b m. Applicative m =&gt; (a -&gt; m b) -&gt; List a -&gt; m (List b)
 traverse _ Nil = pure Nil
 traverse f (Cons x xs) = Cons &lt;$&gt; f x &lt;*&gt; traverse f xs
 </code></pre>
-<p>In the case of an empty list, we can simply return an empty list using <code>pure</code>. If the list is non-empty, we can use the function <code>f</code> to create a computation of type <code>f b</code> from the head element. We can also call <code>traverse</code> recursively on the tail. Finally, we can lift the <code>Cons</code> constructor over the applicative functor <code>f</code> to combine the two results.</p>
+<p>In the case of an empty list, we can simply return an empty list using <code>pure</code>. If the list is non-empty, we can use the function <code>f</code> to create a computation of type <code>f b</code> from the head element. We can also call <code>traverse</code> recursively on the tail. Finally, we can lift the <code>Cons</code> constructor over the applicative functor <code>m</code> to combine the two results.</p>
 <p>But there are more examples of traversable functors than just arrays and lists. The <code>Maybe</code> type constructor we saw earlier also has an instance for <code>Traversable</code>. We can try it in PSCi:</p>
 <pre><code class="language-text">&gt; import Data.Maybe
 &gt; import Data.Traversable
@@ -2742,16 +2744,27 @@ pure ((Just unit))
 <h2><a class="header" href="#exercises-18" id="exercises-18">Exercises</a></h2>
 <ol>
 <li>
-<p>(Medium) Write a <code>Traversable</code> instance for the following binary tree data structure, which combines side-effects from left-to-right:</p>
+<p>(Easy) Write <code>Eq</code> and <code>Show</code> instances for the following binary tree data structure:</p>
 <pre><code class="language-haskell">data Tree a = Leaf | Branch (Tree a) a (Tree a)
 </code></pre>
-<p>This corresponds to an in-order traversal of the tree. What about a preorder traversal? What about reverse order?</p>
 </li>
 <li>
-<p>(Medium) Modify the code to make the <code>address</code> field of the <code>Person</code> type optional using <code>Data.Maybe</code>. <em>Hint</em>: Use <code>traverse</code> to validate a field of type <code>Maybe a</code>.</p>
+<p>(Medium) Write a <code>Traversable</code> instance for <code>Tree a</code>, which combines side-effects from left-to-right. <em>Hint</em>: There are some additional instance dependencies that need to be defined for <code>Traversable</code>.</p>
 </li>
 <li>
-<p>(Difficult) Try to write <code>sequence</code> in terms of <code>traverse</code>. Can you write <code>traverse</code> in terms of <code>sequence</code>?</p>
+<p>(Medium) Write a function <code>traversePreOrder :: forall a m b. Applicative m =&gt; (a -&gt; m b) -&gt; Tree a -&gt; m (Tree b)</code> that performs a pre-order traversal of the tree. This means the order of effect execution is root-left-right, instead of left-root-right as was done for the previous in-order traverse exercise. <em>Hint</em>: No additional instances need to be defined, and you don't need to call any of the the functions defined earlier. Applicative do notation (<code>ado</code>) is the easiest way to write this function.</p>
+</li>
+<li>
+<p>(Medium) Write a function <code>traversePostOrder</code> that performs a post-order traversal of the tree where effects are executed left-right-root.</p>
+</li>
+<li>
+<p>(Medium) Create a new version of the <code>Person</code> type where the <code>homeAddress</code> field is optional (using <code>Maybe</code>). Then write a new version of <code>validatePerson</code> (renamed as <code>validatePersonOptionalAddress</code>) to validate this new <code>Person</code>. <em>Hint</em>: Use <code>traverse</code> to validate a field of type <code>Maybe a</code>.</p>
+</li>
+<li>
+<p>(Difficult) Write a function <code>sequenceUsingTraverse</code> which behaves like <code>sequence</code>, but is written in terms of <code>traverse</code>.</p>
+</li>
+<li>
+<p>(Difficult) Write a function <code>traverseUsingSequence</code> which behaves like <code>traverse</code>, but is written in terms of <code>sequence</code>.</p>
 </li>
 </ol>
 <h2><a class="header" href="#applicative-functors-for-parallelism" id="applicative-functors-for-parallelism">Applicative Functors for Parallelism</a></h2>
