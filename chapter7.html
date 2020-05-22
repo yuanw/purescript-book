@@ -504,13 +504,13 @@ validateAddressAdo a = ado
 &gt; import Data.AddressBook.Validation
 
 &gt; validateAddress $ address &quot;&quot; &quot;&quot; &quot;&quot;
-(Invalid [ &quot;Field 'Street' cannot be empty&quot;
+(invalid [ &quot;Field 'Street' cannot be empty&quot;
          , &quot;Field 'City' cannot be empty&quot;
          , &quot;Field 'State' must have length 2&quot;
          ])
 
 &gt; validateAddress $ address &quot;&quot; &quot;&quot; &quot;CA&quot;
-(Invalid [ &quot;Field 'Street' cannot be empty&quot;
+(invalid [ &quot;Field 'Street' cannot be empty&quot;
          , &quot;Field 'City' cannot be empty&quot;
          ])
 </code></pre>
@@ -539,10 +539,10 @@ validatePhoneNumberAdo pn = ado
 </code></pre>
 <p>Again, try running this validator against some valid and invalid inputs in PSCi:</p>
 <pre><code class="language-text">&gt; validatePhoneNumber $ phoneNumber HomePhone &quot;555-555-5555&quot;
-Valid ({ type: HomePhone, number: &quot;555-555-5555&quot; })
+pure ({ type: HomePhone, number: &quot;555-555-5555&quot; })
 
 &gt; validatePhoneNumber $ phoneNumber HomePhone &quot;555.555.5555&quot;
-Invalid ([&quot;Field 'Number' did not match the required format&quot;])
+invalid ([&quot;Field 'Number' did not match the required format&quot;])
 </code></pre>
 <h2><a class="header" href="#exercises-1" id="exercises-1">Exercises</a></h2>
 <ol>
