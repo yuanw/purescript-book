@@ -2724,6 +2724,7 @@ validatePersonAdo p = ado
 traverse _ Nil = pure Nil
 traverse f (Cons x xs) = Cons &lt;$&gt; f x &lt;*&gt; traverse f xs
 </code></pre>
+<p>(The actual definition was later modified to improve stack safety. You can read more about that change <a href="https://github.com/purescript/purescript-lists/pull/87">here</a>.)</p>
 <p>In the case of an empty list, we can simply return an empty list using <code>pure</code>. If the list is non-empty, we can use the function <code>f</code> to create a computation of type <code>f b</code> from the head element. We can also call <code>traverse</code> recursively on the tail. Finally, we can lift the <code>Cons</code> constructor over the applicative functor <code>m</code> to combine the two results.</p>
 <p>But there are more examples of traversable functors than just arrays and lists. The <code>Maybe</code> type constructor we saw earlier also has an instance for <code>Traversable</code>. We can try it in PSCi:</p>
 <pre><code class="language-text">&gt; import Data.Maybe
