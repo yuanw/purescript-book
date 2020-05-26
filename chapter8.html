@@ -340,7 +340,7 @@ ap mf ma = do
   pure (f a)
 </code></pre>
 <p>If <code>m</code> is a law-abiding member of the <code>Monad</code> type class, then there is a valid <code>Applicative</code> instance for <code>m</code> given by <code>ap</code>.</p>
-<p>The interested reader can check that <code>ap</code> agrees with <code>apply</code> for the monads we have already encountered: <code>Array</code>, <code>Maybe</code> and <code>Either</code>.</p>
+<p>The interested reader can check that <code>ap</code> agrees with <code>apply</code> for the monads we have already encountered: <code>Array</code>, <code>Maybe</code> and <code>Either e</code>.</p>
 <p>If every monad is also an applicative functor, then we should be able to apply our intuition for applicative functors to every monad. In particular, we can reasonably expect a monad to correspond, in some sense, to programming &quot;in a larger language&quot; augmented with some set of additional side-effects. We should be able to lift functions of arbitrary arities, using <code>map</code> and <code>apply</code>, into this new language.</p>
 <p>But monads allow us to do more than we could do with just applicative functors, and the key difference is highlighted by the syntax of do notation. Consider the <code>userCity</code> example again, in which we looked for a user's city in an XML document which encoded their user profile:</p>
 <pre><code class="language-haskell">userCity :: XML -&gt; Maybe XML
