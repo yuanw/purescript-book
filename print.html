@@ -176,6 +176,7 @@
 <h2><a class="header" href="#license" id="license">License</a></h2>
 <p>Copyright (c) 2014-2017 Phil Freeman.</p>
 <p>The text of this book is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License: <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/deed.en_US">https://creativecommons.org/licenses/by-nc-sa/3.0/deed.en_US</a>.</p>
+<p>Some text is derived from the <a href="https://github.com/purescript/documentation">PureScript Documentation Repo</a>, which uses the same license, and is copyright <a href="https://github.com/purescript/documentation/blob/master/CONTRIBUTORS.md">various contributors</a>.</p>
 <p>The exercises are licensed under the MIT license.</p>
 <h1><a class="header" href="#introduction" id="introduction">Introduction</a></h1>
 <h2><a class="header" href="#functional-javascript" id="functional-javascript">Functional JavaScript</a></h2>
@@ -4014,27 +4015,784 @@ M -&gt; MRFRMLFLMLFLMRFRM
 <p>In the next chapter, we will see how to implement libraries like <code>canvas</code> which wrap existing JavaScript functionality, by using PureScript's <em>foreign function interface</em>.</p>
 <h1><a class="header" href="#the-foreign-function-interface" id="the-foreign-function-interface">The Foreign Function Interface</a></h1>
 <h2><a class="header" href="#chapter-goals-8" id="chapter-goals-8">Chapter Goals</a></h2>
-<p>This chapter will introduce PureScript's <em>foreign function interface</em> (or <em>FFI</em>), which enables communication from PureScript code to JavaScript code, and vice versa. We will cover the following:</p>
+<p>This chapter will introduce PureScript's <em>foreign function interface</em> (or <em>FFI</em>), which enables communication from PureScript code to JavaScript code, and vice versa. We will cover how to:</p>
 <ul>
-<li>How to call pure JavaScript functions from PureScript,</li>
-<li>How to create new effect types and actions for use with the <code>Effect</code> monad, based on existing JavaScript code,</li>
-<li>How to call PureScript code from JavaScript,</li>
-<li>How to understand the representation of PureScript values at runtime,</li>
-<li>How to work with untyped data using the <code>foreign</code> package.</li>
+<li>Call pure, effectful, and asynchronous JavaScript functions from PureScript.</li>
+<li>Work with untyped data.</li>
+<li>Encode and parse JSON using the <code>argonaut</code> package.</li>
 </ul>
 <p>Towards the end of this chapter, we will revisit our recurring address book example. The goal of the chapter will be to add the following new functionality to our application using the FFI:</p>
 <ul>
-<li>Alerting the user with a popup notification,</li>
-<li>Storing the serialized form data in the browser's local storage, and reloading it when the application restarts.</li>
+<li>Alert the user with a popup notification.</li>
+<li>Store the serialized form data in the browser's local storage, and reload it when the application restarts.</li>
+</ul>
+<p>There is also an addendum which covers some additional topics which are not as commonly sought-after. Feel free to read these sections, but don't let them stand in the way of progressing through the remainder of the book if they're less relevant to your learning objectives:</p>
+<ul>
+<li>Understand the representation of PureScript values at runtime.</li>
+<li>Call PureScript functions from JavaScript.</li>
 </ul>
 <h2><a class="header" href="#project-setup-7" id="project-setup-7">Project Setup</a></h2>
 <p>The source code for this module is a continuation of the source code from chapters 3, 7 and 8. As such, the source tree includes the appropriate source files from those chapters.</p>
-<p>This chapter intruduces the <code>foreign-generic</code> library as a dependency. This library adds support for <em>datatype generic programming</em> to the <code>foreign</code> library. The <code>foreign</code> library is a sub-dependency and provides a data type and functions for working with <em>untyped data</em>.</p>
-<p><em>Note</em>: to avoid browser-specific issues with local storage when the webpage is served from a local file, it might be necessary to run this chapter's project over HTTP.</p>
+<p>This chapter introduces the <code>argonaut</code> library as a dependency. This library is used for encoding and decoding JSON.</p>
+<p>The exercises for this chapter should be written in <code>test/Solutions.purs</code> and can be checked against the unit tests in <code>test/Main.purs</code> by running <code>spago test</code>.</p>
+<p>The Address Book app can be launched with <code>parcel src/index.html --open</code>. It uses the same workflow from Chapter 8, so refer to that chapter for more detailed instructions.</p>
 <h2><a class="header" href="#a-disclaimer" id="a-disclaimer">A Disclaimer</a></h2>
 <p>PureScript provides a straightforward foreign function interface to make working with JavaScript as simple as possible. However, it should be noted that the FFI is an <em>advanced</em> feature of the language. To use it safely and effectively, you should have an understanding of the runtime representation of the data you plan to work with. This chapter aims to impart such an understanding as pertains to code in PureScript's standard libraries.</p>
 <p>PureScript's FFI is designed to be very flexible. In practice, this means that developers have a choice, between giving their foreign functions very simple types, or using the type system to protect against accidental misuses of foreign code. Code in the standard libraries tends to favor the latter approach.</p>
 <p>As a simple example, a JavaScript function makes no guarantees that its return value will not be <code>null</code>. Indeed, idiomatic JavaScript code returns <code>null</code> quite frequently! However, PureScript's types are usually not inhabited by a null value. Therefore, it is the responsibility of the developer to handle these corner cases appropriately when designing their interfaces to JavaScript code using the FFI.</p>
+<h2><a class="header" href="#calling-javascript-from-purescript" id="calling-javascript-from-purescript">Calling JavaScript From PureScript</a></h2>
+<p>The simplest way to use JavaScript code from PureScript is to give a type to an existing JavaScript value using a <em>foreign import</em> declaration. Foreign import declarations should have a corresponding JavaScript declaration in a <em>foreign JavaScript module</em>.</p>
+<p>For example, consider the <code>encodeURIComponent</code> function, which can be used from JavaScript to encode a component of a URI by escaping special characters:</p>
+<pre><code class="language-text">$ node
+
+node&gt; encodeURIComponent('Hello World')
+'Hello%20World'
+</code></pre>
+<p>This function has the correct runtime representation for the function type <code>String -&gt; String</code>, since it takes non-null strings to non-null strings, and has no other side-effects.</p>
+<p>We can assign this type to the function with the following foreign import declaration:</p>
+<pre><code class="language-haskell">module Test.URI where
+
+foreign import encodeURIComponent :: String -&gt; String
+</code></pre>
+<p>We also need to write a foreign JavaScript module. If the module above is saved as <code>test/URI.purs</code>, then the foreign JavaScript module should be saved as <code>test/URI.js</code>:</p>
+<pre><code class="language-javascript">&quot;use strict&quot;;
+
+exports.encodeURIComponent = encodeURIComponent;
+</code></pre>
+<p>Spago will find <code>.js</code> files in the <code>src</code> and <code>test</code> directories, and provide them to the compiler as foreign JavaScript modules.</p>
+<p>JavaScript functions and values are exported from foreign JavaScript modules by assigning them to the <code>exports</code> object just like a regular CommonJS module. The <code>purs</code> compiler (wrapped by <code>spago</code>) treats this module like a regular CommonJS module, and simply adds it as a dependency to the compiled PureScript module. However, when bundling code for the browser with <code>psc-bundle</code> or <code>spago bundle-app --to</code>, it is very important to follow the pattern above, assigning exports to the <code>exports</code> object using a property assignment. This is because <code>psc-bundle</code> recognizes this format, allowing unused JavaScript exports to be removed from bundled code.</p>
+<p>With these two pieces in place, we can now use the <code>encodeURIComponent</code> function from PureScript like any function written in PureScript. For example, if this declaration is saved as a module and loaded into PSCi, we can reproduce the calculation above:</p>
+<pre><code class="language-text">$ spago repl
+
+&gt; import Data.URI
+&gt; encodeURIComponent &quot;Hello World&quot;
+&quot;Hello%20World&quot;
+</code></pre>
+<p>We can also define our own functions in foreign modules. Here's an example of how to create and call a custom JavaScript function that squares a <code>Number</code>:</p>
+<p><code>src/Test/Examples.js</code>:</p>
+<pre><code class="language-js">&quot;use strict&quot;;
+
+exports.square = function(n) {
+  return n * n;
+};
+</code></pre>
+<p><code>src/Test/Examples.purs</code>:</p>
+<pre><code class="language-hs">module Test.Examples where
+
+foreign import square :: Number -&gt; Number
+</code></pre>
+<pre><code class="language-text">$ spago repl
+
+&gt; import Test.Examples
+&gt; square 5.0
+25.0
+</code></pre>
+<h2><a class="header" href="#functions-of-multiple-arguments" id="functions-of-multiple-arguments">Functions of Multiple Arguments</a></h2>
+<p>Let's rewrite our <code>diagonal</code> function from Chapter 2 in a foreign module to demonstrate how to call functions of multiple arguments. Recall that this function calculates the diagonal of a right-angled triangle:</p>
+<pre><code class="language-js">exports.diagonal = function(w, h) {
+  return Math.sqrt(w * w + h * h);
+};
+</code></pre>
+<p>Because PureScript uses curried functions of <em>single arguments</em>, we cannot directly import the <code>diagonal</code> function of <em>two arguments</em> like so:</p>
+<pre><code class="language-hs">-- This will not work with above uncurried definition of diagonal
+foreign import diagonal :: Number -&gt; Number -&gt; Number
+</code></pre>
+<p>However, there are a few solutions to this dilemma:</p>
+<p>The first option is to import and run the function with an <code>Fn</code> wrapper from <code>Data.Function.Uncurried</code> (<code>Fn</code> and uncurried functions are discussed in more detail later):</p>
+<pre><code class="language-hs">foreign import diagonal :: Fn2 Number Number Number
+</code></pre>
+<pre><code class="language-text">$ spago repl
+
+&gt; import Test.Examples
+&gt; import Data.Function.Uncurried
+&gt; runFn2 diagonal 3.0 4.0
+5.0
+</code></pre>
+<p>The second option is to wrap or rewrite the function as curried JavaScript:</p>
+<pre><code class="language-js">exports.diagonalNested = function(w) {
+  return function (h) {
+    return Math.sqrt(w * w + h * h);
+  };
+};
+</code></pre>
+<p>or equivalently with arrow functions (see ES6 note below):</p>
+<pre><code class="language-js">exports.diagonalArrow = w =&gt; h =&gt;
+  Math.sqrt(w * w + h * h);
+</code></pre>
+<pre><code class="language-hs">foreign import diagonalNested :: Number -&gt; Number -&gt; Number
+foreign import diagonalArrow  :: Number -&gt; Number -&gt; Number
+</code></pre>
+<pre><code class="language-text">$ spago repl
+
+&gt; import Test.Examples
+&gt; diagonalNested 3.0 4.0
+5.0
+&gt; diagonalArrow 3.0 4.0
+5.0
+</code></pre>
+<h2><a class="header" href="#a-note-about-uncurried-functions" id="a-note-about-uncurried-functions">A Note About Uncurried Functions</a></h2>
+<p>PureScript's Prelude contains an interesting set of examples of foreign types. As we have covered already, PureScript's function types only take a single argument, and can be used to simulate functions of multiple arguments via <em>currying</em>. This has certain advantages - we can partially apply functions, and give type class instances for function types - but it comes with a performance penalty. For performance critical code, it is sometimes necessary to define genuine JavaScript functions which accept multiple arguments. The Prelude defines foreign types which allow us to work safely with such functions.</p>
+<p>For example, the following foreign type declaration is taken from the <code>Data.Function.Uncurried</code> module:</p>
+<pre><code class="language-haskell">foreign import data Fn2 :: Type -&gt; Type -&gt; Type -&gt; Type
+</code></pre>
+<p>This defines the type constructor <code>Fn2</code> which takes three type arguments. <code>Fn2 a b c</code> is a type representing JavaScript functions of two arguments of types <code>a</code> and <code>b</code>, and with return type <code>c</code>.</p>
+<p>The <code>functions</code> package defines similar type constructors for function arities from 0 to 10.</p>
+<p>We can create a function of two arguments by using the <code>mkFn2</code> function, as follows:</p>
+<pre><code class="language-haskell">import Data.Function.Uncurried
+
+uncurriedAdd :: Fn2 Int Int Int
+uncurriedAdd = mkFn2 \n m -&gt; m + n
+</code></pre>
+<p>and we can apply a function of two arguments by using the <code>runFn2</code> function:</p>
+<pre><code class="language-text">$ spago repl
+
+&gt; import Test.Examples
+&gt; import Data.Function.Uncurried
+&gt; runFn2 uncurriedAdd 3 10
+13
+</code></pre>
+<p>The key here is that the compiler <em>inlines</em> the <code>mkFn2</code> and <code>runFn2</code> functions whenever they are fully applied. The result is that the generated code is very compact:</p>
+<pre><code class="language-javascript">var uncurriedAdd = function (n, m) {
+  return m + n | 0;
+};
+</code></pre>
+<p>For contrast, here is a traditional curried function:</p>
+<pre><code class="language-haskell">curriedAdd :: Int -&gt; Int -&gt; Int
+curriedAdd n m = m + n
+</code></pre>
+<p>and the resulting generated code, which is less compact due to the nested functions:</p>
+<pre><code class="language-javascript">var curriedAdd = function (n) {
+  return function (m) {
+    return m + n | 0;
+  };
+};
+</code></pre>
+<h2><a class="header" href="#a-note-about-modern-javascript-syntax" id="a-note-about-modern-javascript-syntax">A Note About Modern JavaScript Syntax</a></h2>
+<p>The arrow function syntax we saw earlier is an ES6 feature, and so it is incompatible with some older browsers (namely IE11). As of writing, it is <a href="https://caniuse.com/#feat=arrow-functions">estimated that arrow functions are unavailable for the 6% of users</a> who have not yet updated their web browser.</p>
+<p>In order to be compatible with the most users, the JavaScript code generated by the PureScript compiler does not use arrow functions. It is also recommended to <strong>avoid arrow functions in public libraries</strong> for the same reason.</p>
+<p>You may still use arrow functions in your own FFI code, but then should include a tool such as <a href="https://github.com/babel/babel#intro">Babel</a> in your deployment workflow to convert these back to ES5 compatible functions.</p>
+<p>If you find arrow functions in ES6 more readable, you may transform JavaScript code in the compiler's <code>output</code> directory with a tool like <a href="https://github.com/lebab/lebab">Lebab</a>:</p>
+<pre><code class="language-sh">npm i -g lebab
+lebab --replace output/ --transform arrow,arrow-return
+</code></pre>
+<p>This operation would convert the above <code>curriedAdd</code> function to:</p>
+<pre><code class="language-js">var curriedAdd = n =&gt; m =&gt;
+  m + n | 0;
+</code></pre>
+<p>The remaining examples in this book will use arrow functions instead of nested functions.</p>
+<h2><a class="header" href="#exercises-25" id="exercises-25">Exercises</a></h2>
+<ol>
+<li>(Medium) Write a JavaScript function <code>volumeFn</code> in the <code>Test.Solutions</code> module that finds the volume of a box. Use an <code>Fn</code> wrapper from <code>Data.Function.Uncurried</code>.</li>
+<li>(Medium) Rewrite <code>volumeFn</code> with arrow functions as <code>volumeArrow</code>.</li>
+</ol>
+<h2><a class="header" href="#passing-simple-types" id="passing-simple-types">Passing Simple Types</a></h2>
+<p>The following data types may be passed between PureScript and JavaScript as-is:</p>
+<table><thead><tr><th>PureScript</th><th>JavaScript</th></tr></thead><tbody>
+<tr><td>Boolean</td><td>Boolean</td></tr>
+<tr><td>String</td><td>String</td></tr>
+<tr><td>Int, Number</td><td>Number</td></tr>
+<tr><td>Array</td><td>Array</td></tr>
+<tr><td>Record</td><td>Object</td></tr>
+</tbody></table>
+<p>We've already seen examples with the primitive types <code>String</code> and <code>Number</code>. We'll now take a look at the structural types <code>Array</code> and <code>Record</code> (<code>Object</code> in JavaScript).</p>
+<p>To demonstrate passing <code>Array</code>s, here's how to call a JavaScript function which takes an <code>Array</code> of <code>Int</code> and returns the cumulative sum as another array. Recall that, since JavaScript does not have a separate type for <code>Int</code>, both <code>Int</code> and <code>Number</code> in PureScript translate to <code>Number</code> in JavaScript.</p>
+<pre><code class="language-hs">foreign import cumulativeSums :: Array Int -&gt; Array Int
+</code></pre>
+<pre><code class="language-js">exports.cumulativeSums = arr =&gt; {
+  let sum = 0
+  let sums = []
+  arr.forEach(x =&gt; {
+    sum += x;
+    sums.push(sum);
+  });
+  return sums;
+};
+</code></pre>
+<pre><code class="language-text">$ spago repl
+
+&gt; import Test.Examples
+&gt; cumulativeSums [1, 2, 3]
+[1,3,6]
+</code></pre>
+<p>To demonstrate passing <code>Records</code>, here's how to call a JavaScript function which takes two <code>Complex</code> numbers as records, and returns their sum as another record. Note that a <code>Record</code> in PureScript is represented as an <code>Object</code> in JavaScript:</p>
+<pre><code class="language-hs">type Complex = {
+  real :: Number,
+  imag :: Number
+}
+
+foreign import addComplex :: Complex -&gt; Complex -&gt; Complex
+</code></pre>
+<pre><code class="language-js">exports.addComplex = a =&gt; b =&gt; {
+  return {
+    real: a.real + b.real,
+    imag: a.imag + b.imag
+  }
+};
+</code></pre>
+<pre><code class="language-text">$ spago repl
+
+&gt; import Test.Examples
+&gt; addComplex { real: 1.0, imag: 2.0 } { real: 3.0, imag: 4.0 }
+{ imag: 6.0, real: 4.0 }
+</code></pre>
+<p>Note that the above techniques require trusting that JavaScript will return the expected types, as PureScript is not able to apply type checking to JavaScript code. We will describe this type safety concern in more detail later on in the JSON section, as well as cover techniques to protect against type mismatches.</p>
+<h2><a class="header" href="#exercises-26" id="exercises-26">Exercises</a></h2>
+<ol>
+<li>(Medium) Write a JavaScript function <code>cumulativeSumsComplex</code> (and corresponding PureScript foreign import) that takes an <code>Array</code> of <code>Complex</code> numbers and returns the cumulative sum as another array of complex numbers.</li>
+</ol>
+<h2><a class="header" href="#beyond-simple-types" id="beyond-simple-types">Beyond Simple Types</a></h2>
+<p>We have seen examples of how to send and receive types with a native JavaScript representation, such as <code>String</code>, <code>Number</code>, <code>Array</code>, and <code>Record</code>, over FFI. Now we'll cover how to use some of the other types available in PureScript, like <code>Maybe</code>.</p>
+<p>Suppose we wanted to recreate the <code>head</code> function on arrays by using a foreign declaration. In JavaScript, we might write the function as follows:</p>
+<pre><code class="language-javascript">exports.head = arr =&gt;
+  arr[0];
+</code></pre>
+<p>However, there is a problem with this function. We might try to give it the type <code>forall a. Array a -&gt; a</code>, but for empty arrays, this function returns <code>undefined</code>. Therefore, this function does not have the correct runtime representation.</p>
+<p>We can instead return a <code>Maybe</code> value to handle this corner case.</p>
+<p>It is tempting to write the following:</p>
+<pre><code class="language-js">// Don't do this
+exports.maybeHead = arr =&gt; {
+  if (arr.length) {
+    return Data_Maybe.Just.create(arr[0]);
+  } else {
+    return Data_Maybe.Nothing.value;
+  }
+}
+</code></pre>
+<pre><code class="language-hs">foreign import maybeHead :: forall a. Array a -&gt; Maybe a
+</code></pre>
+<p>But calling these <code>Maybe</code> constructors directly in the FFI code isn't recommended as it makes the code brittle to changes in the code generator. Additionally, doing this can cause problems when using <code>purs bundle</code> for dead code elimination.</p>
+<p>The recommended approach is to add extra parameters to your FFI-defined function to accept the functions you need to call as arguments:</p>
+<pre><code class="language-js">exports.maybeHeadImpl = just =&gt; nothing =&gt; arr =&gt; {
+  if (arr.length) {
+    return just(arr[0]);
+  } else {
+    return nothing;
+  }
+};
+</code></pre>
+<pre><code class="language-hs">foreign import maybeHeadImpl :: forall a. (forall x. x -&gt; Maybe x) -&gt; (forall x. Maybe x) -&gt; Array a -&gt; Maybe a
+
+maybeHead :: forall a. Array a -&gt; Maybe a
+maybeHead arr = maybeHeadImpl Just Nothing arr
+</code></pre>
+<p>Note that we wrote:</p>
+<pre><code class="language-hs">forall a. (forall x. x -&gt; Maybe x) -&gt; (forall x. Maybe x) -&gt; Array a -&gt; Maybe a
+</code></pre>
+<p>and not:</p>
+<pre><code class="language-hs">forall a. ( a -&gt; Maybe a) -&gt; Maybe a -&gt; Array a -&gt; Maybe a
+</code></pre>
+<p>While both forms work, the latter is more vulnerable to unwanted inputs in place of <code>Just</code> and <code>Nothing</code>.
+For example, in the more vulnerable case we could call it as follows:</p>
+<pre><code class="language-hs">maybeHeadImpl (\_ -&gt; Just 1000) (Just 1000) [1,2,3]
+</code></pre>
+<p>which returns <code>Just 1000</code> for any array input.
+This vulnerability is allowed because <code>(\_ -&gt; Just 1000)</code> and <code>Just 1000</code> match the signatures of <code>(a -&gt; Maybe a)</code> and <code>Maybe a</code> respectively when <code>a</code> is <code>Int</code> (based on input array).</p>
+<p>In the more secure type signature, even when <code>a</code> is determined to be <code>Int</code> based on the input array, we still need to provide valid functions matching the signatures involving <code>forall x</code>.
+The <em>only</em> option for <code>(forall x. Maybe x)</code> is <code>Nothing</code>, since a <code>Just</code> would assume a type for <code>x</code> and then no longer be valid for all <code>x</code>. The only options for <code>(forall x. x -&gt; Maybe x)</code> are <code>Just</code> (our desired argument) and <code>(\_ -&gt; Nothing)</code>, which is the only remaining vulnerability.</p>
+<h2><a class="header" href="#defining-foreign-types" id="defining-foreign-types">Defining Foreign Types</a></h2>
+<p>Suppose instead of returning a <code>Maybe a</code>, we wanted to return a new type <code>Undefined a</code> whose representation at runtime was like that for the type <code>a</code>, but also allowing the <code>undefined</code> value.</p>
+<p>We can define a <em>foreign type</em> using the FFI using a <em>foreign type declaration</em>. The syntax is similar to defining a foreign function:</p>
+<pre><code class="language-haskell">foreign import data Undefined :: Type -&gt; Type
+</code></pre>
+<p>Note that the <code>data</code> keyword here indicates that we are defining a type, not a value. Instead of a type signature, we give the <em>kind</em> of the new type. In this case, we declare the kind of <code>Undefined</code> to be <code>Type -&gt; Type</code>. In other words, <code>Undefined</code> is a type constructor.</p>
+<p>We can now simply reuse our original definition for <code>head</code>:</p>
+<pre><code class="language-javascript">exports.undefinedHead = arr =&gt;
+  arr[0];
+</code></pre>
+<p>And in the PureScript module:</p>
+<pre><code class="language-haskell">foreign import undefinedHead :: forall a. Array a -&gt; Undefined a
+</code></pre>
+<p>The body of the <code>undefinedHead</code> function returns <code>arr[0]</code> even if that value is undefined, and the type signature reflects the fact that our function can return an undefined value.</p>
+<p>This function has the correct runtime representation for its type, but is quite useless since we have no way to use a value of type <code>Undefined a</code>. But we can fix that by writing some new functions using the FFI!</p>
+<p>The most basic function we need will tell us whether a value is defined or not:</p>
+<pre><code class="language-haskell">foreign import isUndefined :: forall a. Undefined a -&gt; Boolean
+</code></pre>
+<p>This is easily defined in our foreign JavaScript module as follows:</p>
+<pre><code class="language-javascript">exports.isUndefined = value =&gt;
+  value === undefined;
+</code></pre>
+<p>We can now use <code>isUndefined</code> and <code>undefinedHead</code> together from PureScript to define a useful function:</p>
+<pre><code class="language-haskell">isEmpty :: forall a. Array a -&gt; Boolean
+isEmpty = isUndefined &lt;&lt;&lt; undefinedHead
+</code></pre>
+<p>Here, the foreign function we defined is very simple, which means we can benefit from the use of PureScript's typechecker as much as possible. This is good practice in general: foreign functions should be kept as small as possible, and application logic moved into PureScript code wherever possible.</p>
+<h2><a class="header" href="#exceptions-1" id="exceptions-1">Exceptions</a></h2>
+<p>Another option is to simply throw an exception in the case of an empty array. Strictly speaking, pure functions should not throw exceptions, but we have the flexibility to do so. We indicate the lack of safety in the function name:</p>
+<pre><code class="language-haskell">foreign import unsafeHead :: forall a. Array a -&gt; a
+</code></pre>
+<p>In our foreign JavaScript module, we can define <code>unsafeHead</code> as follows:</p>
+<pre><code class="language-javascript">exports.unsafeHead = arr =&gt; {
+  if (arr.length) {
+    return arr[0];
+  } else {
+    throw new Error('unsafeHead: empty array');
+  }
+};
+</code></pre>
+<h2><a class="header" href="#exercises-27" id="exercises-27">Exercises</a></h2>
+<ol>
+<li>(Medium) Given a record that represents a quadratic polynomial <code>a*x^2 + b*x + c = 0</code>:
+<pre><code class="language-hs">type Quadratic = {
+  a :: Number,
+  b :: Number,
+  c :: Number
+}
+</code></pre>
+Write a JavaScript function <code>quadraticRootsImpl</code> and a wrapper <code>quadraticRoots :: Quadratic -&gt; Pair Complex</code> that uses the quadratic formula to find the roots of this polynomial. Return the two roots as a <code>Pair</code> of <code>Complex</code> numbers. <em>Hint:</em> Use the <code>quadraticRoots</code> wrapper to pass a constructor for <code>Pair</code> to <code>quadraticRootsImpl</code>.</li>
+</ol>
+<h2><a class="header" href="#using-type-class-member-functions" id="using-type-class-member-functions">Using Type Class Member Functions</a></h2>
+<p>Just like our earlier guide on passing the <code>Maybe</code> constructor over FFI, this is another case of writing PureScript that calls JavaScript, which in turn calls PureScript functions again. Here we will explore how to pass type class member functions over the FFI.</p>
+<p>We start with writing a foreign JavaScript function which expects the appropriate instance of <code>show</code> to match the type of <code>x</code>.</p>
+<pre><code class="language-js">exports.boldImpl = show =&gt; x =&gt;
+  show(x).toUpperCase() + &quot;!!!&quot;;
+</code></pre>
+<p>Then we write the matching signature:</p>
+<pre><code class="language-hs">foreign import boldImpl :: forall a. (a -&gt; String) -&gt; a -&gt; String
+</code></pre>
+<p>and a wrapper function that passes the correct instance of <code>show</code>:</p>
+<pre><code class="language-hs">bold :: forall a. Show a =&gt; a -&gt; String
+bold x = boldImpl show x
+</code></pre>
+<p>Alternatively in point-free form:</p>
+<pre><code class="language-hs">bold :: forall a. Show a =&gt; a -&gt; String
+bold = boldImpl show
+</code></pre>
+<p>We can then call the wrapper:</p>
+<pre><code class="language-text">$ spago repl
+
+&gt; import Test.Examples
+&gt; import Data.Tuple
+&gt; bold (Tuple 1 &quot;Hat&quot;)
+&quot;(TUPLE 1 \&quot;HAT\&quot;)!!!&quot;
+</code></pre>
+<p>Here's another example demonstrating passing multiple functions, including a function of multiple arguments (<code>eq</code>):</p>
+<pre><code class="language-js">exports.showEqualityImpl = eq =&gt; show =&gt; a =&gt; b =&gt; {
+  if (eq(a)(b)) {
+    return &quot;Equivalent&quot;;
+  } else {
+    return show(a) + &quot; is not equal to &quot; + show(b);
+  }
+}
+</code></pre>
+<pre><code class="language-hs">foreign import showEqualityImpl :: forall a. (a -&gt; a -&gt; Boolean) -&gt; (a -&gt; String) -&gt; a -&gt; a -&gt; String
+
+showEquality :: forall a. Eq a =&gt; Show a =&gt; a -&gt; a -&gt; String
+showEquality = showEqualityImpl eq show
+</code></pre>
+<pre><code class="language-text">$ spago repl
+
+&gt; import Test.Examples
+&gt; import Data.Maybe
+&gt; showEquality Nothing (Just 5)
+&quot;Nothing is not equal to (Just 5)&quot;
+</code></pre>
+<h2><a class="header" href="#effectful-functions" id="effectful-functions">Effectful Functions</a></h2>
+<p>Let's extend our <code>bold</code> function to log to the console. Logging is an <code>Effect</code>, and <code>Effect</code>s are represented in JavaScript as a function of zero arguments, <code>()</code> with arrow notation:</p>
+<pre><code class="language-js">exports.yellImpl = show =&gt; x =&gt; () =&gt;
+  console.log(show(x).toUpperCase() + &quot;!!!&quot;);
+</code></pre>
+<p>The new foreign import is the same as before, except that the return type changed from <code>String</code> to <code>Effect Unit</code>.</p>
+<pre><code class="language-hs">foreign import yellImpl :: forall a. (a -&gt; String) -&gt; a -&gt; Effect Unit
+
+yell :: forall a. Show a =&gt; a -&gt; Effect Unit
+yell = yellImpl show
+</code></pre>
+<p>When testing this in the repl, notice that the string is printed directly to the console (instead of being quoted) and a <code>unit</code> value is returned.</p>
+<pre><code class="language-text">$ spago repl
+
+&gt; import Test.Examples
+&gt; import Data.Tuple
+&gt; yell (Tuple 1 &quot;Hat&quot;)
+(TUPLE 1 &quot;HAT&quot;)!!!
+unit
+</code></pre>
+<p>There are also <code>EffectFn</code> wrappers from <code>Effect.Uncurried</code>. These are similar to the <code>Fn</code> wrappers from <code>Data.Function.Uncurried</code> that we've already seen. These wrappers let you call uncurried effectful functions in PureScript.</p>
+<p>You'd generally only use these if you want to call existing JavaScript library APIs directly, rather than wrapping those APIs in curried functions. So it doesn't make much sense to present an example of uncurried <code>yell</code>, where the JavaScript relies on PureScript type class members, since you wouldn't find that in the existing JavaScript ecosystem.</p>
+<p>Instead, we'll modify our previous <code>diagonal</code> example to include logging in addition to returning the result:</p>
+<pre><code class="language-js">exports.diagonalLog = function(w, h) {
+  let result = Math.sqrt(w * w + h * h);
+  console.log(&quot;Diagonal is &quot; + result);
+  return result;
+};
+</code></pre>
+<pre><code class="language-hs">foreign import diagonalLog :: EffectFn2 Number Number Number
+</code></pre>
+<pre><code class="language-text">$ spago repl
+
+&gt; import Test.Examples
+&gt; import Effect.Uncurried
+&gt; runEffectFn2 diagonalLog 3.0 4.0
+Diagonal is 5
+5.0
+</code></pre>
+<h2><a class="header" href="#asynchronous-functions" id="asynchronous-functions">Asynchronous Functions</a></h2>
+<p>Promises in JavaScript translate directly to asynchronous effects in PureScript with the help of the <code>aff-promise</code> library. See that library's <a href="https://pursuit.purescript.org/packages/purescript-aff-promise">documentation</a> for more information. We'll just go through a few examples.</p>
+<p>Suppose we want to use this JavaScript <code>wait</code> promise (or asynchronous function) in our PureScript project. It may be used to delay execution for <code>ms</code> milliseconds.</p>
+<pre><code class="language-js">const wait = ms =&gt; new Promise(resolve =&gt; setTimeout(resolve, ms));
+</code></pre>
+<p>We just need to export it wrapped as an <code>Effect</code> (function of zero arguments):</p>
+<pre><code class="language-js">exports.sleepImpl = ms =&gt; () =&gt;
+  wait(ms);
+</code></pre>
+<p>Then import it as follows:</p>
+<pre><code class="language-hs">foreign import sleepImpl :: Int -&gt; Effect (Promise Unit)
+
+sleep :: Int -&gt; Aff Unit
+sleep = sleepImpl &gt;&gt;&gt; toAffE
+</code></pre>
+<p>We can then run this <code>Promise</code> in an <code>Aff</code> block like so:</p>
+<pre><code class="language-text">$ spago repl
+
+&gt; import Prelude
+&gt; import Test.Examples
+&gt; import Effect.Class.Console
+&gt; import Effect.Aff
+&gt; :pa
+… launchAff_ do
+…   log &quot;waiting&quot;
+…   sleep 300
+…   log &quot;done waiting&quot;
+…
+waiting
+unit
+done waiting
+</code></pre>
+<p>Note that asynchronous logging in the repl just waits to print until the entire block has finished executing. This code behaves more predictably when run with <code>spago test</code> where there is a slight delay <em>between</em> prints.</p>
+<p>Let's look at another example where we return a value from a promise. This function is written with <code>async</code> and <code>await</code>, which is just syntactic sugar for promises.</p>
+<pre><code class="language-js">async function diagonalWait(delay, w, h) {
+  await wait(delay);
+  return Math.sqrt(w * w + h * h);
+}
+
+exports.diagonalAsyncImpl = delay =&gt; w =&gt; h =&gt; () =&gt;
+  diagonalWait(delay, w, h);
+</code></pre>
+<p>Since we're returning a <code>Number</code>, we represent this type in the <code>Promise</code> and <code>Aff</code> wrappers:</p>
+<pre><code class="language-hs">foreign import diagonalAsyncImpl :: Int -&gt; Number -&gt; Number -&gt; Effect (Promise Number)
+
+diagonalAsync :: Int -&gt; Number -&gt; Number -&gt; Aff Number
+diagonalAsync i x y = toAffE $ diagonalAsyncImpl i x y
+</code></pre>
+<pre><code class="language-text">$ spago repl
+
+import Prelude
+import Test.Examples
+import Effect.Class.Console
+import Effect.Aff
+&gt; :pa
+… launchAff_ do
+…   res &lt;- diagonalAsync 300 3.0 4.0
+…   logShow res
+…
+unit
+5.0
+</code></pre>
+<h2><a class="header" href="#exercises-28" id="exercises-28">Exercises</a></h2>
+<p>Exercises for the above sections are still on the ToDo list. If you have any ideas for good exercises, please make a suggestion.</p>
+<h2><a class="header" href="#json" id="json">JSON</a></h2>
+<p>There are many reasons to use JSON in an application, for example, it's a common means of communicating with web APIs. This section will discuss other use-cases too, beginning with a technique to improve type safety when passing structural data over the FFI.</p>
+<p>Let's revisit our earlier FFI functions <code>cumulativeSums</code> and <code>addComplex</code> and introduce a bug to each:</p>
+<pre><code class="language-js">exports.cumulativeSumsBroken = arr =&gt; {
+  let sum = 0
+  let sums = []
+  arr.forEach(x =&gt; {
+    sum += x;
+    sums.push(sum);
+  });
+  sums.push(&quot;Broken&quot;); // Bug
+  return sums;
+};
+
+exports.addComplexBroken = a =&gt; b =&gt; {
+  return {
+    real: a.real + b.real,
+    broken: a.imag + b.imag // Bug
+  }
+};
+</code></pre>
+<p>We can use the original type signatures, and the code will still compile, despite the fact that the return types are incorrect.</p>
+<pre><code class="language-hs">foreign import cumulativeSumsBroken :: Array Int -&gt; Array Int
+
+foreign import addComplexBroken :: Complex -&gt; Complex -&gt; Complex
+</code></pre>
+<p>We can even execute the code, which might either produce unexpected results or a runtime error:</p>
+<pre><code class="language-text">$ spago repl
+
+&gt; import Test.Examples
+&gt; import Data.Foldable (sum)
+
+&gt; sums = cumulativeSumsBroken [1, 2, 3]
+&gt; sums
+[1,3,6,Broken]
+&gt; sum sums
+0
+
+&gt; complex = addComplexBroken { real: 1.0, imag: 2.0 } { real: 3.0, imag: 4.0 }
+&gt; complex.real
+4.0
+&gt; complex.imag + 1.0
+NaN
+&gt; complex.imag
+  var str = n.toString();
+              ^
+TypeError: Cannot read property 'toString' of undefined
+</code></pre>
+<p>For example, our resulting <code>sums</code> is no-longer a valid <code>Array Int</code>, now that a <code>String</code> is included in the Array. And further operations produce unexpected behavior, rather than an outright error, as the <code>sum</code> of these <code>sums</code> is <code>0</code> rather than <code>10</code>. This could be a difficult bug to track down!</p>
+<p>Likewise, there are no errors when calling <code>addComplexBroken</code>; however, accessing the <code>imag</code> field of our <code>Complex</code> result will either produce unexpected behavior (returning <code>NaN</code> instead of <code>7.0</code>), or a non-obvious runtime error.</p>
+<p>Let's use JSON to make our PureScript code more impervious to bugs in JavaScript code.</p>
+<p>The <code>argonaut</code> library contains the JSON decoding and encoding capabilities we need. That library has excellent <a href="https://github.com/purescript-contrib/purescript-argonaut#documentation">documentation</a>, so we will only cover basic usage in this book.</p>
+<p>If we create an alternate foreign import that defines the return type as <code>Json</code>:</p>
+<pre><code class="language-hs">foreign import cumulativeSumsJson :: Array Int -&gt; Json
+foreign import addComplexJson :: Complex -&gt; Complex -&gt; Json
+</code></pre>
+<p>Note that we're simply pointing to our existing broken functions:</p>
+<pre><code class="language-js">exports.cumulativeSumsJson = exports.cumulativeSumsBroken
+exports.addComplexJson = exports.addComplexBroken
+</code></pre>
+<p>And then write a wrapper to decode the returned foreign <code>Json</code> value:</p>
+<pre><code class="language-hs">cumulativeSumsDecoded :: Array Int -&gt;  Either String (Array Int)
+cumulativeSumsDecoded arr = decodeJson $ cumulativeSumsJson arr
+
+addComplexDecoded :: Complex -&gt; Complex -&gt;  Either String Complex
+addComplexDecoded a b = decodeJson $ addComplexJson a b
+</code></pre>
+<p>Then any values that can't be successfully decoded to our return type appear as a <code>Left</code> error <code>String</code>:</p>
+<pre><code class="language-text">$ spago repl
+
+&gt; import Test.Examples
+
+&gt; cumulativeSumsDecoded [1, 2, 3]
+(Left &quot;Couldn't decode Array (Failed at index 3): Value is not a Number&quot;)
+
+&gt; addComplexDecoded { real: 1.0, imag: 2.0 } { real: 3.0, imag: 4.0 }
+(Left &quot;JSON was missing expected field: imag&quot;)
+</code></pre>
+<p>If we call the working versions, a <code>Right</code> value is returned.</p>
+<p>Try this yourself by modifying <code>test/Examples.js</code> with the following change to point to the working versions before running the next repl block.</p>
+<pre><code class="language-js">exports.cumulativeSumsJson = exports.cumulativeSums
+exports.addComplexJson = exports.addComplex
+</code></pre>
+<pre><code class="language-text">$ spago repl
+
+&gt; import Test.Examples
+
+&gt; cumulativeSumsDecoded [1, 2, 3]
+(Right [1,3,6])
+
+&gt; addComplexDecoded { real: 1.0, imag: 2.0 } { real: 3.0, imag: 4.0 }
+(Right { imag: 6.0, real: 4.0 })
+</code></pre>
+<p>Using JSON is also the easiest way to pass other structural types, such as <code>Map</code> and <code>Set</code> through the FFI. Note that since JSON only consists of booleans, numbers, strings, arrays, and objects of other JSON values, we can't write a <code>Map</code> and <code>Set</code> directly in JSON. But we can represent these structures as arrays (assuming the keys and values can also be represented in JSON), and then decode them back to <code>Map</code> or <code>Set</code>.</p>
+<p>Here's an example of a foreign function signature that modifies a <code>Map</code> of <code>String</code> keys and <code>Int</code> values, along with the wrapper function that handles JSON encoding and decoding.</p>
+<pre><code class="language-hs">foreign import mapSetFooJson :: Json -&gt; Json
+
+mapSetFoo :: Map String Int -&gt; Either String (Map String Int)
+mapSetFoo m = decodeJson $ mapSetFooJson $ encodeJson m
+</code></pre>
+<p>Note that this is a prime use case for function composition. Both of these alternatives are equivalent to the above:</p>
+<pre><code class="language-hs">mapSetFoo :: Map String Int -&gt; Either String (Map String Int)
+mapSetFoo = decodeJson &lt;&lt;&lt; mapSetFooJson &lt;&lt;&lt; encodeJson
+
+mapSetFoo :: Map String Int -&gt; Either String (Map String Int)
+mapSetFoo = encodeJson &gt;&gt;&gt; mapSetFooJson &gt;&gt;&gt; decodeJson
+</code></pre>
+<p>Here is the JavaScript implementation. Note the <code>Array.from</code> step which is necessary to convert the JavaScript <code>Map</code> into a JSON-friendly format before decoding converts it back to a PureScript <code>Map</code>.</p>
+<pre><code class="language-js">exports.mapSetFooJson = j =&gt; {
+  let m = new Map(j);
+  m.set(&quot;Foo&quot;, 42);
+  return Array.from(m);
+};
+</code></pre>
+<p>Now we can send and receive a <code>Map</code> over the FFI:</p>
+<pre><code class="language-text">$ spago repl
+
+&gt; import Test.Examples
+&gt; import Data.Map
+&gt; import Data.Tuple
+
+&gt; myMap = fromFoldable [ Tuple &quot;hat&quot; 1, Tuple &quot;cat&quot; 2 ]
+
+&gt; :type myMap
+Map String Int
+
+&gt; myMap
+(fromFoldable [(Tuple &quot;cat&quot; 2),(Tuple &quot;hat&quot; 1)])
+
+&gt; mapSetFoo myMap
+(Right (fromFoldable [(Tuple &quot;Foo&quot; 42),(Tuple &quot;cat&quot; 2),(Tuple &quot;hat&quot; 1)]))
+</code></pre>
+<h2><a class="header" href="#exercises-29" id="exercises-29">Exercises</a></h2>
+<ol>
+<li>
+<p>(Medium) Write a JavaScript function and PureScript wrapper <code>valuesOfMap :: Map String Int -&gt; Either String (Set Int)</code> that returns a <code>Set</code> of all the values in a <code>Map</code>. <em>Hint</em>: The <code>.values()</code> instance method for Map may be useful in your JavaScript code.</p>
+</li>
+<li>
+<p>(Easy) Write a new wrapper for the previous JavaScript function with the signature <code>valuesOfMapGeneric :: forall k v. Map k v -&gt; Either String (Set v)</code> so it works with a wider variety of maps. Note that you'll need to add some type class constraints for <code>k</code> and <code>v</code>. The compiler will guide you.</p>
+</li>
+<li>
+<p>(Medium) Rewrite the earlier <code>quadraticRoots</code> function as <code>quadraticRootsSet</code> which returns the <code>Complex</code> roots as a <code>Set</code> via JSON (instead of as a <code>Pair</code>).</p>
+</li>
+<li>
+<p>(Difficult) Rewrite the earlier <code>quadraticRoots</code> function as <code>quadraticRootsSafe</code> which uses JSON to pass the <code>Pair</code> of <code>Complex</code> roots over FFI. Don't use the <code>Pair</code> constructor in JavaScript, but instead, just return the pair in a decoder-compatible format.
+<em>Hint</em>: You'll need to write a <code>DecodeJson</code> instance for <code>Pair</code>. Consult the <a href="https://github.com/purescript-contrib/purescript-argonaut-codecs#writing-new-instances">argonaut docs</a> for instruction on writing your own decode instance. Their <a href="https://github.com/purescript-contrib/purescript-argonaut-codecs/blob/master/src/Data/Argonaut/Decode/Class.purs">decodeJsonTuple</a> instance may also be a helpful reference.  Note that you'll need a <code>newtype</code> wrapper for <code>Pair</code> to avoid creating an &quot;orphan instance&quot;.</p>
+</li>
+<li>
+<p>(Medium) Write a <code>decodeArray2D :: String -&gt; Either String (Array (Array Int))</code> function to parse and decode a JSON string containing a 2D array, such as <code>&quot;[[1, 2, 3], [4, 5], [6]]&quot;</code>. <em>Hint</em>: You'll need to use <code>jsonParser</code> to convert the <code>String</code> into <code>Json</code> before decoding.</p>
+</li>
+<li>
+<p>(Medium) The following data type represents a binary tree with values at the leaves:</p>
+<pre><code class="language-haskell">data Tree a
+  = Leaf a
+  | Branch (Tree a) (Tree a)
+</code></pre>
+<p>Derive generic <code>EncodeJson</code> and <code>DecodeJson</code> instances for the <code>Tree</code> type.
+Consult the <a href="https://github.com/purescript-contrib/purescript-argonaut-codecs#generics">argonaut docs</a> for instructions on how to do this.
+Note that you'll also need generic instances of <code>Show</code> and <code>Eq</code> to enable unit testing for this exercise, but those should be straightforward to implement after tackling the JSON instances.</p>
+</li>
+<li>
+<p>(Difficult) The following <code>data</code> type should be represented directly in JSON as either an integer or a string:</p>
+<pre><code class="language-haskell">data IntOrString
+  = IntOrString_Int Int
+  | IntOrString_String String
+</code></pre>
+<p>Write instances of <code>EncodeJson</code> and <code>DecodeJson</code> for the <code>IntOrString</code> data type which implement this behavior. <em>Hint</em>: The <code>alt</code> operator from <code>Control.Alt</code> may be helpful.</p>
+</li>
+</ol>
+<h2><a class="header" href="#address-book" id="address-book">Address book</a></h2>
+<p>In this section we will apply our newly-acquired FFI and JSON knowledge to build on our address book example from chapter 8. We will add the following features:</p>
+<ul>
+<li>A Save button at the bottom of the form that, when clicked, serializes the state of the form to JSON and saves it in local storage.</li>
+<li>Automatic retrieval of the JSON document from local storage upon page reload. The form fields are populated with the contents of this document.</li>
+<li>A pop-up alert if there is an issue saving or loading the form state.</li>
+</ul>
+<p>We'll start by creating FFI wrappers for the following Web Storage APIs in our <code>Effect.Storage</code> module:</p>
+<ul>
+<li><code>setItem</code> takes a key and a value (both strings), and returns a computation which stores (or updates) the value in local storage at the specified key.</li>
+<li><code>getItem</code> takes a key, and attempts to retrieve the associated value from local storage. However, since the <code>getItem</code> method on <code>window.localStorage</code> can return <code>null</code>, the return type is not <code>String</code>, but <code>Json</code>.</li>
+</ul>
+<pre><code class="language-haskell">foreign import setItem :: String -&gt; String -&gt; Effect Unit
+
+foreign import getItem :: String -&gt; Effect Json
+</code></pre>
+<p>Here is the corresponding JavaScript implementation of these functions in <code>Effect/Storage.js</code>:</p>
+<pre><code class="language-js">exports.setItem = key =&gt; value =&gt; () =&gt;
+  window.localStorage.setItem(key, value);
+
+exports.getItem = key =&gt; () =&gt;
+  window.localStorage.getItem(key);
+</code></pre>
+<p>We'll create a save button like so:</p>
+<pre><code class="language-hs">saveButton :: R.JSX
+saveButton =
+  D.label
+    { className: &quot;form-group row col-form-label&quot;
+    , children:
+        [ D.button
+            { className: &quot;btn-primary btn&quot;
+            , onClick: handler_ validateAndSave
+            , children: [ D.text &quot;Save&quot; ]
+            }
+        ]
+    }
+</code></pre>
+<p>And write our validated <code>person</code> as a JSON string with <code>setItem</code> in the <code>validateAndSave</code> function:</p>
+<pre><code class="language-hs">validateAndSave :: Effect Unit
+validateAndSave = do
+  log &quot;Running validators&quot;
+  case validatePerson' person of
+    Left errs -&gt; log $ &quot;There are &quot; &lt;&gt; show (length errs) &lt;&gt; &quot; validation errors.&quot;
+    Right validPerson -&gt; do
+      setItem &quot;person&quot; $ stringify $ encodeJson validPerson
+      log &quot;Saved&quot;
+</code></pre>
+<p>Note that if we attempt to compile at this stage, we'll encounter the following error:</p>
+<pre><code class="language-text">  No type class instance was found for
+    Data.Argonaut.Encode.Class.EncodeJson PhoneType
+</code></pre>
+<p>This is because <code>PhoneType</code> in the <code>Person</code> record needs an <code>EncodeJson</code> instance. We'll just derive a generic encode instance, and an encode instance too while we're at it. More information how this works is available in the argonaut docs:</p>
+<pre><code class="language-hs">import Data.Argonaut (class DecodeJson, class EncodeJson)
+import Data.Argonaut.Encode.Generic.Rep (genericEncodeJson)
+import Data.Argonaut.Decode.Generic.Rep (genericDecodeJson)
+import Data.Generic.Rep (class Generic)
+
+derive instance genericPhoneType :: Generic PhoneType _
+
+instance encodeJsonPhoneType :: EncodeJson PhoneType where
+  encodeJson = genericEncodeJson
+
+instance decodeJsonPhoneType :: DecodeJson PhoneType where
+  decodeJson = genericDecodeJson
+</code></pre>
+<p>Now we can save our <code>person</code> to local storage, but this isn't very useful unless we can retrieve the data. We'll tackle that next.</p>
+<p>We'll start with retrieving the &quot;person&quot; string from local storage:</p>
+<pre><code class="language-hs">item &lt;- getItem &quot;person&quot;
+</code></pre>
+<p>Then we'll create a helper function to handle converting the string from local storage to our <code>Person</code> record. Note that this string in storage may be <code>null</code>, so we represent it as a foreign <code>Json</code> until it is successfully decoded as a <code>String</code>. There are a number of other conversion steps along the way - each of which return an <code>Either</code> value, so it makes sense to organize these together in a <code>do</code> block.</p>
+<pre><code class="language-hs">processItem :: Json -&gt; Either String Person
+processItem item = do
+  jsonString &lt;- decodeJson item
+  j &lt;- jsonParser jsonString
+  (p :: Person) &lt;- decodeJson j
+  pure p
+</code></pre>
+<p>Then we inspect this result to see if it succeeded. If it failed, we'll log the errors and use our default <code>examplePerson</code>, otherwise we'll use the person retrieved from local storage.</p>
+<pre><code class="language-hs">initialPerson &lt;- case processItem item of
+  Left err -&gt; do
+    log $ &quot;Error: &quot; &lt;&gt; err &lt;&gt; &quot;. Loading examplePerson&quot;
+    pure examplePerson
+  Right p -&gt; pure p
+</code></pre>
+<p>Finally, we'll pass this <code>initialPerson</code> to our component via the <code>props</code> record:</p>
+<pre><code class="language-hs">-- Create JSX node from react component.
+app = element addressBookApp { initialPerson }
+</code></pre>
+<p>And pick it up on the other side to use in our state hook:</p>
+<pre><code class="language-hs">mkAddressBookApp :: Effect (ReactComponent { initialPerson :: Person })
+mkAddressBookApp =
+  component &quot;AddressBookApp&quot; \props -&gt; R.do
+    Tuple person setPerson &lt;- useState props.initialPerson
+</code></pre>
+<p>As a finishing touch, we'll improve the quality of our error messages by appending to the <code>String</code> of each <code>Left</code> value with <code>lmap</code>.</p>
+<pre><code class="language-hs">processItem :: Json -&gt; Either String Person
+processItem item = do
+  jsonString &lt;- lmap (&quot;No string in local storage: &quot; &lt;&gt; _) $ decodeJson item
+  j &lt;- lmap (&quot;Cannot parse JSON string: &quot; &lt;&gt; _) $ jsonParser jsonString
+  (p :: Person) &lt;- lmap (&quot;Cannot decode Person: &quot; &lt;&gt; _) $ decodeJson j
+  pure p
+</code></pre>
+<p>Only the first error should ever occur during normal operation of this app. You can trigger the other errors by opening your web browser's dev tools, editing the saved &quot;person&quot; string in local storage, and refreshing the page. How you modify the JSON string determines which error is triggered. See if you can trigger each of them.</p>
+<p>That covers local storage. Next we'll implement the <code>alert</code> action, which is very similar to the <code>log</code> action from the <code>Effect.Console</code> module. The only difference is that the <code>alert</code> action uses the <code>window.alert</code> method, whereas the <code>log</code> action uses the <code>console.log</code> method. As such, <code>alert</code> can only be used in environments where <code>window.alert</code> is defined, such as a web browser.</p>
+<pre><code class="language-hs">foreign import alert :: String -&gt; Effect Unit
+</code></pre>
+<pre><code class="language-js">exports.alert = msg =&gt; () =&gt;
+  window.alert(msg);
+</code></pre>
+<p>We want this alert to appear when either:</p>
+<ul>
+<li>A user attempts to save a form with validation errors.</li>
+<li>The state cannot be retrieved from local storage.</li>
+</ul>
+<p>That is accomplished by simply replacing <code>log</code> with <code>alert</code> on these lines:</p>
+<pre><code class="language-hs">Left errs -&gt; alert $ &quot;There are &quot; &lt;&gt; show (length errs) &lt;&gt; &quot; validation errors.&quot;
+
+alert $ &quot;Error: &quot; &lt;&gt; err &lt;&gt; &quot;. Loading examplePerson&quot;
+</code></pre>
+<h2><a class="header" href="#exercises-30" id="exercises-30">Exercises</a></h2>
+<ol>
+<li>(Easy) Write a wrapper for the <code>removeItem</code> method on the <code>localStorage</code> object, and add your foreign function to the <code>Effect.Storage</code> module.</li>
+<li>(Medium) Add a &quot;Reset&quot; button that, when clicked, calls the newly-created <code>removeItem</code> function to delete the &quot;person&quot; entry from local storage.</li>
+<li>(Easy) Write a wrapper for the <code>confirm</code> method on the JavaScript <code>Window</code> object, and add your foreign function to the <code>Effect.Alert</code> module.</li>
+<li>(Medium) Call this <code>confirm</code> function when a users clicks the &quot;Reset&quot; button to ask if they're sure they want to reset their address book.</li>
+</ol>
+<h2><a class="header" href="#conclusion-8" id="conclusion-8">Conclusion</a></h2>
+<p>In this chapter, we've learned how to work with foreign JavaScript code from PureScript and we've seen the issues involved with writing trustworthy code using the FFI:</p>
+<ul>
+<li>We've seen the importance of ensuring that foreign functions have correct representations.</li>
+<li>We learned how to deal with corner cases like null values and other types of JavaScript data, by using foreign types, or the <code>Json</code> data type.</li>
+<li>We saw how to safely serialize and deserialize JSON data.</li>
+</ul>
+<p>For more examples, the <code>purescript</code>, <code>purescript-contrib</code> and <code>purescript-node</code> GitHub organizations provide plenty of examples of libraries which use the FFI. In the remaining chapters, we will see some of these libraries put to use to solve real-world problems in a type-safe way.</p>
+<h1><a class="header" href="#addendum" id="addendum">Addendum</a></h1>
 <h2><a class="header" href="#calling-purescript-from-javascript" id="calling-purescript-from-javascript">Calling PureScript from JavaScript</a></h2>
 <p>Calling a PureScript function from JavaScript is very simple, at least for functions with simple types.</p>
 <p>Let's take the following simple module as an example:</p>
@@ -4164,7 +4922,7 @@ shout a = show a &lt;&gt; &quot;!!!&quot;
 <p>We can call this function from JavaScript by passing an explicit type class dictionary from <code>Data.Show</code> as the first parameter:</p>
 <pre><code class="language-javascript">shout(require('Data.Show').showNumber)(42);
 </code></pre>
-<h2><a class="header" href="#exercises-25" id="exercises-25">Exercises</a></h2>
+<h2><a class="header" href="#exercises-31" id="exercises-31">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) What are the runtime representations of these types?</p>
@@ -4178,131 +4936,8 @@ forall a. Ord a =&gt; Array a -&gt; Boolean
 <p>(Medium) Try using the functions defined in the <code>arrays</code> package, calling them from JavaScript, by compiling the library using <code>spago build</code> and importing modules using the <code>require</code> function in NodeJS. <em>Hint</em>: you may need to configure the output path so that the generated CommonJS modules are available on the NodeJS module path.</p>
 </li>
 </ol>
-<h2><a class="header" href="#using-javascript-code-from-purescript" id="using-javascript-code-from-purescript">Using JavaScript Code From PureScript</a></h2>
-<p>The simplest way to use JavaScript code from PureScript is to give a type to an existing JavaScript value using a <em>foreign import</em> declaration. Foreign import
-declarations should have a corresponding JavaScript declaration in a <em>foreign JavaScript module</em>.</p>
-<p>For example, consider the <code>encodeURIComponent</code> function, which can be used from JavaScript to encode a component of a URI by escaping special characters:</p>
-<pre><code class="language-text">$ node
-
-node&gt; encodeURIComponent('Hello World')
-'Hello%20World'
-</code></pre>
-<p>This function has the correct runtime representation for the function type <code>String -&gt; String</code>, since it takes non-null strings to non-null strings, and has no other side-effects.</p>
-<p>We can assign this type to the function with the following foreign import declaration:</p>
-<pre><code class="language-haskell">module Data.URI where
-
-foreign import encodeURIComponent :: String -&gt; String
-</code></pre>
-<p>We also need to write a foreign JavaScript module. If the module above is saved as <code>src/Data/URI.purs</code>, then the foreign JavaScript module should be saved as
-<code>src/Data/URI.js</code>:</p>
-<pre><code class="language-javascript">&quot;use strict&quot;;
-
-exports.encodeURIComponent = encodeURIComponent;
-</code></pre>
-<p>Spago will find <code>.js</code> files in the <code>src</code> directory, and provide them to the compiler as foreign JavaScript modules.</p>
-<p>JavaScript functions and values are exported from foreign JavaScript modules by assigning them to the <code>exports</code> object just like a regular CommonJS module. The <code>purs</code> compiler treats this module like a regular CommonJS module, and simply adds it as a dependency to the compiled
-PureScript module. However, when bundling code for the browser with <code>psc-bundle</code> or <code>spago bundle-app --to</code>, it is very important to follow the
-pattern above, assigning exports to the <code>exports</code> object using a property assignment. This is because <code>psc-bundle</code> recognizes this format,
-allowing unused JavaScript exports to be removed from bundled code.</p>
-<p>With these two pieces in place, we can now use the <code>encodeURIComponent</code> function from PureScript like any function written in PureScript.
-For example, if this declaration is saved as a module and loaded into PSCi, we can reproduce the calculation above:</p>
-<pre><code class="language-text">$ spago repl
-
-&gt; import Data.URI
-&gt; encodeURIComponent &quot;Hello World&quot;
-&quot;Hello%20World&quot;
-</code></pre>
-<p>This approach works well for simple JavaScript values, but is of limited use for more complicated examples. The reason is that most idiomatic JavaScript code does not meet the strict criteria imposed by the runtime representations of the basic PureScript types. In those cases, we have another option - we can <em>wrap</em> the JavaScript code in such a way that we can force it to adhere to the correct runtime representation.</p>
-<h2><a class="header" href="#wrapping-javascript-values" id="wrapping-javascript-values">Wrapping JavaScript Values</a></h2>
-<p>We might want to wrap JavaScript values and functions for a number of reasons:</p>
-<ul>
-<li>A function takes multiple arguments, but we want to call it like a curried function.</li>
-<li>We might want to use the <code>Effect</code> monad to keep track of any JavaScript side-effects.</li>
-<li>It might be necessary to handle corner cases like <code>null</code> or <code>undefined</code>, to give a function the correct runtime representation.</li>
-</ul>
-<p>For example, suppose we wanted to recreate the <code>head</code> function on arrays by using a foreign declaration. In JavaScript, we might write the function as follows:</p>
-<pre><code class="language-javascript">function head(arr) {
-    return arr[0];
-}
-</code></pre>
-<p>However, there is a problem with this function. We might try to give it the type <code>forall a. Array a -&gt; a</code>, but for empty arrays, this function returns <code>undefined</code>. Therefore, this function does not have the correct runtime representation, and we should use a wrapper function to handle this corner case.</p>
-<p>To keep things simple, we can throw an exception in the case of an empty array. Strictly speaking, pure functions should not throw exceptions, but it will suffice for demonstration purposes, and we can indicate the lack of safety in the function name:</p>
-<pre><code class="language-haskell">foreign import unsafeHead :: forall a. Array a -&gt; a
-</code></pre>
-<p>In our foreign JavaScript module, we can define <code>unsafeHead</code> as follows:</p>
-<pre><code class="language-javascript">exports.unsafeHead = function(arr) {
-  if (arr.length) {
-    return arr[0];
-  } else {
-    throw new Error('unsafeHead: empty array');
-  }
-};
-</code></pre>
-<h2><a class="header" href="#defining-foreign-types" id="defining-foreign-types">Defining Foreign Types</a></h2>
-<p>Throwing an exception in the case of failure is less than ideal - idiomatic PureScript code uses the type system to represent side-effects such as missing values. One example of this approach is the <code>Maybe</code> type constructor. In this section, we will build another solution using the FFI.</p>
-<p>Suppose we wanted to define a new type <code>Undefined a</code> whose representation at runtime was like that for the type <code>a</code>, but also allowing the <code>undefined</code> value.</p>
-<p>We can define a <em>foreign type</em> using the FFI using a <em>foreign type declaration</em>. The syntax is similar to defining a foreign function:</p>
-<pre><code class="language-haskell">foreign import data Undefined :: Type -&gt; Type
-</code></pre>
-<p>Note that the <code>data</code> keyword here indicates that we are defining a type, not a value. Instead of a type signature, we give the <em>kind</em> of the new type. In this case, we declare the kind of <code>Undefined</code> to be <code>Type -&gt; Type</code>. In other words, <code>Undefined</code> is a type constructor.</p>
-<p>We can now simplify our original definition for <code>head</code>:</p>
-<pre><code class="language-javascript">exports.head = function(arr) {
-  return arr[0];
-};
-</code></pre>
-<p>And in the PureScript module:</p>
-<pre><code class="language-haskell">foreign import head :: forall a. Array a -&gt; Undefined a
-</code></pre>
-<p>Note the two changes: the body of the <code>head</code> function is now much simpler, and returns <code>arr[0]</code> even if that value is undefined, and the type signature has been changed to reflect the fact that our function can return an undefined value.</p>
-<p>This function has the correct runtime representation for its type, but is quite useless since we have no way to use a value of type <code>Undefined a</code>. But we can fix that by writing some new functions using the FFI!</p>
-<p>The most basic function we need will tell us whether a value is defined or not:</p>
-<pre><code class="language-haskell">foreign import isUndefined :: forall a. Undefined a -&gt; Boolean
-</code></pre>
-<p>This is easily defined in our foreign JavaScript module as follows:</p>
-<pre><code class="language-javascript">exports.isUndefined = function(value) {
-  return value === undefined;
-};
-</code></pre>
-<p>We can now use <code>isUndefined</code> and <code>head</code> together from PureScript to define a useful function:</p>
-<pre><code class="language-haskell">isEmpty :: forall a. Array a -&gt; Boolean
-isEmpty = isUndefined &lt;&lt;&lt; head
-</code></pre>
-<p>Here, the foreign functions we defined were very simple, which meant that we were able to benefit from the use of PureScript's typechecker as much as possible. This is good practice in general: foreign functions should be kept as small as possible, and application logic moved into PureScript code wherever possible.</p>
-<h2><a class="header" href="#functions-of-multiple-arguments" id="functions-of-multiple-arguments">Functions of Multiple Arguments</a></h2>
-<p>PureScript's Prelude contains an interesting set of examples of foreign types. As we have covered already, PureScript's function types only take a single argument, and can be used to simulate functions of multiple arguments via <em>currying</em>. This has certain advantages - we can partially apply functions, and give type class instances for function types - but it comes with a performance penalty. For performance critical code, it is sometimes necessary to define genuine JavaScript functions which accept multiple arguments. The Prelude defines foreign types which allow us to work safely with such functions.</p>
-<p>For example, the following foreign type declaration is taken from the Prelude in the <code>Data.Function.Uncurried</code> module:</p>
-<pre><code class="language-haskell">foreign import data Fn2 :: Type -&gt; Type -&gt; Type -&gt; Type
-</code></pre>
-<p>This defines the type constructor <code>Fn2</code> which takes three type arguments. <code>Fn2 a b c</code> is a type representing JavaScript functions of two arguments of types <code>a</code> and <code>b</code>, and with return type <code>c</code>.</p>
-<p>The <code>functions</code> package defines similar type constructors for function arities from 0 to 10.</p>
-<p>We can create a function of two arguments by using the <code>mkFn2</code> function, as follows:</p>
-<pre><code class="language-haskell">import Data.Function.Uncurried
-
-uncurriedAdd :: Fn2 Int Int Int
-uncurriedAdd = mkFn2 \n m -&gt; m + n
-</code></pre>
-<p>and we can apply a function of two arguments by using the <code>runFn2</code> function:</p>
-<pre><code class="language-haskell">&gt; runFn2 uncurriedAdd 3 10
-13
-</code></pre>
-<p>The key here is that the compiler <em>inlines</em> the <code>mkFn2</code> and <code>runFn2</code> functions whenever they are fully applied. The result is that the generated code is very compact:</p>
-<pre><code class="language-javascript">var uncurriedAdd = function (n, m) {
-    return m + n | 0;
-};
-</code></pre>
-<p>For contrast, here is a traditional curried function:</p>
-<pre><code class="language-haskell">curriedAdd :: Int -&gt; Int -&gt; Int
-curriedAdd n m = m + n
-</code></pre>
-<p>and the resulting generated code, which is less compact due to the nested functions:</p>
-<pre><code class="language-javascript">var curriedAdd = function (n) {
-    return function (m) {
-        return m + n | 0;
-    };
-};
-</code></pre>
 <h2><a class="header" href="#representing-side-effects" id="representing-side-effects">Representing Side Effects</a></h2>
-<p>The <code>Effect</code> monad is also defined as a foreign type. Its runtime representation is quite simple - an expression of type <code>Effect a</code> should evaluate to a JavaScript function of no arguments, which performs any side-effects and returns a value with the correct runtime representation for type <code>a</code>.</p>
+<p>The <code>Effect</code> monad is also defined as a foreign type. Its runtime representation is quite simple - an expression of type <code>Effect a</code> should evaluate to a JavaScript function of <strong>no arguments</strong>, which performs any side-effects and returns a value with the correct runtime representation for type <code>a</code>.</p>
 <p>The definition of the <code>Effect</code> type constructor is given in the <code>Effect</code> module as follows:</p>
 <pre><code class="language-haskell">foreign import data Effect :: Type -&gt; Type
 </code></pre>
@@ -4328,216 +4963,6 @@ curriedAdd n m = m + n
 <pre><code class="language-javascript">require('Main').main();
 </code></pre>
 <p>When using <code>spago bundle-app --to</code> or <code>spago run</code>, this call to <code>main</code> is generated automatically, whenever the <code>Main</code> module is defined.</p>
-<h2><a class="header" href="#defining-new-effects" id="defining-new-effects">Defining New Effects</a></h2>
-<p>The source code for this chapter defines two new effects. The simplest is <code>alert</code>, defined in the <code>Effect.Alert</code> module. It is used to indicate that a computation might alert the user using a popup window.</p>
-<p>The effect is defined using a foreign type declaration:</p>
-<pre><code class="language-haskell">foreign import alert :: String -&gt; Effect Unit
-</code></pre>
-<p>The foreign JavaScript module is straightforward, defining the <code>alert</code> function by assigning it to the <code>exports</code> variable:</p>
-<pre><code class="language-javascript">&quot;use strict&quot;;
-
-exports.alert = function(msg) {
-    return function() {
-        window.alert(msg);
-    };
-};
-</code></pre>
-<p>The <code>alert</code> action is very similar to the <code>log</code> action from the <code>Effect.Console</code> module. The only difference is that the <code>alert</code> action uses the <code>window.alert</code> method, whereas the <code>log</code> action uses the <code>console.log</code> method. As such, <code>alert</code> can only be used in environments where <code>window.alert</code> is defined, such as a web browser.</p>
-<p>Note that, as in the case of <code>log</code>, the <code>alert</code> function uses a function of no arguments to represent the computation of type <code>Effect Unit</code>.</p>
-<p>The second effect defined in this chapter is the <code>Storage</code> effect, which is defined in the <code>Effect.Storage</code> module. It is used to indicate that a computation might read or write values using the Web Storage API.</p>
-<p>The <code>Effect.Storage</code> module defines two actions: <code>getItem</code>, which retrieves a value from local storage, and <code>setItem</code> which inserts or updates a value in local storage. The two functions have the following types:</p>
-<pre><code class="language-haskell">foreign import getItem :: String -&gt; Effect Foreign
-
-foreign import setItem :: String -&gt; String -&gt; Effect Unit
-</code></pre>
-<p>Here is the corresponding JavaScript implementation of these functions in <code>Effect/Storage.js</code>:</p>
-<pre><code class="language-js">exports.setItem = function(key) {
-    return function(value) {
-        return function() {
-            window.localStorage.setItem(key, value);
-        };
-    };
-};
-
-exports.getItem = function(key) {
-    return function() {
-        return window.localStorage.getItem(key);
-    }
-};
-</code></pre>
-<p><code>setItem</code> takes a key and a value (both strings), and returns a computation which stores the value in local storage at the specified key.</p>
-<p>The type of <code>getItem</code> is more interesting. It takes a key, and attempts to retrieve the associated value from local storage. However, since the <code>getItem</code> method on <code>window.localStorage</code> can return <code>null</code>, the return type is not <code>String</code>, but <code>Foreign</code> which is defined by the <code>foreign</code> package in the <code>Foreign</code> module.</p>
-<p><code>Foreign</code> provides a way to work with <em>untyped data</em>, or more generally, data whose runtime representation is uncertain.</p>
-<h2><a class="header" href="#modern-javascript-for-curried-functions" id="modern-javascript-for-curried-functions">Modern JavaScript for Curried Functions</a></h2>
-<p>We may rewrite our <code>setItem</code> and <code>getItem</code> functions in ES6 style as follows:</p>
-<pre><code class="language-js">exports.setItem = key =&gt; value =&gt; () =&gt; {
-    window.localStorage.setItem(key, value);
-};
-
-exports.getItem = key =&gt; () =&gt;
-    window.localStorage.getItem(key);
-</code></pre>
-<p>Note that in the original <code>setItem</code>, there is no inner <code>return</code> statement, which means the function returns nothing (technically it returns <code>undefined</code>). We preserve this lack of returned value in the new ES6 version by surrounding the expression to the right of the last arrow (<code>=&gt;</code>) with curly braces (<code>{}</code>).
-Contrast this with <code>getItem</code> where we return a value, and so that expression is simply placed directly after the last arrow.
-In practice however, writing <code>setItem</code> in the style of <code>getItem</code> (without curly braces) will still work for two reasons:</p>
-<ol>
-<li>The return value of <code>window.localStorage.setItem</code> also happens to be <code>undefined</code>.</li>
-<li>If PureScript expects an <code>undefined</code> value to be returned, then an erroneously-returned non-<code>undefined</code> value will simply be ignored.</li>
-</ol>
-<p>Also, recall the generated <code>curriedAdd</code> function from earlier:</p>
-<pre><code class="language-js">var curriedAdd = function (n) {
-    return function (m) {
-        return m + n | 0;
-    };
-};
-</code></pre>
-<p>Here's its ES6 representation:</p>
-<pre><code class="language-js">var curriedAdd = n =&gt; m =&gt; m + n | 0;
-</code></pre>
-<p>The PureScript compiler generates the more verbose ES5-style curried functions, but if you find the ES6-style arrow-notation more readable, you may transform the <code>output</code> directory with a tool like <a href="https://github.com/lebab/lebab">lebab</a>:</p>
-<pre><code class="language-sh">npm i -g lebab
-lebab --replace output/ --transform arrow,arrow-return
-</code></pre>
-<h2><a class="header" href="#exercises-26" id="exercises-26">Exercises</a></h2>
-<ol>
-<li>(Medium) Write a wrapper for the <code>confirm</code> method on the JavaScript <code>Window</code> object, and add your foreign function to the <code>Effect.Alert</code> module.</li>
-<li>(Medium) Write a wrapper for the <code>removeItem</code> method on the <code>localStorage</code> object, and add your foreign function to the <code>Effect.Storage</code> module.</li>
-</ol>
-<h2><a class="header" href="#working-with-untyped-data" id="working-with-untyped-data">Working With Untyped Data</a></h2>
-<p>In this section, we will see how we can use the <code>Foreign</code> library to turn untyped data into typed data, with the correct runtime representation for its type.</p>
-<p>The code for this chapter demonstrates how a record can be serialized to JSON and stored in / retrieved from local storage.</p>
-<p>The <code>Main</code> module defines a type for the saved form data:</p>
-<pre><code class="language-haskell">newtype FormData = FormData
-  { firstName  :: String
-  , lastName   :: String
-  }
-</code></pre>
-<p>The problem is that we have no guarantee that the JSON will have the correct form. Put another way, we don't know that the JSON represents the correct type of data at runtime. This is the sort of problem that is solved by the <code>foreign</code> library. Here are some other examples:</p>
-<ul>
-<li>A JSON response from a web service</li>
-<li>A value passed to a function from JavaScript code</li>
-</ul>
-<p>Let's try the <code>foreign</code> and <code>foreign-generic</code> libraries in PSCi.</p>
-<p>Start by importing some modules:</p>
-<pre><code class="language-text">&gt; import Foreign
-&gt; import Foreign.Generic
-&gt; import Foreign.JSON
-</code></pre>
-<p>A good way to obtain a <code>Foreign</code> value is to parse a JSON document. <code>foreign-generic</code> defines the following two functions:</p>
-<pre><code class="language-haskell">parseJSON :: String -&gt; F Foreign
-decodeJSON :: forall a. Decode a =&gt; String -&gt; F a
-</code></pre>
-<p>The type constructor <code>F</code> is actually just a type synonym, defined in <code>Foreign</code>:</p>
-<pre><code class="language-haskell">type F = Except MultipleErrors
-</code></pre>
-<p>Here, <code>Except</code> is a monad for handling exceptions in pure code, much like <code>Either</code>. We can convert a value in the <code>F</code> monad into a value in the <code>Either</code> monad by using the <code>runExcept</code> function.</p>
-<p>Most of the functions in the <code>foreign</code> and <code>foreign-generic</code> libraries return a value in the <code>F</code> monad, which means that we can use do notation and the applicative functor combinators to build typed values.</p>
-<p>The <code>Decode</code> type class represents those types which can be obtained from untyped data. There are type class instances defined for the primitive types and arrays, and we can define our own instances as well.</p>
-<p>Let's try parsing some simple JSON documents using <code>decodeJSON</code> in PSCi (remembering to use <code>runExcept</code> to unwrap the results):</p>
-<pre><code class="language-text">&gt; import Control.Monad.Except
-
-&gt; runExcept (decodeJSON &quot;\&quot;Testing\&quot;&quot; :: F String)
-Right &quot;Testing&quot;
-
-&gt; runExcept (decodeJSON &quot;true&quot; :: F Boolean)
-Right true
-
-&gt; runExcept (decodeJSON &quot;[1, 2, 3]&quot; :: F (Array Int))
-Right [1, 2, 3]
-</code></pre>
-<p>Recall that in the <code>Either</code> monad, the <code>Right</code> data constructor indicates success. Note however, that invalid JSON, or an incorrect type leads to an error:</p>
-<pre><code class="language-text">&gt; runExcept (decodeJSON &quot;[1, 2, true]&quot; :: F (Array Int))
-(Left (NonEmptyList (NonEmpty (ErrorAtIndex 2 (TypeMismatch &quot;Int&quot; &quot;Boolean&quot;)) Nil)))
-</code></pre>
-<p>The <code>foreign-generic</code> library tells us where in the JSON document the type error occurred.</p>
-<h2><a class="header" href="#handling-null-and-undefined-values" id="handling-null-and-undefined-values">Handling Null and Undefined Values</a></h2>
-<p>Real-world JSON documents contain null and undefined values, so we need to be able to handle those too. <code>foreign-generic</code> solves this problem with the 'Maybe' type constructor to represent missing values.</p>
-<pre><code class="language-text">&gt; import Prelude
-&gt; import Foreign.NullOrUndefined
-
-&gt; runExcept (decodeJSON &quot;42&quot; :: F (Maybe Int))
-(Right (Just 42))
-
-&gt; runExcept (decodeJSON &quot;null&quot; :: F (Maybe Int))
-(Right Nothing)
-</code></pre>
-<p>The type <code>Maybe Int</code> represents values which are either integers, or null. What if we wanted to parse more interesting values, like arrays of integers, where each element might be <code>null</code>? <code>decodeJSON</code> handles such cases as well:</p>
-<pre><code class="language-text">&gt; runExcept (decodeJSON &quot;[1,2,null]&quot; :: F (Array (Maybe Int)))
-(Right [(Just 1),(Just 2),Nothing])
-</code></pre>
-<h2><a class="header" href="#generic-json-serialization" id="generic-json-serialization">Generic JSON Serialization</a></h2>
-<p>In fact, we rarely need to write instances for the <code>Decode</code> class, since the <code>foreign-generic</code> class allows us to <em>derive</em> instances using a technique called <em>datatype-generic programming</em>. A full explanation of this technique is beyond the scope of this book, but it allows us to write functions once, and reuse them over many different data types, based on the structure of a the types themselves.</p>
-<p>To derive a <code>Decode</code> instance for our <code>FormData</code> type (so that we may deserialize it from its JSON representation), we first use the <code>derive</code> keyword to derive an instance of the <code>Generic</code> type class, which looks like this:</p>
-<pre><code class="language-haskell">import Data.Generic.Rep
-derive instance genericFormData :: Generic FormData _
-</code></pre>
-<p>Next, we simply define the <code>decode</code> function using the <code>genericDecode</code> function, as follows:</p>
-<pre><code class="language-haskell">import Foreign.Class
-instance decodeFormData :: Decode FormData where
-  decode = genericDecode (defaultOptions { unwrapSingleConstructors = true })
-</code></pre>
-<p>In fact, we can also derive an <em>encoder</em> in the same way:</p>
-<pre><code class="language-haskell">instance encodeFormData :: Encode FormData where
-  encode = genericEncode (defaultOptions { unwrapSingleConstructors = true })
-</code></pre>
-<p>And even an instance of Show which comes in handy for logging the result:</p>
-<pre><code class="language-haskell">instance showFormData :: Show FormData where
-  show = genericShow
-</code></pre>
-<p>It is important that we use the same options in the decoder and encoder, otherwise our encoded JSON documents might not get decoded correctly.</p>
-<p>Now, in our main function, a value of type <code>FormData</code> is passed to the <code>encode</code> function, serializing it as a JSON document. The <code>FormData</code> type is a newtype for a record, so a value of type <code>FormData</code> passed to <code>encode</code> will be serialized as a JSON <em>object</em>. This is because we used the <code>unwrapSingleConstructors</code> option when defining our JSON encoder.</p>
-<p>Our <code>Decode</code> type class instance is used with <code>decodeJSON</code> to parse the JSON document when it is retrieved from local storage, as follows:</p>
-<pre><code class="language-haskell">loadSavedData = do
-  item &lt;- getItem &quot;person&quot;
-
-  let
-    savedData :: Either (NonEmptyList ForeignError) (Maybe FormData)
-    savedData = runExcept do
-      jsonOrNull &lt;- traverse readString =&lt;&lt; readNullOrUndefined item
-      traverse decodeJSON jsonOrNull
-</code></pre>
-<p>The <code>savedData</code> action reads the <code>FormData</code> structure in two steps: first, it parses the <code>Foreign</code> value obtained from <code>getItem</code>. The type of <code>jsonOrNull</code> is inferred by the compiler to be <code>Maybe String</code> (exercise for the reader - how is this type inferred?). The <code>traverse</code> function is then used to apply <code>decodeJSON</code> to the (possibly missing) element of the result of type <code>Maybe String</code>. The type class instance inferred for <code>decodeJSON</code> is the one we just wrote, resulting in a value of type <code>F (Maybe FormData)</code>.</p>
-<p>We need to use the monadic structure of <code>F</code>, since the argument to <code>traverse</code> uses the result <code>jsonOrNull</code> obtained in the first line.</p>
-<p>There are three possibilities for the result of <code>FormData</code>:</p>
-<ul>
-<li>If the outer constructor is <code>Left</code>, then there was an error parsing the JSON string, or it represented a value of the wrong type. In this case, the application displays an error using the <code>alert</code> action we wrote earlier.</li>
-<li>If the outer constructor is <code>Right</code>, but the inner constructor is <code>Nothing</code>, then <code>getItem</code> also returned <code>Nothing</code> which means that the key did not exist in local storage. In this case, the application continues quietly.</li>
-<li>Finally, a value matching the pattern <code>Right (Just _)</code> indicates a successfully parsed JSON document. In this case, the application updates the form fields with the appropriate values.</li>
-</ul>
-<p>Try out the code, by running <code>spago bundle-app --to dist/Main.js</code>, and then opening the browser to <code>html/index.html</code>. You should be able to see what's going on in the console.</p>
-<p><em>Note</em>: You may need to serve the HTML and JavaScript files from a HTTP server locally in order to avoid certain browser-specific issues.</p>
-<h2><a class="header" href="#exercises-27" id="exercises-27">Exercises</a></h2>
-<ol>
-<li>
-<p>(Easy) Use <code>decodeJSON</code> to parse a JSON document representing a two-dimensional JavaScript array of integers, such as <code>[[1, 2, 3], [4, 5], [6]]</code>. What if the elements are allowed to be null? What if the arrays themselves are allowed to be null?</p>
-</li>
-<li>
-<p>(Medium) Convince yourself that the implementation of <code>savedData</code> should type-check, and write down the inferred types of each subexpression in the computation.</p>
-</li>
-<li>
-<p>(Medium) The following data type represents a binary tree with values at the leaves:</p>
-<pre><code class="language-haskell">data Tree a = Leaf a | Branch (Tree a) (Tree a)
-</code></pre>
-<p>Derive <code>Encode</code> and <code>Decode</code> instances for this type using <code>foreign-generic</code>, and verify that encoded values can correctly be decoded in PSCi. Hint: This requires a <a href="https://github.com/paf31/24-days-of-purescript-2016/blob/master/11.markdown#deriving-generic-instances">Generic Instance</a>, also see previous section on &quot;Instance Dependencies&quot;, and finally, search the web for &quot;eta-expansion&quot; if you encounter recursion issues during testing.</p>
-</li>
-<li>
-<p>(Difficult) The following <code>data</code> type should be represented directly in JSON as either an integer or a string:</p>
-<pre><code class="language-haskell">data IntOrString
-  = IntOrString_Int Int
-  | IntOrString_String String
-</code></pre>
-<p>Write instances for <code>Encode</code> and <code>Decode</code> for the <code>IntOrString</code> data type which implement this behavior, and verify that encoded values can correctly be decoded in PSCi.</p>
-</li>
-</ol>
-<h2><a class="header" href="#conclusion-8" id="conclusion-8">Conclusion</a></h2>
-<p>In this chapter, we've learned how to work with foreign JavaScript code from PureScript, and vice versa, and we've seen the issues involved with writing trustworthy code using the FFI:</p>
-<ul>
-<li>We've seen the importance of the <em>runtime representation</em> of data, and ensuring that foreign functions have the correct representation.</li>
-<li>We learned how to deal with corner cases like null values and other types of JavaScript data, by using foreign types, or the <code>Foreign</code> data type.</li>
-<li>We looked at some common foreign types defined in the Prelude, and how they can be used to interoperate with idiomatic JavaScript code. In particular, the representation of side-effects in the <code>Effect</code> monad was introduced, and we saw how to use the <code>Effect</code> monad to capture new side effects.</li>
-<li>We saw how to safely deserialize JSON data using the <code>Decode</code> type class.</li>
-</ul>
-<p>For more examples, the <code>purescript</code>, <code>purescript-contrib</code> and <code>purescript-node</code> GitHub organizations provide plenty of examples of libraries which use the FFI. In the remaining chapters, we will see some of these libraries put to use to solve real-world problems in a type-safe way.</p>
 <h1><a class="header" href="#monadic-adventures" id="monadic-adventures">Monadic Adventures</a></h1>
 <h2><a class="header" href="#chapter-goals-9" id="chapter-goals-9">Chapter Goals</a></h2>
 <p>The goal of this chapter will be to learn about <em>monad transformers</em>, which provide a way to combine side-effects provided by different monads. The motivating example will be a text adventure game which can be played on the console in NodeJS. The various side-effects of the game (logging, state, and configuration) will all be provided by a monad transformer stack.</p>
@@ -4635,7 +5060,7 @@ runState  :: forall s a. State s a -&gt; s -&gt; Tuple a s
 … ^D
 21
 </code></pre>
-<h2><a class="header" href="#exercises-28" id="exercises-28">Exercises</a></h2>
+<h2><a class="header" href="#exercises-32" id="exercises-32">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) What is the result of replacing <code>execState</code> with <code>runState</code> or <code>evalState</code> in our example above?</p>
@@ -4694,7 +5119,7 @@ createUserAsAdmin = runAsAdmin createUser
 <p>To run a computation in the <code>Reader</code> monad, the <code>runReader</code> function can be used to provide the global configuration:</p>
 <pre><code class="language-haskell">runReader :: forall r a. Reader r a -&gt; r -&gt; a
 </code></pre>
-<h2><a class="header" href="#exercises-29" id="exercises-29">Exercises</a></h2>
+<h2><a class="header" href="#exercises-33" id="exercises-33">Exercises</a></h2>
 <p>In these exercises, we will use the <code>Reader</code> monad to build a small library for rendering documents with indentation. The &quot;global configuration&quot; will be a number indicating the current indentation level:</p>
 <pre><code class="language-haskell">type Level = Int
 
@@ -4779,7 +5204,7 @@ runWriter  :: forall w a. Writer w a -&gt; Tuple a w
 &gt; runWriter (gcdLog 21 15)
 Tuple 3 [&quot;gcdLog 21 15&quot;,&quot;gcdLog 6 15&quot;,&quot;gcdLog 6 9&quot;,&quot;gcdLog 6 3&quot;,&quot;gcdLog 3 3&quot;]
 </code></pre>
-<h2><a class="header" href="#exercises-30" id="exercises-30">Exercises</a></h2>
+<h2><a class="header" href="#exercises-34" id="exercises-34">Exercises</a></h2>
 <ol>
 <li>
 <p>(Medium) Rewrite the <code>sumArray</code> function above using the <code>Writer</code> monad and the <code>Additive Int</code> monoid from the <code>monoid</code> package.</p>
@@ -4922,7 +5347,7 @@ split = do
 <p>This is because of the way in which the side-effects provided by the <code>ExceptT</code> monad transformer interact with the side-effects provided by the <code>WriterT</code> monad transformer. We can address this by changing the order in which the monad transformer stack is composed. If we move the <code>ExceptT</code> transformer to the top of the stack, then the log will contain all messages written up until the first error, as we saw earlier when we transformed <code>Writer</code> with <code>ExceptT</code>.</p>
 <p>One problem with this code is that we have to use the <code>lift</code> function multiple times to lift computations over multiple monad transformers: for example, the call to <code>throwError</code> has to be lifted twice, once over <code>WriterT</code> and a second time over <code>StateT</code>. This is fine for small monad transformer stacks, but quickly becomes inconvenient.</p>
 <p>Fortunately, as we will see, we can use the automatic code generation provided by type class inference to do most of this &quot;heavy lifting&quot; for us.</p>
-<h2><a class="header" href="#exercises-31" id="exercises-31">Exercises</a></h2>
+<h2><a class="header" href="#exercises-35" id="exercises-35">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Use the <code>ExceptT</code> monad transformer over the <code>Identity</code> functor to write a function <code>safeDivide</code> which divides two numbers, throwing an error if the denominator is zero.</p>
@@ -5051,7 +5476,7 @@ lower = do
               ]))
 </code></pre>
 <p>Again, this illustrates the power of reusability that monad transformers bring - we were able to write a backtracking parser in a declarative style with only a few lines of code, by reusing standard abstractions!</p>
-<h2><a class="header" href="#exercises-32" id="exercises-32">Exercises</a></h2>
+<h2><a class="header" href="#exercises-36" id="exercises-36">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Remove the calls to the <code>lift</code> function from your implementation of the <code>string</code> parser. Verify that the new implementation type checks, and convince yourself that it should.</p>
@@ -5204,7 +5629,7 @@ lineHandler currentState input = do
 <pre><code class="language-haskell">  RL.setLineHandler interface $ lineHandler initialGameState
   RL.prompt interface
 </code></pre>
-<h2><a class="header" href="#exercises-33" id="exercises-33">Exercises</a></h2>
+<h2><a class="header" href="#exercises-37" id="exercises-37">Exercises</a></h2>
 <ol>
 <li>
 <p>(Medium) Implement a new command <code>cheat</code>, which moves all game items from the game grid into the user's inventory.</p>
@@ -5237,7 +5662,7 @@ lineHandler currentState input = do
 <p>Here, the <code>gameEnvironment</code> function, which has the type <code>PlayerName -&gt; Boolean -&gt; GameEnvironment</code>, is lifted over <code>Y</code>. The two arguments specify how to read the player name and debug flag from the command line options. The first argument describes the player name option, which is specified by the <code>-p</code> or <code>--player</code> options, and the second describes the debug mode flag, which is turned on using the <code>-d</code> or <code>--debug</code> options.</p>
 <p>This demonstrates two basic functions defined in the <code>Node.Yargs.Applicative</code> module: <code>yarg</code>, which defines a command line option which takes an optional argument (of type <code>String</code>, <code>Number</code> or <code>Boolean</code>), and <code>flag</code> which defines a command line flag of type <code>Boolean</code>.</p>
 <p>Notice how we were able to use the notation afforded by the applicative operators to give a compact, declarative specification of our command line interface. In addition, it is simple to add new command line arguments, simply by adding a new function argument to <code>runGame</code>, and then using <code>&lt;*&gt;</code> to lift <code>runGame</code> over an additional argument in the definition of <code>env</code>.</p>
-<h2><a class="header" href="#exercises-34" id="exercises-34">Exercises</a></h2>
+<h2><a class="header" href="#exercises-38" id="exercises-38">Exercises</a></h2>
 <ol>
 <li>(Medium) Add a new Boolean-valued property <code>cheatMode</code> to the <code>GameEnvironment</code> record. Add a new command line flag <code>-c</code> to the <code>yargs</code> configuration which enables cheat mode. The <code>cheat</code> command from the previous exercise should be disallowed if cheat mode is not enabled.</li>
 </ol>
@@ -5447,7 +5872,7 @@ main =
     (copyFileCont &quot;/tmp/1.txt&quot; &quot;/tmp/2.txt&quot;)
     logShow
 </code></pre>
-<h2><a class="header" href="#exercises-35" id="exercises-35">Exercises</a></h2>
+<h2><a class="header" href="#exercises-39" id="exercises-39">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Use <code>readFileCont</code> and <code>writeFileCont</code> to write a function which concatenates two text files.</p>
@@ -5495,7 +5920,7 @@ copyFileContEx src dest = do
   content &lt;- readFileContEx src
   writeFileContEx dest content
 </code></pre>
-<h2><a class="header" href="#exercises-36" id="exercises-36">Exercises</a></h2>
+<h2><a class="header" href="#exercises-40" id="exercises-40">Exercises</a></h2>
 <ol>
 <li>(Medium) Modify your solution which concatenated two files, using <code>ExceptT</code> to handle any errors.</li>
 <li>(Medium) Write a function <code>concatenateMany</code> to concatenate multiple text files, given an array of input file names. <em>Hint</em>: use <code>traverse</code>.</li>
@@ -5543,7 +5968,7 @@ foreign import getImpl
 get req = ContT \k -&gt;
   runFn3 getImpl req (k &lt;&lt;&lt; Right) (k &lt;&lt;&lt; Left)
 </code></pre>
-<h2><a class="header" href="#exercises-37" id="exercises-37">Exercises</a></h2>
+<h2><a class="header" href="#exercises-41" id="exercises-41">Exercises</a></h2>
 <ol>
 <li>(Easy) Use <code>runContT</code> to test <code>get</code> in PSCi, printing the result to the console.</li>
 <li>(Medium) Use <code>ExceptT</code> to write a function <code>getEx</code> which wraps <code>get</code>, as we did previously for <code>readFileCont</code> and <code>writeFileCont</code>.</li>
@@ -5579,7 +6004,7 @@ main = flip runContT logShow do
 <p>Note that, since <code>readFileCont</code> returns a value of type <code>Either ErrorCode String</code>, we need to lift the <code>append</code> function over the <code>Either</code> type constructor using <code>lift2</code> to form our combining function.</p>
 <p>Because applicative functors support lifting of functions of arbitrary arity, we can perform more computations in parallel by using the applicative combinators. We can also benefit from all of the standard library functions which work with applicative functors, such as <code>traverse</code> and <code>sequence</code>!</p>
 <p>We can also combine parallel computations with sequential portions of code, by using applicative combinators in a do notation block, or vice versa, using <code>parallel</code> and <code>sequential</code> to change type constructors where appropriate.</p>
-<h2><a class="header" href="#exercises-38" id="exercises-38">Exercises</a></h2>
+<h2><a class="header" href="#exercises-42" id="exercises-42">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Use <code>parallel</code> and <code>sequential</code> to make two HTTP requests and collect their response bodies in parallel. Your combining function should concatenate the two response bodies, and your continuation should use <code>print</code> to print the result to the console.</p>
@@ -5671,7 +6096,7 @@ not equal to expected:
 [-888285,-822215,-196136,-116841,618343,887447]
 </code></pre>
 <p>Notice how the input <code>xs</code> and <code>ys</code> were generated as arrays of randomly-selected integers.</p>
-<h2><a class="header" href="#exercises-39" id="exercises-39">Exercises</a></h2>
+<h2><a class="header" href="#exercises-43" id="exercises-43">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a property which asserts that merging an array with the empty array does not modify the original array. <em>Note</em>: This new property is redundant, since this situation is already covered by our existing property. We're just trying to give you readers a simple way to practice using quickCheck.</li>
 <li>(Easy) Add an appropriate error message to the remaining property for <code>merge</code>.</li>
@@ -5701,7 +6126,7 @@ ints = id
   eq (ints $ mergePoly (sort xs) (sort ys)) (sort $ xs &lt;&gt; ys)
 </code></pre>
 <p>Here, <code>xs</code> and <code>ys</code> both have type <code>Array Int</code>, since the <code>ints</code> function has been used to disambiguate the unknown type.</p>
-<h2><a class="header" href="#exercises-40" id="exercises-40">Exercises</a></h2>
+<h2><a class="header" href="#exercises-44" id="exercises-44">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a function <code>bools</code> which forces the types of <code>xs</code> and <code>ys</code> to be <code>Array Boolean</code>, and add additional properties which test <code>mergePoly</code> at that type.</li>
 <li>(Medium) Choose a pure function from the core libraries (for example, from the <code>arrays</code> package), and write a QuickCheck property for it, including an appropriate error message. Your property should use a helper function to fix any polymorphic type arguments to either <code>Int</code> or <code>Boolean</code>.</li>
@@ -5771,7 +6196,7 @@ false
   member a $ insert a $ treeOfInt t
 </code></pre>
 <p>Here, the argument <code>t</code> is a randomly-generated tree of type <code>Tree Int</code>, where the type argument disambiguated by the identity function <code>treeOfInt</code>.</p>
-<h2><a class="header" href="#exercises-41" id="exercises-41">Exercises</a></h2>
+<h2><a class="header" href="#exercises-45" id="exercises-45">Exercises</a></h2>
 <ol>
 <li>(Medium) Create a newtype for <code>String</code> with an associated <code>Arbitrary</code> instance which generates collections of randomly-selected characters in the range <code>a-z</code>. <em>Hint</em>: use the <code>elements</code> and <code>arrayOf</code> functions from the <code>Test.QuickCheck.Gen</code> module.</li>
 <li>(Difficult) Write a property which asserts that a value inserted into a tree is still a member of that tree after arbitrarily many more insertions.</li>
@@ -5863,7 +6288,7 @@ Success : Success : ...
 </code></pre>
 <p><code>quickCheckPure</code> takes three arguments: the random seed, the number of test cases to generate, and the property to test. If all tests pass, you should see an array of <code>Success</code> data constructors printed to the console.</p>
 <p><code>quickCheckPure</code> might be useful in other situations, such as generating random input data for performance benchmarks, or generating sample form data for web applications.</p>
-<h2><a class="header" href="#exercises-42" id="exercises-42">Exercises</a></h2>
+<h2><a class="header" href="#exercises-46" id="exercises-46">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Write <code>Coarbitrary</code> instances for the <code>Byte</code> and <code>Sorted</code> type constructors.</p>
@@ -6086,7 +6511,7 @@ height = AttributeKey &quot;height&quot;
 unit
 </code></pre>
 <p>Note, however, that no changes had to be made to the <code>render</code> function, because the underlying data representation never changed. This is one of the benefits of the smart constructors approach - it allows us to separate the internal data representation for a module from the representation which is perceived by users of its external API.</p>
-<h2><a class="header" href="#exercises-43" id="exercises-43">Exercises</a></h2>
+<h2><a class="header" href="#exercises-47" id="exercises-47">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Use the <code>Data.DOM.Smart</code> module to experiment by creating new HTML documents using <code>render</code>.</p>
@@ -6165,7 +6590,7 @@ height = AttributeKey &quot;height&quot;
 &lt;img src=&quot;cat.jpg&quot; width=&quot;100&quot; height=&quot;200&quot; /&gt;
 unit
 </code></pre>
-<h2><a class="header" href="#exercises-44" id="exercises-44">Exercises</a></h2>
+<h2><a class="header" href="#exercises-48" id="exercises-48">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Create a data type which represents either pixel or percentage lengths. Write an instance of <code>IsValue</code> for your type. Modify the <code>width</code> and <code>height</code> attributes to use your new type.</p>
@@ -6320,7 +6745,7 @@ render = execWriter &lt;&lt;&lt; renderElement
 &lt;p&gt;&lt;img src=&quot;cat.jpg&quot; /&gt;A cat&lt;/p&gt;
 unit
 </code></pre>
-<h2><a class="header" href="#exercises-45" id="exercises-45">Exercises</a></h2>
+<h2><a class="header" href="#exercises-49" id="exercises-49">Exercises</a></h2>
 <ol>
 <li>(Medium) Add a new data constructor to the <code>ContentF</code> type to support a new action <code>comment</code>, which renders a comment in the generated HTML. Implement the new action using <code>liftF</code>. Update the interpretation <code>renderContentItem</code> to interpret your new constructor appropriately.</li>
 </ol>
@@ -6412,7 +6837,7 @@ render e = evalState (execWriterT (renderElement e)) 0
 unit
 </code></pre>
 <p>You can verify that multiple calls to <code>newName</code> do in fact result in unique names.</p>
-<h2><a class="header" href="#exercises-46" id="exercises-46">Exercises</a></h2>
+<h2><a class="header" href="#exercises-50" id="exercises-50">Exercises</a></h2>
 <ol>
 <li>
 <p>(Medium) We can simplify the API further by hiding the <code>Element</code> type from its users. Make these changes in the following steps:</p>
