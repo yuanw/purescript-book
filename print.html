@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../index.html">Foreword</a></li><li class="chapter-item expanded "><a href="chapter1.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="chapter2.html"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="chapter3.html"><strong aria-hidden="true">3.</strong> Functions and Records</a></li><li class="chapter-item expanded "><a href="chapter4.html"><strong aria-hidden="true">4.</strong> Recursion, Maps And Folds</a></li><li class="chapter-item expanded "><a href="chapter5.html"><strong aria-hidden="true">5.</strong> Pattern Matching</a></li><li class="chapter-item expanded "><a href="chapter6.html"><strong aria-hidden="true">6.</strong> Type Classes</a></li><li class="chapter-item expanded "><a href="chapter7.html"><strong aria-hidden="true">7.</strong> Applicative Validation</a></li><li class="chapter-item expanded "><a href="chapter8.html"><strong aria-hidden="true">8.</strong> The Effect Monad</a></li><li class="chapter-item expanded "><a href="chapter9.html"><strong aria-hidden="true">9.</strong> Canvas Graphics</a></li><li class="chapter-item expanded "><a href="chapter10.html"><strong aria-hidden="true">10.</strong> The Foreign Function Interface</a></li><li class="chapter-item expanded "><a href="chapter11.html"><strong aria-hidden="true">11.</strong> Monadic Adventures</a></li><li class="chapter-item expanded "><a href="chapter12.html"><strong aria-hidden="true">12.</strong> Callback Hell</a></li><li class="chapter-item expanded "><a href="chapter13.html"><strong aria-hidden="true">13.</strong> Generative Testing</a></li><li class="chapter-item expanded "><a href="chapter14.html"><strong aria-hidden="true">14.</strong> Domain-Specific Languages</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../index.html">Foreword</a></li><li class="chapter-item expanded "><a href="chapter1.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="chapter2.html"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="chapter3.html"><strong aria-hidden="true">3.</strong> Functions and Records</a></li><li class="chapter-item expanded "><a href="chapter4.html"><strong aria-hidden="true">4.</strong> Recursion, Maps And Folds</a></li><li class="chapter-item expanded "><a href="chapter5.html"><strong aria-hidden="true">5.</strong> Pattern Matching</a></li><li class="chapter-item expanded "><a href="chapter6.html"><strong aria-hidden="true">6.</strong> Type Classes</a></li><li class="chapter-item expanded "><a href="chapter7.html"><strong aria-hidden="true">7.</strong> Applicative Validation</a></li><li class="chapter-item expanded "><a href="chapter8.html"><strong aria-hidden="true">8.</strong> The Effect Monad</a></li><li class="chapter-item expanded "><a href="chapter9.html"><strong aria-hidden="true">9.</strong> Canvas Graphics</a></li><li class="chapter-item expanded "><a href="chapter10.html"><strong aria-hidden="true">10.</strong> The Foreign Function Interface</a></li><li class="chapter-item expanded "><a href="chapter11.html"><strong aria-hidden="true">11.</strong> Monadic Adventures</a></li><li class="chapter-item expanded "><a href="chapter12.html"><strong aria-hidden="true">12.</strong> Asynchronous Effects</a></li><li class="chapter-item expanded "><a href="chapter13.html"><strong aria-hidden="true">13.</strong> Generative Testing</a></li><li class="chapter-item expanded "><a href="chapter14.html"><strong aria-hidden="true">14.</strong> Domain-Specific Languages</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -153,10 +153,7 @@
 <p>This repository contains a community fork of <em>PureScript by Example</em> by Phil Freeman, also known as &quot;the PureScript book&quot;. This version differs from the original in that it has been updated so that the code and exercises work with up-to-date versions of the compiler, libraries, and tools.</p>
 <p>If you enjoyed the book or found it useful, please consider buying a copy of <a href="https://leanpub.com/purescript">the original on Leanpub</a>.</p>
 <h2><a class="header" href="#status" id="status">Status</a></h2>
-<p>This book is being continuously updated as the language evolves, so please report any issues you notice with the material. The following chapters are still being updated for purescript 0.13:</p>
-<ul>
-<li>Chapter 12</li>
-</ul>
+<p>This book is being continuously updated as the language evolves, so please report any issues you notice with the material.</p>
 <p>Unit tests are also being added for the exercises in each chapter. See <a href="https://github.com/purescript-contrib/purescript-book/issues/79">#79</a> for the latest status on tests.</p>
 <h2><a class="header" href="#about-the-book" id="about-the-book">About the Book</a></h2>
 <p>PureScript is a small strongly, statically typed programming language with expressive types, written in and inspired by Haskell, and compiling to Javascript.</p>
@@ -171,7 +168,7 @@
 <li>Domain specific language implementation</li>
 <li>Working with the DOM</li>
 <li>JavaScript interoperability</li>
-<li>Dealing with callback hell</li>
+<li>Parallel asynchronous execution</li>
 </ul>
 <h2><a class="header" href="#license" id="license">License</a></h2>
 <p>Copyright (c) 2014-2017 Phil Freeman.</p>
@@ -5549,313 +5546,135 @@ lineHandler currentState input = do
 <p>We have seen how monad transformers allow us to write safe code in an imperative style, where effects are tracked by the type system. In addition, type classes provide a powerful way to abstract over the actions provided by a monad, enabling code reuse. We were able to use standard abstractions like <code>Alternative</code> and <code>MonadPlus</code> to build useful monads by combining standard monad transformers.</p>
 <p>Monad transformers are an excellent demonstration of the sort of expressive code that can be written by relying on advanced type system features such as higher-kinded polymorphism and multi-parameter type classes.</p>
 <p>In the next chapter, we will see how monad transformers can be used to give an elegant solution to a common complaint when working with asynchronous JavaScript code - the problem of <em>callback hell</em>.</p>
-<h1><a class="header" href="#callback-hell" id="callback-hell">Callback Hell</a></h1>
+<h1><a class="header" href="#asynchronous-effects" id="asynchronous-effects">Asynchronous Effects</a></h1>
 <h2><a class="header" href="#chapter-goals-10" id="chapter-goals-10">Chapter Goals</a></h2>
-<p>In this chapter, we will see how the tools we have seen so far - namely monad transformers and applicative functors - can be put to use to solve real-world problems. In particular, we will see how we can solve the problem of <em>callback hell</em>.</p>
+<p>This chapter focuses on the <code>Aff</code> monad, which is similar to the <code>Effect</code> monad, but represents <em>asynchronous</em> side-effects. We'll demonstrate examples of asynchronously interacting with the filesystem and making HTTP requests. We'll also cover how to manage sequential and parallel execution of asynchronous effects.</p>
 <h2><a class="header" href="#project-setup-9" id="project-setup-9">Project Setup</a></h2>
-<p>The source code for this chapter can be compiled and run using <code>spago run</code>. It is also necessary to install the <code>request</code> module using NPM:</p>
-<pre><code class="language-text">npm install
-</code></pre>
-<h2><a class="header" href="#the-problem" id="the-problem">The Problem</a></h2>
-<p>Asynchronous code in JavaScript typically uses <em>callbacks</em> to structure program flow. For example, to read text from a file, the preferred approach is to use the <code>readFile</code> function and to pass a callback - a function that will be called when the text is available:</p>
-<pre><code class="language-javascript">function readText(onSuccess, onFailure) {
-  var fs = require('fs');
-  fs.readFile('file1.txt', { encoding: 'utf-8' }, function (error, data) {
-    if (error) {
-      onFailure(error.code);
-    } else {
-      onSuccess(data);
-    }   
-  });
-}
-</code></pre>
-<p>However, if multiple asynchronous operations are involved, this can quickly lead to nested callbacks, which can result in code which is difficult to read:</p>
-<pre><code class="language-javascript">function copyFile(onSuccess, onFailure) {
-  var fs = require('fs');
-  fs.readFile('file1.txt', { encoding: 'utf-8' }, function (error, data1) {
-    if (error) {
-      onFailure(error.code);
-    } else {
-      fs.writeFile('file2.txt', data, { encoding: 'utf-8' }, function (error) {
-        if (error) {
-          onFailure(error.code);
-        } else {
-          onSuccess();
-        }
-      });
-    }   
-  });
-}
-</code></pre>
-<p>One solution to this problem is to break out individual asynchronous calls into their own functions:</p>
-<pre><code class="language-javascript">function writeCopy(data, onSuccess, onFailure) {
-  var fs = require('fs');
-  fs.writeFile('file2.txt', data, { encoding: 'utf-8' }, function (error) {
-    if (error) {
-      onFailure(error.code);
-    } else {
-      onSuccess();
-    }
-  });
-}
-
-function copyFile(onSuccess, onFailure) {
-  var fs = require('fs');
-  fs.readFile('file1.txt', { encoding: 'utf-8' }, function (error, data) {
-    if (error) {
-      onFailure(error.code);
-    } else {
-      writeCopy(data, onSuccess, onFailure);
-    }   
-  });
-}
-</code></pre>
-<p>This solution works but has some issues:</p>
+<p>New PureScript libraries introduced in this chapter are:</p>
 <ul>
-<li>It is necessary to pass intermediate results to asynchronous functions as function arguments, in the same way that we passed <code>data</code> to <code>writeCopy</code> above. This is fine for small functions, but if there are many callbacks involved, the data dependencies can become complex, resulting in many additional function arguments.</li>
-<li>There is a common pattern - the callbacks <code>onSuccess</code> and <code>onFailure</code> are usually specified as arguments to every asynchronous function - but this pattern has to be documented in module documentation which accompanies the source code. It is better to capture this pattern in the type system, and to use the type system to enforce its use.</li>
+<li><code>aff</code> - defines the <code>Aff</code> monad.</li>
+<li><code>node-fs-aff</code> - asynchronous filesystem operations with <code>Aff</code>.</li>
+<li><code>affjax</code> - HTTP requests with AJAX and <code>Aff</code>.</li>
+<li><code>parallel</code> - parallel execution of <code>Aff</code>.</li>
 </ul>
-<p>Next, we will see how to use the techniques we have learned so far to solve these issues.</p>
-<h2><a class="header" href="#the-continuation-monad" id="the-continuation-monad">The Continuation Monad</a></h2>
-<p>Let's translate the <code>copyFile</code> example above into PureScript by using the FFI. In doing so, the structure of the computation will become apparent, and we will be led naturally to a monad transformer which is defined in the <code>transformers</code> package - the continuation monad transformer <code>ContT</code>.</p>
-<p><em>Note</em>: in practice, it is not necessary to write these functions by hand every time. Asynchronous file IO functions can be found in the <code>node-fs</code> and <code>node-fs-aff</code> libraries.</p>
-<p>First, we need to gives types to <code>readFile</code> and <code>writeFile</code> using the FFI. Let's start by defining some type synonyms, and a new effect for file IO:</p>
-<pre><code class="language-haskell">foreign import data FS :: Effect
+<p>When running outside of the browser (such as in our Node.js environment), the <code>affjax</code> library requires the <code>xhr2</code> NPM module. Install that by running:</p>
+<pre><code class="language-shell">$ npm install
+</code></pre>
+<h2><a class="header" href="#asynchronous-javascript" id="asynchronous-javascript">Asynchronous JavaScript</a></h2>
+<p>A convenient way to work with asynchronous code in JavaScript is with <a href="https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Async_await"><code>async</code> and <code>await</code></a>. See <a href="https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Introducing">this article on asynchronous JavaScript</a> for more background information.</p>
+<p>Here is an example of using this technique to copy the contents of one file to another file:</p>
+<pre><code class="language-js">var fs = require('fs');
 
-type ErrorCode = String
-type FilePath = String
-</code></pre>
-<p><code>readFile</code> takes a filename and a callback which takes two arguments. If the file was read successfully, the second argument will contain the file contents, and if not, the first argument will be used to indicate the error.</p>
-<p>In our case, we will wrap <code>readFile</code> with a function which takes two callbacks: an error callback (<code>onFailure</code>) and a result callback (<code>onSuccess</code>), much like we did with <code>copyFile</code> and <code>writeCopy</code> above. Using the multiple-argument function support from <code>Data.Function</code> for simplicity, our wrapped function <code>readFileImpl</code> might look like this:</p>
-<pre><code class="language-haskell">foreign import readFileImpl
-  :: forall eff
-   . Fn3 FilePath
-         (String -&gt; Eff (fs :: FS | eff) Unit)
-         (ErrorCode -&gt; Eff (fs :: FS | eff) Unit)
-         (Eff (fs :: FS | eff) Unit)
-</code></pre>
-<p>In the foreign JavaScript module, <code>readFileImpl</code> would be defined as:</p>
-<pre><code class="language-javascript">exports.readFileImpl = function(path, onSuccess, onFailure) {
-  return function() {
-    require('fs').readFile(path, {
-      encoding: 'utf-8'
-    }, function(error, data) {
-      if (error) {
-        onFailure(error.code)();
-      } else {
-        onSuccess(data)();
-      }
-    });
-  };
-};
-</code></pre>
-<p>This type signature indicates that <code>readFileImpl</code> takes three arguments: a file path, a success callback and an error callback, and returns an effectful computation which returns an empty (<code>Unit</code>) result. Notice that the callbacks themselves are given types which use the <code>Eff</code> monad to track their effects.</p>
-<p>You should try to understand why this implementation has the correct runtime representation for its type.</p>
-<p><code>writeFileImpl</code> is very similar - it is different only in that the file content is passed to the function itself, not to the callback. Its implementation looks like this:</p>
-<pre><code class="language-haskell">foreign import writeFileImpl
-  :: forall eff
-   . Fn4 FilePath
-         String
-         (Eff (fs :: FS | eff) Unit)
-         (ErrorCode -&gt; Eff (fs :: FS | eff) Unit)
-         (Eff (fs :: FS | eff) Unit)
-</code></pre>
-<pre><code class="language-javascript">exports.writeFileImpl = function(path, data, onSuccess, onFailure) {
-  return function() {
-    require('fs').writeFile(path, data, {
-      encoding: 'utf-8'
-    }, function(error) {
-      if (error) {
-        onFailure(error.code)();
-      } else {
-        onSuccess();
-      }
-    });
-  };
-};
-</code></pre>
-<p>Given these FFI declarations, we can write the implementations of <code>readFile</code> and <code>writeFile</code>. These will use the <code>Data.Function.Uncurried</code> module to turn the multiple-argument FFI bindings into regular (curried) PureScript functions, and therefore have slightly more readable types.</p>
-<p>In addition, instead of requiring two callbacks, one for successes and one for failures, we can require only a single callback which responds to <em>either</em> successes or failures. That is, the new callback takes a value in the <code>Either ErrorCode</code> monad as its argument:</p>
-<pre><code class="language-haskell">readFile
-  :: forall eff
-   . FilePath
-  -&gt; (Either ErrorCode String -&gt; Eff (fs :: FS | eff) Unit)
-  -&gt; Eff (fs :: FS | eff) Unit
-readFile path k =
-  runFn3 readFileImpl
-         path
-         (k &lt;&lt;&lt; Right)
-         (k &lt;&lt;&lt; Left)
+async function copyFile(file1, file2) {
+  let data = await fs.readFile(file1, { encoding: 'utf-8' })
+  fs.writeFile(file2, data, { encoding: 'utf-8' })
+}
 
-writeFile
-  :: forall eff
-   . FilePath
-  -&gt; String
-  -&gt; (Either ErrorCode Unit -&gt; Eff (fs :: FS | eff) Unit)
-  -&gt; Eff (fs :: FS | eff) Unit
-writeFile path text k =
-  runFn4 writeFileImpl
-         path
-         text
-         (k $ Right unit)
-         (k &lt;&lt;&lt; Left)
+copyFile('file1.txt', 'file2.txt')
+.catch(e =&gt; {
+  console.log('There was a problem with copyFile: ' + e.message);
+});
 </code></pre>
-<p>Now we can spot an important pattern. Each of these functions takes a callback which returns a value in some monad (in this case <code>Eff (fs :: FS | eff)</code>) and returns a value in <em>the same monad</em>. This means that when the first callback returns a result, that monad can be used to bind the result to the input of the next asynchronous function. In fact, that's exactly what we did by hand in the <code>copyFile</code> example.</p>
-<p>This is the basis of the <em>continuation monad transformer</em>, which is defined in the <code>Control.Monad.Cont.Trans</code> module in <code>transformers</code>.</p>
-<p><code>ContT</code> is defined as a newtype as follows:</p>
-<pre><code class="language-haskell">newtype ContT r m a = ContT ((a -&gt; m r) -&gt; m r)
-</code></pre>
-<p>A <em>continuation</em> is just another name for a callback. A continuation captures the <em>remainder</em> of a computation - in our case, what happens after a result has been provided after an asynchronous call.</p>
-<p>The argument to the <code>ContT</code> data constructor looks remarkably similar to the types of <code>readFile</code> and <code>writeFile</code>. In fact, if we take the type <code>a</code> to be the type <code>Either ErrorCode String</code>, <code>r</code> to be <code>Unit</code> and <code>m</code> to be the monad <code>Eff (fs :: FS | eff)</code>, we recover the right-hand side of the type of <code>readFile</code>.</p>
-<p>This motivates the following type synonym, defining an <code>Async</code> monad, which we will use to compose asynchronous actions like <code>readFile</code> and <code>writeFile</code>:</p>
-<pre><code class="language-haskell">type Async eff = ContT Unit (Eff eff)
-</code></pre>
-<p>For our purposes, we will always use <code>ContT</code> to transform the <code>Eff</code> monad, and the type <code>r</code> will always be <code>Unit</code>, but this is not required.</p>
-<p>We can treat <code>readFile</code> and <code>writeFile</code> as computations in the <code>Async</code> monad, by simply applying the <code>ContT</code> data constructor:</p>
-<pre><code class="language-haskell">readFileCont
-  :: forall eff
-   . FilePath
-  -&gt; Async (fs :: FS | eff) (Either ErrorCode String)
-readFileCont path = ContT $ readFile path
+<p>It is also possible to use callbacks or synchronous functions, but those are less desireable because:</p>
+<ul>
+<li>Callbacks lead to excessive nesting, known as &quot;Callback Hell&quot; or the &quot;Pyramid of Doom&quot;.</li>
+<li>Synchronous functions block execution of the other code in your app.</li>
+</ul>
+<h2><a class="header" href="#asynchronous-purescript" id="asynchronous-purescript">Asynchronous PureScript</a></h2>
+<p>The <code>Aff</code> monad in PureScript offers similar ergonomics of JavaScript's <code>async</code>/<code>await</code> syntax. Here is the same <code>copyFile</code> example from before, but rewritten in PureScript using <code>Aff</code>:</p>
+<pre><code class="language-hs">import Prelude
+import Data.Either (Either(..))
+import Effect.Aff (Aff, attempt, message)
+import Effect.Class.Console (log)
+import Node.Encoding (Encoding(..))
+import Node.FS.Aff (readTextFile, writeTextFile)
+import Node.Path (FilePath)
 
-writeFileCont
-  :: forall eff
-   . FilePath
-  -&gt; String
-  -&gt; Async (fs :: FS | eff) (Either ErrorCode Unit)
-writeFileCont path text = ContT $ writeFile path text
-</code></pre>
-<p>With that, we can write our copy-file routine by simply using do notation for the <code>ContT</code> monad transformer:</p>
-<pre><code class="language-haskell">copyFileCont
-  :: forall eff
-   . FilePath
-  -&gt; FilePath
-  -&gt; Async (fs :: FS | eff) (Either ErrorCode Unit)
-copyFileCont src dest = do
-  e &lt;- readFileCont src
-  case e of
-    Left err -&gt; pure $ Left err
-    Right content -&gt; writeFileCont dest content
-</code></pre>
-<p>Note how the asynchronous nature of <code>readFileCont</code> is hidden by the monadic bind expressed using do notation - this looks just like synchronous code, but the <code>ContT</code> monad is taking care of wiring our asynchronous functions together.</p>
-<p>We can run this computation using the <code>runContT</code> handler by providing a continuation. The continuation represents <em>what to do next</em>, i.e. what to do when the asynchronous copy-file routine completes. For our simple example, we can just choose the <code>logShow</code> function as the continuation, which will print the result of type <code>Either ErrorCode Unit</code> to the console:</p>
-<pre><code class="language-haskell">import Prelude
+copyFile :: FilePath -&gt; FilePath -&gt; Aff Unit
+copyFile file1 file2 = do
+  my_data &lt;- readTextFile UTF8 file1
+  writeTextFile UTF8 file2 my_data
 
-import Control.Monad.Eff.Console (logShow)
-import Control.Monad.Cont.Trans (runContT)
-
-main =
-  runContT
-    (copyFileCont &quot;/tmp/1.txt&quot; &quot;/tmp/2.txt&quot;)
-    logShow
+main :: Aff Unit
+main = do
+  result &lt;- attempt $ copyFile &quot;file1.txt&quot; &quot;file2.txt&quot;
+  case result of
+    Left e -&gt; log $ &quot;There was a problem with copyFile: &quot; &lt;&gt; message e
+    _ -&gt; pure unit
 </code></pre>
+<p>It is also possible to re-write the above snippet using callbacks or synchronous functions (for example with <code>Node.FS.Async</code> and <code>Node.FS.Sync</code> respectively), but those share the same downsides as discussed earlier with JavaScript, and so that coding style is not recommended.</p>
+<p>The syntax for working with <code>Aff</code> is very similar to working with <code>Effect</code>. They are both monads, and can therefore be written with do notation.</p>
+<p>For example, if we look at the signature of <code>readTextFile</code>, we see that it returns the file contents as a <code>String</code> wrapped in <code>Aff</code>:</p>
+<pre><code class="language-hs">readTextFile :: Encoding -&gt; FilePath -&gt; Aff String
+</code></pre>
+<p>We can &quot;unwrap&quot; the returned string with a bind arrow (<code>&lt;-</code>) in do notation:</p>
+<pre><code class="language-hs">my_data &lt;- readTextFile UTF8 file1
+</code></pre>
+<p>Then pass it as the string argument to <code>writeTextFile</code>:</p>
+<pre><code class="language-hs">writeTextFile :: Encoding -&gt; FilePath -&gt; String -&gt; Aff Unit
+</code></pre>
+<p>The only other notable feature unique to <code>Aff</code> in the above example is <code>attempt</code>, which captures errors or exceptions encountered while running <code>Aff</code> code and stores them in an <code>Either</code>:</p>
+<pre><code class="language-hs">attempt :: forall a. Aff a -&gt; Aff (Either Error a)
+</code></pre>
+<p>You should hopefully be able to draw on your knowledge of concepts from previous chapters and combine this with the new <code>Aff</code> patterns learned in the above <code>copyFile</code> example to tackle the following exercises:</p>
 <h2><a class="header" href="#exercises-39" id="exercises-39">Exercises</a></h2>
 <ol>
 <li>
-<p>(Easy) Use <code>readFileCont</code> and <code>writeFileCont</code> to write a function which concatenates two text files.</p>
+<p>(Easy) Write a <code>concatenateFiles</code> function which concatenates two text files.</p>
 </li>
 <li>
-<p>(Medium) Use the FFI to give an appropriate type to the <code>setTimeout</code> function. Write a wrapper function which uses the <code>Async</code> monad:</p>
-<pre><code class="language-haskell">type Milliseconds = Int
-
-foreign import data TIMEOUT :: Effect
-
-setTimeoutCont
-  :: forall eff
-   . Milliseconds
-  -&gt; Async (timeout :: TIMEOUT | eff) Unit
-</code></pre>
+<p>(Medium) Write a function <code>concatenateMany</code> to concatenate multiple text files, given an array of input file names and an output file name. <em>Hint</em>: use <code>traverse</code>.</p>
+</li>
+<li>
+<p>(Medium) Write a function <code>countCharacters :: FilePath -&gt; Aff (Either Error Int)</code> that returns the number of characters in a file, or an error if one is encountered.</p>
 </li>
 </ol>
-<h2><a class="header" href="#putting-exceptt-to-work" id="putting-exceptt-to-work">Putting ExceptT To Work</a></h2>
-<p>This solution works, but it can be improved.</p>
-<p>In the implementation of <code>copyFileCont</code>, we had to use pattern matching to analyze the result of the <code>readFileCont</code> computation (of type <code>Either ErrorCode String</code>) to determine what to do next. However, we know that the <code>Either</code> monad has a corresponding monad transformer, <code>ExceptT</code>, so it is reasonable to expect that we should be able to use <code>ExceptT</code> with <code>ContT</code> to combine the two effects of asynchronous computation and error handling.</p>
-<p>In fact, it is possible, and we can see why if we look at the definition of <code>ExceptT</code>:</p>
-<pre><code class="language-haskell">newtype ExceptT e m a = ExceptT (m (Either e a))
-</code></pre>
-<p><code>ExceptT</code> simply changes the result of the underlying monad from <code>a</code> to <code>Either e a</code>. This means that we can rewrite <code>copyFileCont</code> by transforming our current monad stack with the <code>ExceptT ErrorCode</code> transformer. It is as simple as applying the <code>ExceptT</code> data constructor to our existing solution:</p>
-<pre><code class="language-haskell">readFileContEx
-  :: forall eff
-   . FilePath
-  -&gt; ExceptT ErrorCode (Async (fs :: FS | eff)) String
-readFileContEx path = ExceptT $ readFileCont path
+<h2><a class="header" href="#additional-aff-resources" id="additional-aff-resources">Additional Aff Resources</a></h2>
+<p>If you haven't already taken a look at the <a href="https://pursuit.purescript.org/packages/purescript-aff/">official Aff guide</a>, skim through that now. It's not a direct prerequisite for completing the remaining exercises in this chapter, but you may find it helpful to lookup some functions on Pursuit.</p>
+<p>You're also welcome to consult these supplemental resources too, but again, the exercises in this chapter don't depend on them:</p>
+<ul>
+<li><a href="https://blog.drewolson.org/asynchronous-purescript">Drew's Aff Post</a></li>
+<li><a href="https://github.com/JordanMartinez/purescript-jordans-reference/tree/latestRelease/21-Hello-World/02-Effect-and-Aff/src/03-Aff">Additional Aff Explanation and Examples</a></li>
+</ul>
+<h2><a class="header" href="#a-http-client" id="a-http-client">A HTTP Client</a></h2>
+<p>The <code>affjax</code> library offers a convenient way to make asynchronous AJAX HTTP requests with <code>Aff</code>. Consult the <a href="https://pursuit.purescript.org/packages/purescript-affjax">Affjax docs</a> for more usage information. Here is an example that makes HTTP GET requests at a provided URL and returns the response body or an error message:</p>
+<pre><code class="language-hs">import Prelude
+import Affjax as AX
+import Affjax.ResponseFormat as ResponseFormat
+import Data.Either (Either(..))
+import Effect.Aff (Aff)
 
-writeFileContEx
-  :: forall eff
-   . FilePath
-  -&gt; String
-  -&gt; ExceptT ErrorCode (Async (fs :: FS | eff)) Unit
-writeFileContEx path text = ExceptT $ writeFileCont path text
+getUrl :: String -&gt; Aff String
+getUrl url = do
+  result &lt;- AX.get ResponseFormat.string url
+  pure $ case result of
+    Left err -&gt; &quot;GET /api response failed to decode: &quot; &lt;&gt; AX.printError err
+    Right response -&gt; response.body
 </code></pre>
-<p>Now, our copy-file routine is much simpler, since the asynchronous error handling is hidden inside the <code>ExceptT</code> monad transformer:</p>
-<pre><code class="language-haskell">copyFileContEx
-  :: forall eff
-   . FilePath
-  -&gt; FilePath
-  -&gt; ExceptT ErrorCode (Async (fs :: FS | eff)) Unit
-copyFileContEx src dest = do
-  content &lt;- readFileContEx src
-  writeFileContEx dest content
+<p>When calling this in the repl, <code>launchAff_</code> is required to convert the <code>Aff</code> to a repl-compatible <code>Effect</code>:</p>
+<pre><code class="language-shell">$ spago repl
+
+&gt; :pa
+… import Prelude
+… import Effect.Aff (launchAff_)
+… import Effect.Class.Console (log)
+… import Test.ExamplesHTTP (getUrl)
+…
+… launchAff_ do
+…   str &lt;- getUrl &quot;https://reqres.in/api/users/1&quot;
+…   log str
+…
+unit
+{&quot;data&quot;:{&quot;id&quot;:1,&quot;email&quot;:&quot;george.bluth@reqres.in&quot;,&quot;first_name&quot;:&quot;George&quot;,&quot;last_name&quot;:&quot;Bluth&quot;, ...}}
 </code></pre>
 <h2><a class="header" href="#exercises-40" id="exercises-40">Exercises</a></h2>
 <ol>
-<li>(Medium) Modify your solution which concatenated two files, using <code>ExceptT</code> to handle any errors.</li>
-<li>(Medium) Write a function <code>concatenateMany</code> to concatenate multiple text files, given an array of input file names. <em>Hint</em>: use <code>traverse</code>.</li>
-</ol>
-<h2><a class="header" href="#a-http-client" id="a-http-client">A HTTP Client</a></h2>
-<p>As another example of using <code>ContT</code> to handle asynchronous functions, we'll now look at the <code>Network.HTTP.Client</code> module from this chapter's source code. This module uses the <code>Async</code> monad to support asynchronous HTTP requests using the <code>request</code> module, which is available via NPM.</p>
-<p>The <code>request</code> module provides a function which takes a URL and a callback, makes a HTTP(S) request and invokes the callback when the response is available, or in the event of an error. Here is an example request:</p>
-<pre><code class="language-javascript">require('request')('http://purescript.org'), function(err, _, body) {
-  if (err) {
-    console.error(err);
-  } else {
-    console.log(body);
-  }
-});
-</code></pre>
-<p>We will recreate this simple example in PureScript using the <code>Async</code> monad.</p>
-<p>In the <code>Network.HTTP.Client</code> module, the <code>request</code> method is wrapped with a function <code>getImpl</code>:</p>
-<pre><code class="language-haskell">foreign import data HTTP :: Effect
-
-type URI = String
-
-foreign import getImpl
-  :: forall eff
-   . Fn3 URI
-         (String -&gt; Eff (http :: HTTP | eff) Unit)
-         (String -&gt; Eff (http :: HTTP | eff) Unit)
-         (Eff (http :: HTTP | eff) Unit)
-</code></pre>
-<pre><code class="language-javascript">exports.getImpl = function(uri, done, fail) {
-  return function() {
-    require('request')(uri, function(err, _, body) {
-      if (err) {
-        fail(err)();
-      } else {
-        done(body)();
-      }
-    });
-  };
-};
-</code></pre>
-<p>Again, we can use the <code>Data.Function.Uncurried</code> module to turn this into a regular, curried PureScript function. As before, we turn the two callbacks into a single callback, this time accepting a value of type <code>Either String String</code>, and apply the <code>ContT</code> constructor to construct an action in our <code>Async</code> monad:</p>
-<pre><code class="language-haskell">get :: forall eff.
-  URI -&gt;
-  Async (http :: HTTP | eff) (Either String String)
-get req = ContT \k -&gt;
-  runFn3 getImpl req (k &lt;&lt;&lt; Right) (k &lt;&lt;&lt; Left)
-</code></pre>
-<h2><a class="header" href="#exercises-41" id="exercises-41">Exercises</a></h2>
-<ol>
-<li>(Easy) Use <code>runContT</code> to test <code>get</code> in PSCi, printing the result to the console.</li>
-<li>(Medium) Use <code>ExceptT</code> to write a function <code>getEx</code> which wraps <code>get</code>, as we did previously for <code>readFileCont</code> and <code>writeFileCont</code>.</li>
-<li>(Difficult) Write a function which saves the response body of a request to a file on disk using <code>getEx</code> and <code>writeFileContEx</code>.</li>
+<li>(Easy) Write a function <code>writeGet</code> which makes an HTTP <code>GET</code> request to a provided url, and writes the response body to a file.</li>
 </ol>
 <h2><a class="header" href="#parallel-computations" id="parallel-computations">Parallel Computations</a></h2>
-<p>We've seen how to use the <code>ContT</code> monad and do notation to compose asynchronous computations in sequence. It would also be useful to be able to compose asynchronous computations <em>in parallel</em>.</p>
-<p>If we are using <code>ContT</code> to transform the <code>Eff</code> monad, then we can compute in parallel simply by initiating our two computations one after the other.</p>
-<p>The <code>parallel</code> package defines a type class <code>Parallel</code> for monads like <code>Async</code> which support parallel execution. When we met applicative functors earlier in the book, we observed how applicative functors can be useful for combining parallel computations. In fact, an instance for <code>Parallel</code> defines a correspondence between a monad <code>m</code> (such as <code>Async</code>) and an applicative functor <code>f</code> which can be used to combine computations in parallel:</p>
-<pre><code class="language-haskell">class (Monad m, Applicative f) &lt;= Parallel f m | m -&gt; f, f -&gt; m where
+<p>We've seen how to use the <code>Aff</code> monad and do notation to compose asynchronous computations in sequence. It would also be useful to be able to compose asynchronous computations <em>in parallel</em>. With <code>Aff</code>, we can compute in parallel simply by initiating our two computations one after the other.</p>
+<p>The <code>parallel</code> package defines a type class <code>Parallel</code> for monads like <code>Aff</code> which support parallel execution. When we met applicative functors earlier in the book, we observed how applicative functors can be useful for combining parallel computations. In fact, an instance for <code>Parallel</code> defines a correspondence between a monad <code>m</code> (such as <code>Aff</code>) and an applicative functor <code>f</code> which can be used to combine computations in parallel:</p>
+<pre><code class="language-hs">class (Monad m, Applicative f) &lt;= Parallel f m | m -&gt; f, f -&gt; m where
   sequential :: forall a. f a -&gt; m a
   parallel :: forall a. m a -&gt; f a
 </code></pre>
@@ -5864,57 +5683,111 @@ get req = ContT \k -&gt;
 <li><code>parallel</code>, which takes computations in the monad <code>m</code> and turns them into computations in the applicative functor <code>f</code>, and</li>
 <li><code>sequential</code>, which performs a conversion in the opposite direction.</li>
 </ul>
-<p>The <code>parallel</code> library provides a <code>Parallel</code> instance for the <code>Async</code> monad. It uses mutable references to combine <code>Async</code> actions in parallel, by keeping track of which of the two continuations has been called. When both results have been returned, we can compute the final result and pass it to the main continuation.</p>
-<p>We can use the <code>parallel</code> function to create a version of our <code>readFileCont</code> action which can be combined in parallel. Here is a simple example which reads two text files in parallel, and concatenates and prints their results:</p>
-<pre><code class="language-haskell">import Prelude
-import Control.Apply (lift2)
-import Control.Monad.Cont.Trans (runContT)
-import Control.Monad.Eff.Console (logShow)
-import Control.Monad.Parallel (parallel, sequential)
-
-main = flip runContT logShow do
-  sequential $
-   lift2 append
-     &lt;$&gt; parallel (readFileCont &quot;/tmp/1.txt&quot;)
-     &lt;*&gt; parallel (readFileCont &quot;/tmp/2.txt&quot;)
-</code></pre>
-<p>Note that, since <code>readFileCont</code> returns a value of type <code>Either ErrorCode String</code>, we need to lift the <code>append</code> function over the <code>Either</code> type constructor using <code>lift2</code> to form our combining function.</p>
+<p>The <code>aff</code> library provides a <code>Parallel</code> instance for the <code>Aff</code> monad. It uses mutable references to combine <code>Aff</code> actions in parallel, by keeping track of which of the two continuations has been called. When both results have been returned, we can compute the final result and pass it to the main continuation.</p>
 <p>Because applicative functors support lifting of functions of arbitrary arity, we can perform more computations in parallel by using the applicative combinators. We can also benefit from all of the standard library functions which work with applicative functors, such as <code>traverse</code> and <code>sequence</code>!</p>
 <p>We can also combine parallel computations with sequential portions of code, by using applicative combinators in a do notation block, or vice versa, using <code>parallel</code> and <code>sequential</code> to change type constructors where appropriate.</p>
-<h2><a class="header" href="#exercises-42" id="exercises-42">Exercises</a></h2>
+<p>To demonstrate the difference between sequential and parallel execution, we'll create an array of 100 10-millisecond delays, then execute those delays with both techniques.
+You'll notice in the repl that <code>seqDelay</code> is much slower than <code>parDelay</code>.
+Note that parallel execution is enabled by simply by replacing <code>sequence_</code> with <code>parSequence_</code>.</p>
+<pre><code class="language-hs">import Prelude
+
+import Control.Parallel (parSequence_)
+import Data.Array (replicate)
+import Data.Foldable (sequence_)
+import Effect (Effect)
+import Effect.Aff (Aff, Milliseconds(..), delay, launchAff_)
+
+delayArray :: Array (Aff Unit)
+delayArray = replicate 100 $ delay $ Milliseconds 10.0
+
+seqDelay :: Effect Unit
+seqDelay = launchAff_ $ sequence_ delayArray
+
+parDelay :: Effect Unit
+parDelay = launchAff_ $ parSequence_ delayArray
+</code></pre>
+<pre><code class="language-shell">$ spago repl
+
+&gt; import Test.ParallelDelay
+
+&gt; seqDelay -- This is slow
+unit
+
+&gt; parDelay -- This is fast
+unit
+</code></pre>
+<p>Here's a more real-world example of making multiple HTTP requests in parallel. We're reusing our <code>getUrl</code> function to fetch information from two users in parallel. Note that <code>parTraverse</code> (the parallel version of <code>traverse</code>) is used in this case. This example would also work fine with <code>traverse</code> instead, but it will be slower.</p>
+<pre><code class="language-hs">import Prelude
+
+import Control.Parallel (parTraverse)
+import Effect (Effect)
+import Effect.Aff (launchAff_)
+import Effect.Class.Console (logShow)
+import Test.HTTP (getUrl)
+
+fetchPar :: Effect Unit
+fetchPar =
+  launchAff_
+    $ do
+        let
+          urls = map (\n -&gt; &quot;https://reqres.in/api/users/&quot; &lt;&gt; show n) [ 1, 2 ]
+        res &lt;- parTraverse getUrl urls
+        logShow res
+</code></pre>
+<pre><code class="language-shell">$ spago repl
+
+&gt; import Test.ParallelFetch
+
+&gt; fetchPar
+unit
+[&quot;{\&quot;data\&quot;:{\&quot;id\&quot;:1,\&quot;email\&quot;:\&quot;george.bluth@reqres.in\&quot;, ... }&quot;
+,&quot;{\&quot;data\&quot;:{\&quot;id\&quot;:2,\&quot;email\&quot;:\&quot;janet.weaver@reqres.in\&quot;, ... }&quot;
+]
+</code></pre>
+<p>A full listing of available parallel functions can be found in the <a href="https://pursuit.purescript.org/packages/purescript-parallel/docs/Control.Parallel"><code>parallel</code> docs on Pursuit</a>. The <a href="https://github.com/purescript-contrib/purescript-aff#parallel-execution">aff docs section on parallel</a> also contains more examples.</p>
+<h2><a class="header" href="#exercises-41" id="exercises-41">Exercises</a></h2>
 <ol>
 <li>
-<p>(Easy) Use <code>parallel</code> and <code>sequential</code> to make two HTTP requests and collect their response bodies in parallel. Your combining function should concatenate the two response bodies, and your continuation should use <code>print</code> to print the result to the console.</p>
+<p>(Easy) Write a <code>concatenateManyParallel</code> function which has the same signature as the earlier <code>concatenateMany</code> function, but reads all input files in parallel.</p>
 </li>
 <li>
-<p>(Medium) The applicative functor which corresponds to <code>Async</code> is also an instance of <code>Alternative</code>. The <code>&lt;|&gt;</code> operator defined by this instance runs two computations in parallel, and returns the result from the computation which completes first.</p>
-<p>Use this <code>Alternative</code> instance in conjunction with your <code>setTimeoutCont</code> function to define a function</p>
-<pre><code class="language-haskell">timeout :: forall a eff
-         . Milliseconds
-        -&gt; Async (timeout :: TIMEOUT | eff) a
-        -&gt; Async (timeout :: TIMEOUT | eff) (Maybe a)
-</code></pre>
-<p>which returns <code>Nothing</code> if the specified computation does not provide a result within the given number of milliseconds.</p>
+<p>(Medium) Write a <code>getWithTimeout :: Number -&gt; String -&gt; Aff (Maybe String)</code> function which makes an HTTP <code>GET</code> request at the provided URL and returns either:</p>
+<ul>
+<li><code>Nothing</code>: if the request takes longer than the provided timeout (in milliseconds).</li>
+<li>The string response: if the request succeeds before the timeout elapses.</li>
+</ul>
 </li>
 <li>
-<p>(Medium) <code>parallel</code> also provides instances of the <code>Parallel</code> class for several monad transformers, including <code>ExceptT</code>.</p>
-<p>Rewrite the parallel file IO example to use <code>ExceptT</code> for error handling, instead of lifting <code>append</code> with <code>lift2</code>. Your solution should use the <code>ExceptT</code> transformer to transform the <code>Async</code> monad.</p>
-<p>Use this approach to modify your <code>concatenateMany</code> function to read multiple input files in parallel.</p>
-</li>
-<li>
-<p>(Difficult, Extended) Suppose we are given a collection of JSON documents on disk, such that each document contains an array of references to other files on disk:</p>
-<pre><code class="language-javascript">{ references: ['/tmp/1.json', '/tmp/2.json'] }
-</code></pre>
-<p>Write a utility which takes a single filename as input, and spiders the JSON files on disk referenced transitively by that file, collecting a list of all referenced files.</p>
-<p>Your utility should use the <code>foreign</code> library to parse the JSON documents, and should fetch files referenced by a single file in parallel.</p>
+<p>(Difficult) Write a <code>recurseFiles</code> function which takes a &quot;root&quot; file and returns an array of all paths listed in that file (and listed in the listed files too). Read listed files in parallel. Paths are relative to the directory of the file they appear in. <em>Hint:</em> The <code>node-path</code> module has some helpful functions for negotiating directories.</p>
 </li>
 </ol>
+<p>For example, if starting from the following <code>root.txt</code> file:</p>
+<pre><code class="language-shell">$ cat root.txt
+a.txt
+b/a.txt
+c/a/a.txt
+
+$ cat a.txt
+b/b.txt
+
+$ cat b/b.txt
+c/a.txt
+
+$ cat b/c/a.txt
+
+$ cat b/a.txt
+
+$ cat c/a/a.txt
+</code></pre>
+<p>The expected output is:</p>
+<pre><code class="language-hs">[&quot;root.txt&quot;,&quot;a.txt&quot;,&quot;b/a.txt&quot;,&quot;b/b.txt&quot;,&quot;b/c/a.txt&quot;,&quot;c/a/a.txt&quot;]
+</code></pre>
 <h2><a class="header" href="#conclusion-10" id="conclusion-10">Conclusion</a></h2>
-<p>In this chapter, we have seen a practical demonstration of monad transformers:</p>
+<p>In this chapter we covered asynchronous effects and learned how to:</p>
 <ul>
-<li>We saw how the common JavaScript idiom of callback-passing can be captured by the <code>ContT</code> monad transformer.</li>
-<li>We saw how the problem of callback hell can be solved by using do notation to express sequential asynchronous computations, and applicative functors to express parallelism.</li>
-<li>We used <code>ExceptT</code> to express <em>asynchronous errors</em>.</li>
+<li>Run asynchronous code in the <code>Aff</code> monad with the <code>aff</code> library.</li>
+<li>Make HTTP requests asynchronously with the <code>affjax</code> library.</li>
+<li>Run asynchronous code in parallel with the <code>parallel</code> library.</li>
 </ul>
 <h1><a class="header" href="#generative-testing" id="generative-testing">Generative Testing</a></h1>
 <h2><a class="header" href="#chapter-goals-11" id="chapter-goals-11">Chapter Goals</a></h2>
@@ -5973,7 +5846,7 @@ not equal to expected:
 [-888285,-822215,-196136,-116841,618343,887447]
 </code></pre>
 <p>Notice how the input <code>xs</code> and <code>ys</code> were generated as arrays of randomly-selected integers.</p>
-<h2><a class="header" href="#exercises-43" id="exercises-43">Exercises</a></h2>
+<h2><a class="header" href="#exercises-42" id="exercises-42">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a property which asserts that merging an array with the empty array does not modify the original array. <em>Note</em>: This new property is redundant, since this situation is already covered by our existing property. We're just trying to give you readers a simple way to practice using quickCheck.</li>
 <li>(Easy) Add an appropriate error message to the remaining property for <code>merge</code>.</li>
@@ -6003,7 +5876,7 @@ ints = id
   eq (ints $ mergePoly (sort xs) (sort ys)) (sort $ xs &lt;&gt; ys)
 </code></pre>
 <p>Here, <code>xs</code> and <code>ys</code> both have type <code>Array Int</code>, since the <code>ints</code> function has been used to disambiguate the unknown type.</p>
-<h2><a class="header" href="#exercises-44" id="exercises-44">Exercises</a></h2>
+<h2><a class="header" href="#exercises-43" id="exercises-43">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a function <code>bools</code> which forces the types of <code>xs</code> and <code>ys</code> to be <code>Array Boolean</code>, and add additional properties which test <code>mergePoly</code> at that type.</li>
 <li>(Medium) Choose a pure function from the core libraries (for example, from the <code>arrays</code> package), and write a QuickCheck property for it, including an appropriate error message. Your property should use a helper function to fix any polymorphic type arguments to either <code>Int</code> or <code>Boolean</code>.</li>
@@ -6073,7 +5946,7 @@ false
   member a $ insert a $ treeOfInt t
 </code></pre>
 <p>Here, the argument <code>t</code> is a randomly-generated tree of type <code>Tree Int</code>, where the type argument disambiguated by the identity function <code>treeOfInt</code>.</p>
-<h2><a class="header" href="#exercises-45" id="exercises-45">Exercises</a></h2>
+<h2><a class="header" href="#exercises-44" id="exercises-44">Exercises</a></h2>
 <ol>
 <li>(Medium) Create a newtype for <code>String</code> with an associated <code>Arbitrary</code> instance which generates collections of randomly-selected characters in the range <code>a-z</code>. <em>Hint</em>: use the <code>elements</code> and <code>arrayOf</code> functions from the <code>Test.QuickCheck.Gen</code> module.</li>
 <li>(Difficult) Write a property which asserts that a value inserted into a tree is still a member of that tree after arbitrarily many more insertions.</li>
@@ -6165,7 +6038,7 @@ Success : Success : ...
 </code></pre>
 <p><code>quickCheckPure</code> takes three arguments: the random seed, the number of test cases to generate, and the property to test. If all tests pass, you should see an array of <code>Success</code> data constructors printed to the console.</p>
 <p><code>quickCheckPure</code> might be useful in other situations, such as generating random input data for performance benchmarks, or generating sample form data for web applications.</p>
-<h2><a class="header" href="#exercises-46" id="exercises-46">Exercises</a></h2>
+<h2><a class="header" href="#exercises-45" id="exercises-45">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Write <code>Coarbitrary</code> instances for the <code>Byte</code> and <code>Sorted</code> type constructors.</p>
@@ -6388,7 +6261,7 @@ height = AttributeKey &quot;height&quot;
 unit
 </code></pre>
 <p>Note, however, that no changes had to be made to the <code>render</code> function, because the underlying data representation never changed. This is one of the benefits of the smart constructors approach - it allows us to separate the internal data representation for a module from the representation which is perceived by users of its external API.</p>
-<h2><a class="header" href="#exercises-47" id="exercises-47">Exercises</a></h2>
+<h2><a class="header" href="#exercises-46" id="exercises-46">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Use the <code>Data.DOM.Smart</code> module to experiment by creating new HTML documents using <code>render</code>.</p>
@@ -6467,7 +6340,7 @@ height = AttributeKey &quot;height&quot;
 &lt;img src=&quot;cat.jpg&quot; width=&quot;100&quot; height=&quot;200&quot; /&gt;
 unit
 </code></pre>
-<h2><a class="header" href="#exercises-48" id="exercises-48">Exercises</a></h2>
+<h2><a class="header" href="#exercises-47" id="exercises-47">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Create a data type which represents either pixel or percentage lengths. Write an instance of <code>IsValue</code> for your type. Modify the <code>width</code> and <code>height</code> attributes to use your new type.</p>
@@ -6622,7 +6495,7 @@ render = execWriter &lt;&lt;&lt; renderElement
 &lt;p&gt;&lt;img src=&quot;cat.jpg&quot; /&gt;A cat&lt;/p&gt;
 unit
 </code></pre>
-<h2><a class="header" href="#exercises-49" id="exercises-49">Exercises</a></h2>
+<h2><a class="header" href="#exercises-48" id="exercises-48">Exercises</a></h2>
 <ol>
 <li>(Medium) Add a new data constructor to the <code>ContentF</code> type to support a new action <code>comment</code>, which renders a comment in the generated HTML. Implement the new action using <code>liftF</code>. Update the interpretation <code>renderContentItem</code> to interpret your new constructor appropriately.</li>
 </ol>
@@ -6714,7 +6587,7 @@ render e = evalState (execWriterT (renderElement e)) 0
 unit
 </code></pre>
 <p>You can verify that multiple calls to <code>newName</code> do in fact result in unique names.</p>
-<h2><a class="header" href="#exercises-50" id="exercises-50">Exercises</a></h2>
+<h2><a class="header" href="#exercises-49" id="exercises-49">Exercises</a></h2>
 <ol>
 <li>
 <p>(Medium) We can simplify the API further by hiding the <code>Element</code> type from its users. Make these changes in the following steps:</p>
