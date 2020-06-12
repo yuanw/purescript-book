@@ -586,7 +586,7 @@ secondElement xs = head (tail xs)
 <h2><a class="header" href="#exercises-3" id="exercises-3">Exercises</a></h2>
 <ol>
 <li>
-<p>(Medium) Define a partial function which finds the maximum of a non-empty array of integers. Your function should have type <code>Partial =&gt; Array Int -&gt; Int</code>. Test out your function in PSCi using <code>unsafePartial</code>. <em>Hint</em>: Use the <code>maximum</code> function from <code>Data.Foldable</code>.</p>
+<p>(Medium) Define a partial function <code>unsafeMaximum :: Partial =&gt; Array Int -&gt; Int</code> which finds the maximum of a non-empty array of integers. Test out your function in PSCi using <code>unsafePartial</code>. <em>Hint</em>: Use the <code>maximum</code> function from <code>Data.Foldable</code>.</p>
 </li>
 <li>
 <p>(Medium) The <code>Action</code> class is a multi-parameter type class which defines an action of one type on another:</p>
@@ -623,7 +623,7 @@ instance monoidMultiply :: Monoid Multiply where
 </code></pre>
 </li>
 <li>
-<p>(Difficult) Should the arguments of the multi-parameter type class <code>Action</code> be related by some functional dependency? Why or why not?</p>
+<p>(Difficult) Should the arguments of the multi-parameter type class <code>Action</code> be related by some functional dependency? Why or why not? <em>Note</em>: There is no test for this exercise.</p>
 </li>
 </ol>
 <h2><a class="header" href="#a-type-class-for-hashes" id="a-type-class-for-hashes">A Type Class for Hashes</a></h2>
@@ -685,10 +685,10 @@ hashEqual = eq `on` hash
 <h2><a class="header" href="#exercises-4" id="exercises-4">Exercises</a></h2>
 <ol>
 <li>
-<p>(Easy) Use PSCi to test the hash functions for each of the defined instances.</p>
+<p>(Easy) Use PSCi to test the hash functions for each of the defined instances. <em>Note</em>: There is no provided unit test for this exercise.</p>
 </li>
 <li>
-<p>(Medium) Use the <code>hashEqual</code> function to write a function which tests if an array has any duplicate elements, using hash-equality as an approximation to value equality. Remember to check for value equality using <code>==</code> if a duplicate pair is found. <em>Hint</em>: the <code>nubByEq</code> function in <code>Data.Array</code> should make this task much simpler.</p>
+<p>(Medium) Write a function <code>arrayHasDuplicates</code> which tests if an array has any duplicate elements. Use hash-equality from the <code>hashEqual</code> function as an approximation to value equality. Remember to check for value equality using <code>==</code> if a duplicate pair is found. <em>Hint</em>: the <code>nubByEq</code> function in <code>Data.Array</code> should make this task much simpler.</p>
 </li>
 <li>
 <p>(Medium) Write a <code>Hashable</code> instance for the following newtype which satisfies the type class law:</p>
@@ -700,7 +700,7 @@ instance eqHour :: Eq Hour where
 <p>The newtype <code>Hour</code> and its <code>Eq</code> instance represent the type of integers modulo 12, so that 1 and 13 are identified as equal, for example. Prove that the type class law holds for your instance.</p>
 </li>
 <li>
-<p>(Difficult) Prove the type class laws for the <code>Hashable</code> instances for <code>Maybe</code>, <code>Either</code> and <code>Tuple</code>.</p>
+<p>(Difficult) Prove the type class laws for the <code>Hashable</code> instances for <code>Maybe</code>, <code>Either</code> and <code>Tuple</code>. <em>Note</em>: There is no test for this exercise.</p>
 </li>
 </ol>
 <h2><a class="header" href="#conclusion" id="conclusion">Conclusion</a></h2>

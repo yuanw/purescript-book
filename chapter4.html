@@ -153,7 +153,7 @@
 <p>We will also cover some standard functions from PureScript's standard libraries. We will see the <code>map</code> and <code>fold</code> functions, as well as some useful special cases, like <code>filter</code> and <code>concatMap</code>.</p>
 <p>The motivating example for this chapter is a library of functions for working with a virtual filesystem. We will apply the techniques learned in this chapter to write functions which compute properties of the files represented by a model of a filesystem.</p>
 <h2><a class="header" href="#project-setup" id="project-setup">Project Setup</a></h2>
-<p>The source code for this chapter is contained in <code>src/Data/Path.purs</code> and <code>test/Solutions.purs</code>. The <code>Data.Path</code> module contains a model of a virtual filesystem. You do not need to modify the contents of this module. Implement your solutions to the exercises in the <code>Test.Solutions</code> module. Enable accompanying tests in the <code>Test.Main</code> module as you complete each exercise and check your work by running <code>spago test</code>.</p>
+<p>The source code for this chapter is contained in <code>src/Data/Path.purs</code> and <code>test/Examples.purs</code>. The <code>Data.Path</code> module contains a model of a virtual filesystem. You do not need to modify the contents of this module. Implement your solutions to the exercises in the <code>Test.MySolutions</code> module. Enable accompanying tests in the <code>Test.Main</code> module as you complete each exercise and check your work by running <code>spago test</code>.</p>
 <p>The project has the following dependencies:</p>
 <ul>
 <li><code>maybe</code>, which defines the <code>Maybe</code> type constructor</li>
@@ -198,8 +198,8 @@ length arr =
 <p>This example is obviously a very impractical way to find the length of an array in JavaScript, but should provide enough help to allow you to complete the following exercises:</p>
 <h2><a class="header" href="#exercises" id="exercises">Exercises</a></h2>
 <ol>
-<li>(Easy) Write a recursive function which returns <code>true</code> if and only if its input is an even integer.</li>
-<li>(Medium) Write a recursive function which counts the number of even integers in an array. <em>Hint</em>: the function <code>head</code> (also available in <code>Data.Array</code>) can be used to find the first element in a non-empty array.</li>
+<li>(Easy) Write a recursive function <code>isEven</code> which returns <code>true</code> if and only if its input is an even integer.</li>
+<li>(Medium) Write a recursive function <code>countEven</code> which counts the number of even integers in an array. <em>Hint</em>: the function <code>head</code> (also available in <code>Data.Array</code>) can be used to find the first element in a non-empty array.</li>
 </ol>
 <h2><a class="header" href="#maps" id="maps">Maps</a></h2>
 <p>The <code>map</code> function is an example of a recursive function on arrays. It is used to transform the elements of an array by applying a function to each element in turn. Therefore, it changes the <em>contents</em> of the array, but preserves its <em>shape</em> (i.e. its length).</p>
@@ -266,12 +266,12 @@ forall a b f. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </code></pre>
 <h2><a class="header" href="#exercises-1" id="exercises-1">Exercises</a></h2>
 <ol>
-<li>(Easy) Use the <code>map</code> or <code>&lt;$&gt;</code> function to write a function which calculates the squares of an array of numbers.</li>
-<li>(Easy) Use the <code>filter</code> function to write a function which removes the negative numbers from an array of numbers.</li>
+<li>(Easy) Write a function <code>squared</code> which calculates the squares of an array of numbers. <em>Hint</em>: Use the <code>map</code> or <code>&lt;$&gt;</code> function.</li>
+<li>(Easy) Write a function <code>keepNonNegative</code> which removes the negative numbers from an array of numbers. <em>Hint</em>: Use the <code>filter</code> function.</li>
 <li>(Medium)
 <ul>
 <li>Define an infix synonym <code>&lt;$?&gt;</code> for <code>filter</code>.</li>
-<li>Rewrite your answer to the previous question to use your new operator.</li>
+<li>Write a <code>keepNonNegativeRewrite</code> function, which is the same as <code>keepNonNegative</code>, but replaces <code>filter</code> with your new infix operator <code>&lt;$?&gt;</code>.</li>
 <li>Experiment with the precedence level and associativity of your operator in PSCi. NOTE: no unit tests for this.</li>
 </ul>
 </li>
@@ -363,8 +363,8 @@ factors n = filter (\xs -&gt; product xs == n) $ do
 [[1, 2]]
 </code></pre>
 <p>In the case of arrays, <code>pure</code> simply constructs a singleton array. In fact, we could modify our <code>factors</code> function to use this form, instead of using <code>pure</code>:</p>
-<pre><code class="language-haskell">factors :: Int -&gt; Array (Array Int)
-factors n = filter (\xs -&gt; product xs == n) $ do
+<pre><code class="language-haskell">factorsV2 :: Int -&gt; Array (Array Int)
+factorsV2 n = filter (\xs -&gt; product xs == n) $ do
   i &lt;- 1 .. n
   j &lt;- i .. n
   [[i, j]]
@@ -374,8 +374,8 @@ factors n = filter (\xs -&gt; product xs == n) $ do
 <p>One further change we can make to the <code>factors</code> function is to move the filter inside the array comprehension. This is possible using the <code>guard</code> function from the <code>Control.MonadZero</code> module (from the <code>control</code> package):</p>
 <pre><code class="language-haskell">import Control.MonadZero (guard)
 
-factors :: Int -&gt; Array (Array Int)
-factors n = do
+factorsV3 :: Int -&gt; Array (Array Int)
+factorsV3 n = do
   i &lt;- 1 .. n
   j &lt;- i .. n
   guard $ i * j == n
@@ -403,9 +403,9 @@ forall m. MonadZero m =&gt; Boolean -&gt; m Unit
 <p>This means that if the guard fails, then the current branch of the array comprehension will terminate early with no results. This means that a call to <code>guard</code> is equivalent to using <code>filter</code> on the intermediate array. Depending on the application, you might prefer to use <code>guard</code> instead of a <code>filter</code>. Try the two definitions of <code>factors</code> to verify that they give the same results.</p>
 <h2><a class="header" href="#exercises-2" id="exercises-2">Exercises</a></h2>
 <ol>
-<li>(Easy) Use the <code>factors</code> function to define a function <code>isPrime</code> which tests if its integer argument is prime or not.</li>
-<li>(Medium) Write a function which uses do notation to find the <em>cartesian product</em> of two arrays, i.e. the set of all pairs of elements <code>a</code>, <code>b</code>, where <code>a</code> is an element of the first array, and <code>b</code> is an element of the second.</li>
-<li>(Medium) A <em>Pythagorean triple</em> is an array of numbers <code>[a, b, c]</code> such that <code>a² + b² = c²</code>. Use the <code>guard</code> function in an array comprehension to write a function <code>triples</code> which takes a number <code>n</code> and calculates all Pythagorean triples whose components are less than <code>n</code>. Your function should have type <code>Int -&gt; Array (Array Int)</code>.</li>
+<li>(Easy) Write a function <code>isPrime</code> which tests if its integer argument is prime or not. <em>Hint</em>: Use the <code>factors</code> function.</li>
+<li>(Medium) Write a function <code>cartesianProduct</code> which uses do notation to find the <em>cartesian product</em> of two arrays, i.e. the set of all pairs of elements <code>a</code>, <code>b</code>, where <code>a</code> is an element of the first array, and <code>b</code> is an element of the second.</li>
+<li>(Medium) Write a function <code>triples :: Int -&gt; Array (Array Int)</code> which takes a number <code>n</code> and calculates all Pythagorean triples whose components are less than <code>n</code>. A <em>Pythagorean triple</em> is an array of numbers <code>[a, b, c]</code> such that <code>a² + b² = c²</code>. <em>Hint</em>: Use the <code>guard</code> function in an array comprehension.</li>
 <li>(Difficult) Write a function <code>factorizations</code> which produces all <em>factorizations</em> of an integer <code>n</code>, i.e. arrays of integers whose product is <code>n</code>. <em>Hint</em>: for an integer greater than 1, break the problem down into two subproblems: finding the first factor, and finding the remaining factors.</li>
 </ol>
 <h2><a class="header" href="#folds" id="folds">Folds</a></h2>
@@ -467,11 +467,11 @@ RangeError: Maximum call stack size exceeded
 <p>The key observation which enables tail recursion optimization is the following: a recursive call in <em>tail position</em> to a function can be replaced with a <em>jump</em>, which does not allocate a stack frame. A call is in <em>tail position</em> when it is the last call made before a function returns. This is the reason why we observed a stack overflow in the example - the recursive call to <code>f</code> was <em>not</em> in tail position.</p>
 <p>In practice, the PureScript compiler does not replace the recursive call with a jump, but rather replaces the entire recursive function with a <em>while loop</em>.</p>
 <p>Here is an example of a recursive function with all recursive calls in tail position:</p>
-<pre><code class="language-haskell">fact :: Int -&gt; Int -&gt; Int
-fact 0 acc = acc
-fact n acc = fact (n - 1) (acc * n)
+<pre><code class="language-haskell">factTailRec :: Int -&gt; Int -&gt; Int
+factTailRec 0 acc = acc
+factTailRec n acc = factTailRec (n - 1) (acc * n)
 </code></pre>
-<p>Notice that the recursive call to <code>fact</code> is the last thing that happens in this function - it is in tail position.</p>
+<p>Notice that the recursive call to <code>factTailRec</code> is the last thing that happens in this function - it is in tail position.</p>
 <h2><a class="header" href="#accumulators" id="accumulators">Accumulators</a></h2>
 <p>One common way to turn a function which is not tail recursive into a tail recursive function is to use an <em>accumulator parameter</em>. An accumulator parameter is an additional parameter which is added to a function which <em>accumulates</em> a return value, as opposed to using the return value to accumulate the result.</p>
 <p>For example, consider again the <code>length</code> function presented in the beginning of the chapter:</p>
@@ -510,9 +510,9 @@ lengthTailRec arr = length' arr 0
 <p>Writing <code>reverse</code> in terms of <code>foldl</code> will be left as an exercise for the reader.</p>
 <h2><a class="header" href="#exercises-3" id="exercises-3">Exercises</a></h2>
 <ol>
-<li>(Easy) Use <code>foldl</code> to test whether an array of boolean values are all true.</li>
-<li>(Medium) Characterize those arrays <code>xs</code> for which the function <code>foldl (==) false xs</code> returns true.</li>
-<li>(Medium) Rewrite the <code>fib</code> function in tail recursive form using an accumulator parameter.</li>
+<li>(Easy) Write a function <code>allTrue</code> which uses <code>foldl</code> to test whether an array of boolean values are all true.</li>
+<li>(Medium - No Test) Characterize those arrays <code>xs</code> for which the function <code>foldl (==) false xs</code> returns <code>true</code>. In other words, complete the sentence: &quot;The function returns <code>true</code> when <code>xs</code> contains ...&quot;</li>
+<li>(Medium) Write a function <code>fibTailRec</code> which is the same as <code>fib</code> but in tail recursive form. <em>Hint</em>: Use an accumulator parameter.</li>
 <li>(Medium) Write <code>reverse</code> in terms of <code>foldl</code>.</li>
 </ol>
 <h2><a class="header" href="#a-virtual-filesystem" id="a-virtual-filesystem">A Virtual Filesystem</a></h2>
@@ -584,7 +584,7 @@ allFiles' file = file : do
 <p>(Easy) Write a function <code>onlyFiles</code> which returns all <em>files</em> (not directories) in all subdirectories of a directory.</p>
 </li>
 <li>
-<p>(Medium) Write a fold to determine the largest and smallest files in the filesystem.</p>
+<p>(Medium) Write a function <code>largestSmallest</code> which returns an array containing the single largest and single smallest files in the filesystem.</p>
 </li>
 <li>
 <p>(Difficult) Write a function <code>whereIs</code> to search for a file by name. The function should return a value of type <code>Maybe Path</code>, indicating the directory containing the file, if it exists. It should behave as follows:</p>

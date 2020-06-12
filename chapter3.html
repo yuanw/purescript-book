@@ -518,9 +518,9 @@ infixr 0 apply as $
 <p>I will let you make your own decision which definition is easier to understand, but it is often useful to think of functions as building blocks in this way - each function executing a single task, and solutions assembled using function composition.</p>
 <h2><a class="header" href="#exercises" id="exercises">Exercises</a></h2>
 <ol>
-<li>(Easy) Test your understanding of the <code>findEntry</code> function by writing down the types of each of its major subexpressions. For example, the type of the <code>head</code> function as used is specialized to <code>AddressBook -&gt; Maybe Entry</code>.</li>
-<li>(Medium) Write a function which looks up an <code>Entry</code> given a street address, by reusing the existing code in <code>findEntry</code>. Test your function in PSCi.</li>
-<li>(Medium) Write a function which tests whether a name appears in a <code>AddressBook</code>, returning a Boolean value. <em>Hint</em>: Use PSCi to find the type of the <code>Data.List.null</code> function, which test whether a list is empty or not.</li>
+<li>(Easy) Test your understanding of the <code>findEntry</code> function by writing down the types of each of its major subexpressions. For example, the type of the <code>head</code> function as used is specialized to <code>AddressBook -&gt; Maybe Entry</code>. <em>Note</em>: There is no test for this exercise.</li>
+<li>(Medium) Write a function <code>findEntryByStreet :: String -&gt; AddressBook -&gt; Maybe Entry</code> which looks up an <code>Entry</code> given a street address. <em>Hint</em> reusing the existing code in <code>findEntry</code>. Test your function in PSCi and by running <code>spago test</code>.</li>
+<li>(Medium) Write a function <code>isInBook</code> which tests whether a name appears in a <code>AddressBook</code>, returning a Boolean value. <em>Hint</em>: Use PSCi to find the type of the <code>Data.List.null</code> function, which tests whether a list is empty or not.</li>
 <li>(Difficult) Write a function <code>removeDuplicates</code> which removes duplicate address book entries with the same first and last names. <em>Hint</em>: Use PSCi to find the type of the <code>Data.List.nubBy</code> function, which removes duplicate elements from a list based on an equality predicate.</li>
 </ol>
 <h2><a class="header" href="#conclusion" id="conclusion">Conclusion</a></h2>
