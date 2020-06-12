@@ -883,7 +883,7 @@ app = element addressBookApp { initialPerson }
 <p>And pick it up on the other side to use in our state hook:</p>
 <pre><code class="language-hs">mkAddressBookApp :: Effect (ReactComponent { initialPerson :: Person })
 mkAddressBookApp =
-  component &quot;AddressBookApp&quot; \props -&gt; R.do
+  reactComponent &quot;AddressBookApp&quot; \props -&gt; R.do
     Tuple person setPerson &lt;- useState props.initialPerson
 </code></pre>
 <p>As a finishing touch, we'll improve the quality of our error messages by appending to the <code>String</code> of each <code>Left</code> value with <code>lmap</code>.</p>
