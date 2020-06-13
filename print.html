@@ -293,9 +293,13 @@ main = log &quot;Hello, World!&quot;
 <p>Now that you've installed the necessary development tools, clone this book's repo.</p>
 <pre><code>git clone https://github.com/purescript-contrib/purescript-book.git
 </code></pre>
-<p>The book repo contains PureScript example code and unit tests for the exercises that accompany each chapter.</p>
+<p>The book repo contains PureScript example code and unit tests for the exercises that accompany each chapter. There's some initial setup required to reset the exercise solutions so they are ready to be solved by you. Use the <code>resetSolutions.sh</code> script to simplify this process:</p>
+<pre><code>cd purescript-book
+./scripts/resetSolutions.sh
+git commit --all --message &quot;Exercises ready to be solved&quot;
+</code></pre>
 <p>Now run the tests for this chapter:</p>
-<pre><code>cd purescript-book/exercises/chapter2
+<pre><code>cd exercises/chapter2
 spago test
 </code></pre>
 <p>You should see the following successful test output:</p>
@@ -305,8 +309,8 @@ spago test
 
 All 2 tests passed! 🎉
 </code></pre>
-<p>The test suite (found in <code>test/Main.purs</code>) for this <code>answer</code> function is more comprehensive than the test in the earlier getting-started guide. We also modified the <code>answer</code> function (found in <code>src/Euler.purs</code>) to find the multiples of 3 and 5 below any integer.</p>
-<p>The remainder of the book contains lots of exercises. If you write your solutions in the <code>Test.Solutions</code> module (<code>test/Solutions.purs</code>), you can check your work against the provided test suite.</p>
+<p>Note that the <code>answer</code> function (found in <code>src/Euler.purs</code>) has been modified to find the multiples of 3 and 5 below any integer. The test suite (found in <code>test/Main.purs</code>) for this <code>answer</code> function is more comprehensive than the test in the earlier getting-started guide. Don't worry about understanding how this test framework code works while reading these early chapters.</p>
+<p>The remainder of the book contains lots of exercises. If you write your solutions in the <code>Test.MySolutions</code> module (<code>test/MySolutions.purs</code>), you can check your work against the provided test suite.</p>
 <p>Let's work through this next exercise together in test-driven-development style.</p>
 <h2><a class="header" href="#exercise" id="exercise">Exercise:</a></h2>
 <ol>
@@ -330,7 +334,7 @@ at test/Main.purs:21:27 - 21:35 (line 21, column 27 - line 21, column 35)
 
   Unknown value diagonal
 </code></pre>
-<p>Let's first take a look at what happens with a faulty version of this function. Add the following code to <code>test/Solutions.purs</code>:</p>
+<p>Let's first take a look at what happens with a faulty version of this function. Add the following code to <code>test/MySolutions.purs</code>:</p>
 <pre><code class="language-hs">import Math (sqrt)
 
 diagonal w h = sqrt (w * w + h)
@@ -341,10 +345,8 @@ diagonal w h = sqrt (w * w + h)
   ☠ Failed: 5 12 13 because expected 13.0, got 6.082762530298219
 
 2 tests failed:
-
-&lt; There will also be some JavaScript stack traces here that can be ignored &gt;
 </code></pre>
-<p>Uh-oh, that's not quite right. Let's fix this with the correct application of the pythagorean formula by changing the function to:</p>
+<p>Uh-oh, that's not quite right. Let's fix this with the correct application of the Pythagorean formula by changing the function to:</p>
 <pre><code class="language-hs">diagonal w h = sqrt (w * w + h * h)
 </code></pre>
 <p>Trying <code>spago test</code> again now shows all tests are passing:</p>
@@ -357,16 +359,17 @@ diagonal w h = sqrt (w * w + h)
 
 All 4 tests passed! 🎉
 </code></pre>
-<p>Now try these next exercises on your own.</p>
+<p>Success! Now you're ready to try these next exercises on your own.</p>
 <h2><a class="header" href="#exercises" id="exercises">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a function <code>circleArea</code> which computes the area of a circle with a given radius. Use the <code>pi</code> constant, which is defined in the <code>Math</code> module. <em>Hint</em>: don't forget to import <code>pi</code> by modifying the <code>import Math</code> statement.</li>
-<li>(Medium) The <code>readFloat</code> function converts a String to a floating-point Number. Calling <code>readFloat &quot;1.23&quot;</code> produces <code>1.23</code>. Write a function <code>addE</code> which takes a <code>String</code>, converts it to a <code>Number</code> with <code>readFloat</code>, and then adds the mathematical constant <code>e</code> to it. <em>Hint</em>: You should first search <a href="https://pursuit.purescript.org/">Pursuit</a> to find the module that contains the <code>readFloat</code> function, and install that module with <code>spago install</code>. Don't forget to add the necessary imports.</li>
+<li>(Medium) The <code>readFloat</code> function converts a String to a floating-point Number. Calling <code>readFloat &quot;1.23&quot;</code> produces <code>1.23</code>. Write a function <code>addE</code> which takes a <code>String</code>, converts it to a <code>Number</code> with <code>readFloat</code>, and then adds the mathematical constant <code>e</code> to it. <em>Hint</em>: You should first search <a href="https://pursuit.purescript.org/">Pursuit</a> to find the module that contains the <code>readFloat</code> function and import that module.</li>
 </ol>
 <h2><a class="header" href="#conclusion" id="conclusion">Conclusion</a></h2>
 <p>In this chapter, we installed the PureScript compiler and the Spago tool. We also learned how to write solutions to exercises and check these for correctness.</p>
-<p>There will be many more exercises in the chapters ahead, and working through those really helps with learning the material. If you're stumped by any of the exercises, please reach out to any of the community resources listed in the <a href="https://book.purescript.org/chapter1.html#getting-help">Getting Help</a> section of this book, or even file an issue in this <a href="https://github.com/purescript-contrib/purescript-book/issues">book's repo</a>.</p>
-<p>Once you solve all the exercises in a chapter, you may compare your answers against those in the <a href="https://github.com/purescript-contrib/purescript-book/tree/solutions">solutions branch</a>. No peeking please without putting in an honest effort to solve these yourself though. And even if you are stuck, try asking a community member for help first, as we would rather give you a small hint than spoil the exercise. If you found a more elegant solution (that still only requires knowledge of covered content), please send us a PR.</p>
+<p>There will be many more exercises in the chapters ahead, and working through those really helps with learning the material. If you're stumped by any of the exercises, please reach out to any of the community resources listed in the <a href="https://book.purescript.org/chapter1.html#getting-help">Getting Help</a> section of this book, or even file an issue in this <a href="https://github.com/purescript-contrib/purescript-book/issues">book's repo</a>. This reader feedback on which exercises could be made more approachable helps us improve the book.</p>
+<p>Once you solve all the exercises in a chapter, you may compare your answers against those in the <code>no-peeking/Solutions.purs</code>. No peeking please without putting in an honest effort to solve these yourself though. And even if you are stuck, try asking a community member for help first, as we would prefer to give you a small hint rather than spoil the exercise. If you found a more elegant solution (that still only requires knowledge of covered content), please send us a PR.</p>
+<p>The repo is continuously being revised, so be sure to check for updates before starting each new chapter.</p>
 <h1><a class="header" href="#functions-and-records" id="functions-and-records">Functions and Records</a></h1>
 <h2><a class="header" href="#chapter-goals-1" id="chapter-goals-1">Chapter Goals</a></h2>
 <p>This chapter will introduce two building blocks of PureScript programs: functions and records. In addition, we'll see how to structure PureScript programs, and how to use types as an aid to program development.</p>
