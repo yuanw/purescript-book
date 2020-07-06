@@ -310,7 +310,7 @@ sortPair arr = arr
 <h2><a class="header" href="#exercises-1" id="exercises-1">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a function <code>sameCity</code> which uses record patterns to test whether two <code>Person</code> records belong to the same city.</li>
-<li>(Medium) What is the most general type of the <code>sameCity</code> function, taking into account row polymorphism? What about the <code>livesInLA</code> function defined above?</li>
+<li>(Medium) What is the most general type of the <code>sameCity</code> function, taking into account row polymorphism? What about the <code>livesInLA</code> function defined above? Note: There is no test for this exercise.</li>
 <li>(Medium) Write a function <code>fromSingleton</code> which uses an array literal pattern to extract the sole member of a singleton array. If the array is not a singleton, your function should return a provided default value. Your function should have type <code>forall a. a -&gt; Array a -&gt; a</code></li>
 </ol>
 <h2><a class="header" href="#case-expressions" id="case-expressions">Case Expressions</a></h2>
@@ -456,7 +456,7 @@ origin = Point { x, y }
 <h2><a class="header" href="#exercises-2" id="exercises-2">Exercises</a></h2>
 <ol>
 <li>(Easy) Construct a value of type <code>Shape</code> which represents a circle centered at the origin with radius <code>10.0</code>.</li>
-<li>(Medium) Write a function from <code>Shape</code>s to <code>Shape</code>s, which scales its argument by a factor of <code>2.0</code>, center the origin.</li>
+<li>(Medium) Write a function from <code>Shape</code>s to <code>Shape</code>s, which scales its argument by a factor of <code>2.0</code>, and centers it at the origin.</li>
 <li>(Medium) Write a function which extracts the text from a <code>Shape</code>. It should return <code>Maybe String</code>, and use the <code>Nothing</code> constructor if the input is not constructed using <code>Text</code>.</li>
 </ol>
 <h2><a class="header" href="#newtypes" id="newtypes">Newtypes</a></h2>
@@ -513,7 +513,7 @@ bounds = foldl combine emptyBounds
 <p>The accumulating function <code>combine</code> is defined in a <code>where</code> block. <code>combine</code> takes a bounding rectangle computed from <code>foldl</code>'s recursive call, and the next <code>Shape</code> in the array, and uses the <code>union</code> function to compute the union of the two bounding rectangles. The <code>shapeBounds</code> function computes the bounds of a single shape using pattern matching.</p>
 <h2><a class="header" href="#exercises-3" id="exercises-3">Exercises</a></h2>
 <ol>
-<li>(Medium) Extend the vector graphics library with a new operation <code>area</code> which computes the area of a <code>Shape</code>. For the purpose of this exercise, the area of a piece of text is assumed to be zero.</li>
+<li>(Medium) Extend the vector graphics library with a new operation <code>area</code> which computes the area of a <code>Shape</code>. For the purpose of this exercise, the area of a line or a piece of text is assumed to be zero.</li>
 <li>(Difficult) Extend the <code>Shape</code> type with a new data constructor <code>Clipped</code>, which clips another <code>Picture</code> to a rectangle. Extend the <code>shapeBounds</code> function to compute the bounds of a clipped picture. Note that this makes <code>Shape</code> into a recursive data type.</li>
 </ol>
 <h2><a class="header" href="#conclusion" id="conclusion">Conclusion</a></h2>
