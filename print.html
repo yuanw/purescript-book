@@ -1289,8 +1289,9 @@ gcd n m | n &gt; m     = gcd (n - m) m
 <p>As this example demonstrates, guards appear on the left of the equals symbol, separated from the list of patterns by a pipe character (<code>|</code>).</p>
 <h2><a class="header" href="#exercises-7" id="exercises-7">Exercises</a></h2>
 <ol>
-<li>(Easy) Write the factorial function using pattern matching. <em>Hint</em>. Consider the two cases zero and non-zero inputs.</li>
-<li>(Medium) Look up <em>Pascal's Rule</em> for computing binomial coefficients. Use it to write a function which computes binomial coefficients using pattern matching.</li>
+<li>(Easy) Write the <code>factorial</code> function using pattern matching. <em>Hint</em>: Consider the two corner cases of zero and non-zero inputs. <em>Note</em>: This is a repeat of an example from the previous chapter, but see if you can rewrite it here on your own.</li>
+<li>(Medium) Write a function <code>binomial</code> which finds the coefficient of the x^<code>k</code>th term in the polynomial expansion of (1 + x)^<code>n</code>. This is the same as the number of ways to choose a subset of <code>k</code> elements from a set of <code>n</code> elements. Use the formula <code>n! / k! (n - k)!</code>, where <code>!</code> is the factorial function written earlier. <em>Hint</em>: Use pattern matching to handle corner cases.</li>
+<li>(Medium) Write a function <code>pascal</code> which uses <a href="https://en.wikipedia.org/wiki/Pascal%27s_rule"><em>Pascal`s Rule</em></a> for computing the same binomial coefficients as the previous exercise.</li>
 </ol>
 <h2><a class="header" href="#array-patterns" id="array-patterns">Array Patterns</a></h2>
 <p><em>Array literal patterns</em> provide a way to match arrays of a fixed length. For example, suppose we want to write a function <code>isEmpty</code> which identifies empty arrays. We could do this by using an empty array pattern (<code>[]</code>) in the first alternative:</p>
@@ -1374,7 +1375,7 @@ sortPair arr = arr
 <h2><a class="header" href="#exercises-8" id="exercises-8">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a function <code>sameCity</code> which uses record patterns to test whether two <code>Person</code> records belong to the same city.</li>
-<li>(Medium) What is the most general type of the <code>sameCity</code> function, taking into account row polymorphism? What about the <code>livesInLA</code> function defined above? Note: There is no test for this exercise.</li>
+<li>(Medium) What is the most general type of the <code>sameCity</code> function, taking into account row polymorphism? What about the <code>livesInLA</code> function defined above? <em>Note</em>: There is no test for this exercise.</li>
 <li>(Medium) Write a function <code>fromSingleton</code> which uses an array literal pattern to extract the sole member of a singleton array. If the array is not a singleton, your function should return a provided default value. Your function should have type <code>forall a. a -&gt; Array a -&gt; a</code></li>
 </ol>
 <h2><a class="header" href="#case-expressions" id="case-expressions">Case Expressions</a></h2>
@@ -1519,9 +1520,9 @@ origin = Point { x, y }
 <p>This can be useful for improving readability of code in some circumstances.</p>
 <h2><a class="header" href="#exercises-9" id="exercises-9">Exercises</a></h2>
 <ol>
-<li>(Easy) Construct a value of type <code>Shape</code> which represents a circle centered at the origin with radius <code>10.0</code>.</li>
-<li>(Medium) Write a function from <code>Shape</code>s to <code>Shape</code>s, which scales its argument by a factor of <code>2.0</code>, and centers it at the origin.</li>
-<li>(Medium) Write a function which extracts the text from a <code>Shape</code>. It should return <code>Maybe String</code>, and use the <code>Nothing</code> constructor if the input is not constructed using <code>Text</code>.</li>
+<li>(Easy) Write a function <code>circleAtOrigin</code> which constructs a <code>Circle</code> (of type <code>Shape</code>) centered at the origin with radius <code>10.0</code>.</li>
+<li>(Medium) Write a function <code>doubleScaleAndCenter</code> which scales the size of a <code>Shape</code> by a factor of <code>2.0</code> and centers it at the origin.</li>
+<li>(Medium) Write a function <code>shapeText</code> which extracts the text from a <code>Shape</code>. It should return <code>Maybe String</code>, and use the <code>Nothing</code> constructor if the input is not constructed using <code>Text</code>.</li>
 </ol>
 <h2><a class="header" href="#newtypes" id="newtypes">Newtypes</a></h2>
 <p>There is an important special case of algebraic data types, called <em>newtypes</em>. Newtypes are introduced using the <code>newtype</code> keyword instead of the <code>data</code> keyword.</p>
@@ -1583,7 +1584,7 @@ bounds = foldl combine emptyBounds
 <h2><a class="header" href="#conclusion-3" id="conclusion-3">Conclusion</a></h2>
 <p>In this chapter, we covered pattern matching, a basic but powerful technique from functional programming. We saw how to use simple patterns as well as array and record patterns to match parts of deep data structures.</p>
 <p>This chapter also introduced algebraic data types, which are closely related to pattern matching. We saw how algebraic data types allow concise descriptions of data structures, and provide a modular way to extend data types with new operations.</p>
-<p>Finally, we covered <em>row polymorphism</em>, a powerful type of abstraction which allows many idiomatic JavaScript functions to be given a type. </p>
+<p>Finally, we covered <em>row polymorphism</em>, a powerful type of abstraction which allows many idiomatic JavaScript functions to be given a type.</p>
 <p>In the rest of the book, we will use ADTs and pattern matching extensively, so it will pay dividends to become familiar with them now. Try creating your own algebraic data types and writing functions to consume them using pattern matching.</p>
 <h1><a class="header" href="#type-classes" id="type-classes">Type Classes</a></h1>
 <h2><a class="header" href="#chapter-goals-4" id="chapter-goals-4">Chapter Goals</a></h2>
