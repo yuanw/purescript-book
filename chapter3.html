@@ -458,7 +458,7 @@ forall a. (a -&gt; Boolean) -&gt; List a -&gt; List a
 forall a. List a -&gt; Maybe a
 </code></pre>
 <p>Let's pick apart these two types to understand their meaning.</p>
-<p><code>filter</code> is a curried function of two arguments. Its first argument is a function, which takes a list element and returns a <code>Boolean</code> value as a result. Its second argument is a list of elements, and the return value is another list.</p>
+<p><code>filter</code> is a curried function of two arguments. Its first argument is a function, which takes an element of the list and returns a <code>Boolean</code> value as a result. Its second argument is a list of elements, and the return value is another list.</p>
 <p><code>head</code> takes a list as its argument, and returns a type we haven't seen before: <code>Maybe a</code>. <code>Maybe a</code> represents an optional value of type <code>a</code>, and provides a type-safe alternative to using <code>null</code> to indicate a missing value in languages like JavaScript. We will see it again in more detail in later chapters.</p>
 <p>The universally quantified types of <code>filter</code> and <code>head</code> can be <em>specialized</em> by the PureScript compiler, to the following types:</p>
 <pre><code class="language-haskell">filter :: (Entry -&gt; Boolean) -&gt; AddressBook -&gt; AddressBook
