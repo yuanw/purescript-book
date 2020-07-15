@@ -488,7 +488,7 @@ writerAndExceptT = do
   lift $ tell [&quot;After the error&quot;]
   pure &quot;Return value&quot;
 </code></pre>
-<p>If we test this function in PSCi, we can see how the two effects of accumulating a log and throwing an error interact. First, we can run the outer <code>ExceptT</code> computation of type by using <code>runExceptT</code>, leaving a result of type <code>Writer String (Either String String)</code>. We can then use <code>runWriter</code> to run the inner <code>Writer</code> computation:</p>
+<p>If we test this function in PSCi, we can see how the two effects of accumulating a log and throwing an error interact. First, we can run the outer <code>ExceptT</code> computation of type by using <code>runExceptT</code>, leaving a result of type <code>Writer (Array String) (Either String String)</code>. We can then use <code>runWriter</code> to run the inner <code>Writer</code> computation:</p>
 <pre><code class="language-text">&gt; runWriter $ runExceptT writerAndExceptT
 Tuple (Left &quot;Error!&quot;) [&quot;Before the error&quot;]
 </code></pre>
