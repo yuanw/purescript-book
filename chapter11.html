@@ -475,16 +475,13 @@ runExceptT :: forall e m a. ExceptT e m a -&gt; m (Either e a)
 <li>The <code>Exception</code> effect only supports exceptions of one type, namely JavaScript's <code>Error</code> type, whereas <code>ExceptT</code> supports errors of any type. In particular, we are free to define new error types.</li>
 </ul>
 <p>Let's try out <code>ExceptT</code> by using it to wrap the <code>Writer</code> monad. Again, we are free to use actions from the monad transformer <code>ExceptT e</code> directly, but computations in the <code>Writer</code> monad should be lifted using <code>lift</code>:</p>
-<pre><code class="language-haskell">import Control.Monad.Trans
+<pre><code class="language-haskell">import Control.Monad.Except
 import Control.Monad.Writer
-import Control.Monad.Writer.Class
-import Control.Monad.Error.Class
-import Control.Monad.Except.Trans
 
 writerAndExceptT :: ExceptT String (Writer (Array String)) String
 writerAndExceptT = do
   lift $ tell [&quot;Before the error&quot;]
-  throwError &quot;Error!&quot;
+  _ &lt;- throwError &quot;Error!&quot;
   lift $ tell [&quot;After the error&quot;]
   pure &quot;Return value&quot;
 </code></pre>
