@@ -155,7 +155,6 @@
 <p>The project adds the following dependencies:</p>
 <ul>
 <li><code>effect</code> - defines the <code>Effect</code> monad, the subject of the second half of the chapter. This dependency is often listed in every starter project (it's been a dependency of every chapter so far), so you'll rarely have to explicitly install it.</li>
-<li><code>random</code> - a monadic random number generator.</li>
 <li><code>react-basic-hooks</code> - a web framework that we will use for our Address Book app.</li>
 </ul>
 <h2><a class="header" href="#monads-and-do-notation" id="monads-and-do-notation">Monads and Do Notation</a></h2>
@@ -167,7 +166,7 @@
 <li>If the sum of <code>x</code> and <code>y</code> is <code>n</code> then return the pair <code>[x, y]</code>, else fail.</li>
 </ul>
 <p>Array comprehensions allow us to write this non-deterministic algorithm in a natural way:</p>
-<pre><code class="language-haskell">import Prelude
+<pre><code class="language-hs">import Prelude
 
 import Control.Plus (empty)
 import Data.Array ((..))
@@ -181,7 +180,9 @@ countThrows n = do
     else empty
 </code></pre>
 <p>We can see that this function works in PSCi:</p>
-<pre><code class="language-text">&gt; countThrows 10
+<pre><code class="language-text">&gt; import Test.Examples
+
+&gt; countThrows 10
 [[4,6],[5,5],[6,4]]
 
 &gt; countThrows 12
@@ -190,11 +191,11 @@ countThrows n = do
 <p>In the last chapter, we formed an intuition for the <code>Maybe</code> applicative functor, embedding PureScript functions into a larger programming language supporting <em>optional values</em>. In the same way, we can form an intuition for the <em>array monad</em>, embedding PureScript functions into a larger programming language supporting <em>non-deterministic choice</em>.</p>
 <p>In general, a <em>monad</em> for some type constructor <code>m</code> provides a way to use do notation with values of type <code>m a</code>. Note that in the array comprehension above, every line contains a computation of type <code>Array a</code> for some type <code>a</code>. In general, every line of a do notation block will contain a computation of type <code>m a</code> for some type <code>a</code> and our monad <code>m</code>. The monad <code>m</code> must be the same on every line (i.e. we fix the side-effect), but the types <code>a</code> can differ (i.e. individual computations can have different result types).</p>
 <p>Here is another example of do notation, this type applied to the type constructor <code>Maybe</code>. Suppose we have some type <code>XML</code> representing XML nodes, and a function</p>
-<pre><code class="language-haskell">child :: XML -&gt; String -&gt; Maybe XML
+<pre><code class="language-hs">child :: XML -&gt; String -&gt; Maybe XML
 </code></pre>
 <p>which looks for a child element of a node, and returns <code>Nothing</code> if no such element exists.</p>
 <p>In this case, we can look for a deeply-nested element by using do notation. Suppose we wanted to read a user's city from a user profile which had been encoded as an XML document:</p>
-<pre><code class="language-haskell">userCity :: XML -&gt; Maybe XML
+<pre><code class="language-hs">userCity :: XML -&gt; Maybe XML
 userCity root = do
   prof &lt;- child root &quot;profile&quot;
   addr &lt;- child prof &quot;address&quot;
@@ -205,7 +206,7 @@ userCity root = do
 <p>Remember, the <code>pure</code> function in the last line is defined for every <code>Applicative</code> functor. Since <code>pure</code> is defined as <code>Just</code> for the <code>Maybe</code> applicative functor, it would be equally valid to change the last line to <code>Just city</code>.</p>
 <h2><a class="header" href="#the-monad-type-class" id="the-monad-type-class">The Monad Type Class</a></h2>
 <p>The <code>Monad</code> type class is defined as follows:</p>
-<pre><code class="language-haskell">class Apply m &lt;= Bind m where
+<pre><code class="language-hs">class Apply m &lt;= Bind m where
   bind :: forall a b. m a -&gt; (a -&gt; m b) -&gt; m b
 
 class (Applicative m, Bind m) &lt;= Monad m
@@ -213,29 +214,29 @@ class (Applicative m, Bind m) &lt;= Monad m
 <p>The key function here is <code>bind</code>, defined in the <code>Bind</code> type class. Just like for the <code>&lt;$&gt;</code> and <code>&lt;*&gt;</code> operators in the <code>Functor</code> and <code>Apply</code> type classes, the Prelude defines an infix alias <code>&gt;&gt;=</code> for the <code>bind</code> function.</p>
 <p>The <code>Monad</code> type class extends <code>Bind</code> with the operations of the <code>Applicative</code> type class that we have already seen.</p>
 <p>It will be useful to see some examples of the <code>Bind</code> type class. A sensible definition for <code>Bind</code> on arrays can be given as follows:</p>
-<pre><code class="language-haskell">instance bindArray :: Bind Array where
+<pre><code class="language-hs">instance bindArray :: Bind Array where
   bind xs f = concatMap f xs
 </code></pre>
 <p>This explains the connection between array comprehensions and the <code>concatMap</code> function that has been alluded to before.</p>
 <p>Here is an implementation of <code>Bind</code> for the <code>Maybe</code> type constructor:</p>
-<pre><code class="language-haskell">instance bindMaybe :: Bind Maybe where
+<pre><code class="language-hs">instance bindMaybe :: Bind Maybe where
   bind Nothing  _ = Nothing
   bind (Just a) f = f a
 </code></pre>
 <p>This definition confirms the intuition that missing values are propagated through a do notation block.</p>
 <p>Let's see how the <code>Bind</code> type class is related to do notation. Consider a simple do notation block which starts by binding a value from the result of some computation:</p>
-<pre><code class="language-haskell">do value &lt;- someComputation
+<pre><code class="language-hs">do value &lt;- someComputation
    whatToDoNext
 </code></pre>
 <p>Every time the PureScript compiler sees this pattern, it replaces the code with this:</p>
-<pre><code class="language-haskell">bind someComputation \value -&gt; whatToDoNext
+<pre><code class="language-hs">bind someComputation \value -&gt; whatToDoNext
 </code></pre>
 <p>or, written infix:</p>
-<pre><code class="language-haskell">someComputation &gt;&gt;= \value -&gt; whatToDoNext
+<pre><code class="language-hs">someComputation &gt;&gt;= \value -&gt; whatToDoNext
 </code></pre>
 <p>The computation <code>whatToDoNext</code> is allowed to depend on <code>value</code>.</p>
 <p>If there are multiple binds involved, this rule is applied multiple times, starting from the top. For example, the <code>userCity</code> example that we saw earlier gets desugared as follows:</p>
-<pre><code class="language-haskell">userCity :: XML -&gt; Maybe XML
+<pre><code class="language-hs">userCity :: XML -&gt; Maybe XML
 userCity root =
   child root &quot;profile&quot; &gt;&gt;= \prof -&gt;
     child prof &quot;address&quot; &gt;&gt;= \addr -&gt;
@@ -248,26 +249,26 @@ userCity root =
 <p>It is simplest to explain these laws using do notation.</p>
 <h3><a class="header" href="#identity-laws" id="identity-laws">Identity Laws</a></h3>
 <p>The <em>right-identity</em> law is the simplest of the three laws. It tells us that we can eliminate a call to <code>pure</code> if it is the last expression in a do notation block:</p>
-<pre><code class="language-haskell">do
+<pre><code class="language-hs">do
   x &lt;- expr
   pure x
 </code></pre>
 <p>The right-identity law says that this is equivalent to just <code>expr</code>.</p>
 <p>The <em>left-identity</em> law states that we can eliminate a call to <code>pure</code> if it is the first expression in a do notation block:</p>
-<pre><code class="language-haskell">do
+<pre><code class="language-hs">do
   x &lt;- pure y
   next
 </code></pre>
 <p>This code is equivalent to <code>next</code>, after the name <code>x</code> has been replaced with the expression <code>y</code>.</p>
 <p>The last law is the <em>associativity law</em>. It tells us how to deal with nested do notation blocks. It states that the following piece of code:</p>
-<pre><code class="language-haskell">c1 = do
+<pre><code class="language-hs">c1 = do
   y &lt;- do
     x &lt;- m1
     m2
   m3
 </code></pre>
 <p>is equivalent to this code:</p>
-<pre><code class="language-haskell">c2 = do
+<pre><code class="language-hs">c2 = do
   x &lt;- m1
   y &lt;- m2
   m3
@@ -277,7 +278,7 @@ userCity root =
 <p>In <code>c2</code>, all three expressions <code>m1</code>, <code>m2</code> and <code>m3</code> appear in the same do notation block.</p>
 <p>The associativity law tells us that it is safe to simplify nested do notation blocks in this way.</p>
 <p><em>Note</em> that by the definition of how do notation gets desugared into calls to <code>bind</code>, both of <code>c1</code> and <code>c2</code> are also equivalent to this code:</p>
-<pre><code class="language-haskell">c3 = do
+<pre><code class="language-hs">c3 = do
   x &lt;- m1
   do
     y &lt;- m2
@@ -286,7 +287,7 @@ userCity root =
 <h2><a class="header" href="#folding-with-monads" id="folding-with-monads">Folding With Monads</a></h2>
 <p>As an example of working with monads abstractly, this section will present a function which works with any type constructor in the <code>Monad</code> type class. This should serve to solidify the intuition that monadic code corresponds to programming &quot;in a larger language&quot; with side-effects, and also illustrate the generality which programming with monads brings.</p>
 <p>The function we will write is called <code>foldM</code>. It generalizes the <code>foldl</code> function that we met earlier to a monadic context. Here is its type signature:</p>
-<pre><code class="language-haskell">foldM :: forall m a b
+<pre><code class="language-hs">foldM :: forall m a b
        . Monad m
       =&gt; (a -&gt; b -&gt; m a)
       -&gt; a
@@ -294,7 +295,7 @@ userCity root =
       -&gt; m a
 </code></pre>
 <p>Notice that this is the same as the type of <code>foldl</code>, except for the appearance of the monad <code>m</code>:</p>
-<pre><code class="language-haskell">foldl :: forall a b
+<pre><code class="language-hs">foldl :: forall a b
        . (a -&gt; b -&gt; a)
       -&gt; a
       -&gt; List b
@@ -305,23 +306,24 @@ userCity root =
 <p>If we picked <code>m</code> to be the <code>Array</code> type constructor, then every step of the fold would be allowed to return zero or more results, and the fold would proceed to the next step independently for each result. At the end, the set of results would consist of all folds over all possible paths. This corresponds to a traversal of a graph!</p>
 <p>To write <code>foldM</code>, we can simply break the input list into cases.</p>
 <p>If the list is empty, then to produce the result of type <code>a</code>, we only have one option: we have to return the second argument:</p>
-<pre><code class="language-haskell">foldM _ a Nil = pure a
+<pre><code class="language-hs">foldM _ a Nil = pure a
 </code></pre>
 <p>Note that we have to use <code>pure</code> to lift <code>a</code> into the monad <code>m</code>.</p>
 <p>What if the list is non-empty? In that case, we have a value of type <code>a</code>, a value of type <code>b</code>, and a function of type <code>a -&gt; b -&gt; m a</code>. If we apply the function, we obtain a monadic result of type <code>m a</code>. We can bind the result of this computation with a backwards arrow <code>&lt;-</code>.</p>
 <p>It only remains to recurse on the tail of the list. The implementation is simple:</p>
-<pre><code class="language-haskell">foldM f a (b : bs) = do
+<pre><code class="language-hs">foldM f a (b : bs) = do
   a' &lt;- f a b
   foldM f a' bs
 </code></pre>
 <p>Note that this implementation is almost identical to that of <code>foldl</code> on lists, with the exception of do notation.</p>
 <p>We can define and test this function in PSCi. Here is an example - suppose we defined a &quot;safe division&quot; function on integers, which tested for division by zero and used the <code>Maybe</code> type constructor to indicate failure:</p>
-<pre><code class="language-haskell">safeDivide :: Int -&gt; Int -&gt; Maybe Int
+<pre><code class="language-hs">safeDivide :: Int -&gt; Int -&gt; Maybe Int
 safeDivide _ 0 = Nothing
 safeDivide a b = Just (a / b)
 </code></pre>
 <p>Then we can use <code>foldM</code> to express iterated safe division:</p>
-<pre><code class="language-text">&gt; import Data.List
+<pre><code class="language-text">&gt; import Test.Examples
+&gt; import Data.List (fromFoldable)
 
 &gt; foldM safeDivide 100 (fromFoldable [5, 2, 2])
 (Just 5)
@@ -333,7 +335,7 @@ Nothing
 <h2><a class="header" href="#monads-and-applicatives" id="monads-and-applicatives">Monads and Applicatives</a></h2>
 <p>Every instance of the <code>Monad</code> type class is also an instance of the <code>Apply</code> type class, by virtue of the superclass relationship between the two classes.</p>
 <p>However, there is also an implementation of the <code>Apply</code> type class which comes &quot;for free&quot; for any instance of <code>Monad</code>, given by the <code>ap</code> function:</p>
-<pre><code class="language-haskell">ap :: forall m a b. Monad m =&gt; m (a -&gt; b) -&gt; m a -&gt; m b
+<pre><code class="language-hs">ap :: forall m a b. Monad m =&gt; m (a -&gt; b) -&gt; m a -&gt; m b
 ap mf ma = do
   f &lt;- mf
   a &lt;- ma
@@ -343,7 +345,7 @@ ap mf ma = do
 <p>The interested reader can check that <code>ap</code> agrees with <code>apply</code> for the monads we have already encountered: <code>Array</code>, <code>Maybe</code> and <code>Either e</code>.</p>
 <p>If every monad is also an applicative functor, then we should be able to apply our intuition for applicative functors to every monad. In particular, we can reasonably expect a monad to correspond, in some sense, to programming &quot;in a larger language&quot; augmented with some set of additional side-effects. We should be able to lift functions of arbitrary arities, using <code>map</code> and <code>apply</code>, into this new language.</p>
 <p>But monads allow us to do more than we could do with just applicative functors, and the key difference is highlighted by the syntax of do notation. Consider the <code>userCity</code> example again, in which we looked for a user's city in an XML document which encoded their user profile:</p>
-<pre><code class="language-haskell">userCity :: XML -&gt; Maybe XML
+<pre><code class="language-hs">userCity :: XML -&gt; Maybe XML
 userCity root = do
   prof &lt;- child root &quot;profile&quot;
   addr &lt;- child prof &quot;address&quot;
@@ -356,43 +358,43 @@ userCity root = do
 <h2><a class="header" href="#exercises" id="exercises">Exercises</a></h2>
 <ol>
 <li>
-<p>(Easy) Look up the types of the <code>head</code> and <code>tail</code> functions from the <code>Data.Array</code> module in the <code>arrays</code> package. Use do notation with the <code>Maybe</code> monad to combine these functions into a function <code>third</code> which returns the third element of an array with three or more elements. Your function should return an appropriate <code>Maybe</code> type.</p>
+<p>(Easy) Write a function <code>third</code> which returns the third element of an array with three or more elements. Your function should return an appropriate <code>Maybe</code> type. <em>Hint:</em> Look up the types of the <code>head</code> and <code>tail</code> functions from the <code>Data.Array</code> module in the <code>arrays</code> package. Use do notation with the <code>Maybe</code> monad to combine these functions.</p>
 </li>
 <li>
-<p>(Medium) Write a function <code>sums</code> which uses <code>foldM</code> to determine all possible totals that could be made using a set of coins. The coins will be specified as an array which contains the value of each coin. Your function should have the following result:</p>
-<pre><code class="language-text">&gt; sums []
+<p>(Medium) Write a function <code>possibleSums</code> which uses <code>foldM</code> to determine all possible totals that could be made using a set of coins. The coins will be specified as an array which contains the value of each coin. Your function should have the following result:</p>
+<pre><code class="language-text">&gt; possibleSums []
 [0]
 
-&gt; sums [1, 2, 10]
+&gt; possibleSums [1, 2, 10]
 [0,1,2,3,10,11,12,13]
 </code></pre>
 <p><em>Hint</em>: This function can be written as a one-liner using <code>foldM</code>. You might want to use the <code>nub</code> and <code>sort</code> functions to remove duplicates and sort the result respectively.</p>
 </li>
 <li>
-<p>(Medium) Confirm that the <code>ap</code> function and the <code>apply</code> operator agree for the <code>Maybe</code> monad.</p>
+<p>(Medium) Confirm that the <code>ap</code> function and the <code>apply</code> operator agree for the <code>Maybe</code> monad. <em>Note:</em> There are no tests for this exercise.</p>
 </li>
 <li>
-<p>(Medium) Verify that the monad laws hold for the <code>Monad</code> instance for the <code>Maybe</code> type, as defined in the <code>maybe</code> package.</p>
+<p>(Medium) Verify that the monad laws hold for the <code>Monad</code> instance for the <code>Maybe</code> type, as defined in the <code>maybe</code> package. <em>Note:</em> There are no tests for this exercise.</p>
 </li>
 <li>
 <p>(Medium) Write a function <code>filterM</code> which generalizes the <code>filter</code> function on lists. Your function should have the following type signature:</p>
-<pre><code class="language-haskell">filterM :: forall m a. Monad m =&gt; (a -&gt; m Boolean) -&gt; List a -&gt; m (List a)
+<pre><code class="language-hs">filterM :: forall m a. Monad m =&gt; (a -&gt; m Boolean) -&gt; List a -&gt; m (List a)
 </code></pre>
-<p>Test your function in PSCi using the <code>Maybe</code> and <code>Array</code> monads.</p>
 </li>
 <li>
 <p>(Difficult) Every monad has a default <code>Functor</code> instance given by:</p>
-<pre><code class="language-haskell">map f a = do
+<pre><code class="language-hs">map f a = do
   x &lt;- a
   pure (f x)
 </code></pre>
 <p>Use the monad laws to prove that for any monad, the following holds:</p>
-<pre><code class="language-haskell">lift2 f (pure a) (pure b) = pure (f a b)
+<pre><code class="language-hs">lift2 f (pure a) (pure b) = pure (f a b)
 </code></pre>
 <p>where the <code>Apply</code> instance uses the <code>ap</code> function defined above. Recall that <code>lift2</code> was defined as follows:</p>
-<pre><code class="language-haskell">lift2 :: forall f a b c. Apply f =&gt; (a -&gt; b -&gt; c) -&gt; f a -&gt; f b -&gt; f c
+<pre><code class="language-hs">lift2 :: forall f a b c. Apply f =&gt; (a -&gt; b -&gt; c) -&gt; f a -&gt; f b -&gt; f c
 lift2 f a b = f &lt;$&gt; a &lt;*&gt; b
 </code></pre>
+<p><em>Note:</em> There are no tests for this exercise.</p>
 </li>
 </ol>
 <h2><a class="header" href="#native-effects" id="native-effects">Native Effects</a></h2>
@@ -426,12 +428,23 @@ lift2 f a b = f &lt;$&gt; a &lt;*&gt; b
 <p>The only way in which side-effects managed by the <code>Effect</code> monad will be presented is to run a computation of type <code>Effect a</code> from JavaScript.</p>
 <p>The Spago build tool (and other tools) provide a shortcut, by generating additional JavaScript to invoke the <code>main</code> computation when the application starts. <code>main</code> is required to be a computation in the <code>Effect</code> monad.</p>
 <h2><a class="header" href="#the-effect-monad-1" id="the-effect-monad-1">The Effect Monad</a></h2>
-<p>The goal of the <code>Effect</code> monad is to provide a well-typed API for computations with side-effects, while at the same time generating efficient JavaScript.</p>
-<p>Here is an example. It uses the <code>random</code> package, which defines functions for generating random numbers:</p>
-<pre><code class="language-haskell">module Main where
+<p>The <code>Effect</code> monad provides a well-typed API for computations with side-effects, while at the same time generating efficient JavaScript.</p>
+<p>Let's take a closer look at the return type of the familiar <code>log</code> function. <code>Effect</code> indicates that this function produces a native effect, console IO in this case.
+<code>Unit</code> indicates that no <em>meaningful</em> data is returned. You can think of <code>Unit</code> as being analogous to the <code>void</code> keyword in other languages, such as C, Java, etc.</p>
+<pre><code class="language-hs">log :: String -&gt; Effect Unit
+</code></pre>
+<blockquote>
+<p><em>Aside:</em> You may encounter IDE suggestions for the more general (and more elaborately typed) <code>log</code> function from <code>Effect.Class.Console</code>. This is interchangeable with the one from <code>Effect.Console</code> when dealing with the basic <code>Effect</code> monad. Reasons for the more general version will become clearer after reading about &quot;Monad Transformers&quot; in the &quot;Monadic Adventures&quot; chapter. For the curious (and impatient), this works because there's a <code>MonadEffect</code> instance for <code>Effect</code>.</p>
+<pre><code class="language-hs">log :: forall m. MonadEffect m =&gt; String -&gt; m Unit
+</code></pre>
+</blockquote>
+<p>Now let's now consider an <code>Effect</code> that returns meaningful data. The <code>random</code> function from <code>Effect.Random</code> produces a random <code>Number</code>.</p>
+<pre><code class="language-hs">random :: Effect Number
+</code></pre>
+<p>Here's a full example program (found in <code>test/Random.purs</code> of this chapter's exercises folder).</p>
+<pre><code class="language-hs">module Test.Random where
 
 import Prelude
-
 import Effect (Effect)
 import Effect.Random (random)
 import Effect.Console (logShow)
@@ -440,20 +453,26 @@ main :: Effect Unit
 main = do
   n &lt;- random
   logShow n
-
 </code></pre>
-<p>If this file is saved as <code>src/Main.purs</code>, then it can be compiled and run using Spago:</p>
-<pre><code class="language-text">$ spago run
+<p>Because <code>Effect</code> is a monad, we use do notation to <em>unwrap</em> the data it contains before passing this data on to the effectful <code>logShow</code> function. As a refresher, here's the equivalent code written using the <code>bind</code> operator:</p>
+<pre><code class="language-hs">main :: Effect Unit
+main = random &gt;&gt;= logShow
 </code></pre>
-<p>Running this command, you will see a randomly chosen number between <code>0</code> and <code>1</code> printed to the console.</p>
-<p>This program uses do notation to combine two native effects provided by the JavaScript runtime: random number generation and console IO.</p>
+<p>Try running this yourself with:</p>
+<pre><code>spago run --main Test.Random
+</code></pre>
+<p>You should see a randomly chosen number between <code>0.0</code> and <code>1.0</code> printed to the console.</p>
+<blockquote>
+<p><em>Aside:</em> <code>spago run</code> defaults to searching in the <code>Main</code> module for a <code>main</code> function. You may also specify an alternate module as an entry point with the <code>--main</code> flag, as is done in the above example. Just be sure that this alternate module also contains a <code>main</code> function.</p>
+</blockquote>
+<p>Note that it's also possible to generate &quot;random&quot; (technically pseudorandom) data without resorting to impure effectful code. We'll cover these techniques in the &quot;Generative Testing&quot; chapter.</p>
 <p>As mentioned previously, the <code>Effect</code> monad is of central importance to PureScript. The reason why it's central is because it is the conventional way to interoperate with PureScript's <code>Foreign Function Interface</code>, which provides the mechanism to execute a program and perform side effects. While it's desireable to avoid using the <code>Foreign Function Interface</code>, it's fairly critical to understand how it works and how to use it, so I recommend reading that chapter before doing any serious PureScript work. That said, the <code>Effect</code> monad is fairly simple. It has a few helper functions, but aside from that it doesn't do much except encapsulate side effects.</p>
 <h2><a class="header" href="#exceptions" id="exceptions">Exceptions</a></h2>
 <p>Let's examine a function from the <code>node-fs</code> package that involves two <em>native</em> side effects: reading mutable state, and exceptions:</p>
-<pre><code class="language-haskell">readTextFile :: Encoding → String → Effect String
+<pre><code class="language-hs">readTextFile :: Encoding → String → Effect String
 </code></pre>
 <p>If we attempt to read a file that does not exist:</p>
-<pre><code class="language-haskell">import Node.Encoding (Encoding(..))
+<pre><code class="language-hs">import Node.Encoding (Encoding(..))
 import Node.FS.Sync (readTextFile)
 
 main :: Effect Unit
@@ -472,7 +491,7 @@ Error: ENOENT: no such file or directory, open 'iDoNotExist.md'
   path: 'iDoNotExist.md'
 </code></pre>
 <p>To manage this exception gracefully, we can wrap the potentially problematic code in <code>try</code> to handle either outcome:</p>
-<pre><code class="language-haskell">main :: Effect Unit
+<pre><code class="language-hs">main :: Effect Unit
 main = do
   result &lt;- try $ readTextFile UTF8 &quot;iDoNotExist.md&quot;
   case result of
@@ -480,20 +499,20 @@ main = do
     Left error -&gt; log $ &quot;Couldn't open file. Error was: &quot; &lt;&gt; message error
 </code></pre>
 <p><code>try</code> runs an <code>Effect</code> and returns eventual exceptions as a <code>Left</code> value. If the computation succeeds, the result gets wrapped in a <code>Right</code>:</p>
-<pre><code class="language-haskell">try :: forall a. Effect a -&gt; Effect (Either Error a)
+<pre><code class="language-hs">try :: forall a. Effect a -&gt; Effect (Either Error a)
 </code></pre>
 <p>We can also generate our own exceptions. Here is an alternative implementation of <code>Data.List.head</code> which throws an exception if the list is empty, rather than returning a <code>Maybe</code> value of <code>Nothing</code>.</p>
-<pre><code>exceptionHead :: List Int -&gt; Effect Int
+<pre><code class="language-hs">exceptionHead :: List Int -&gt; Effect Int
 exceptionHead l = case l of
   x : _ -&gt; pure x
   Nil -&gt; throwException $ error &quot;empty list&quot;
 </code></pre>
-<p>That was a somewhat impractical example, as it is usually better to avoid generating exceptions in PureScript code instead and use non-native effects such as <code>Either</code> and <code>Maybe</code> to manage errors and missing values.</p>
+<p>Note that the <code>exceptionHead</code> function is a somewhat impractical example, as it is best to avoid generating exceptions in PureScript code and instead use non-native effects such as <code>Either</code> and <code>Maybe</code> to manage errors and missing values.</p>
 <h2><a class="header" href="#mutable-state" id="mutable-state">Mutable State</a></h2>
 <p>There is another effect defined in the core libraries: the <code>ST</code> effect.</p>
 <p>The <code>ST</code> effect is used to manipulate mutable state. As pure functional programmers, we know that shared mutable state can be problematic. However, the <code>ST</code> effect uses the type system to restrict sharing in such a way that only safe <em>local</em> mutation is allowed.</p>
 <p>The <code>ST</code> effect is defined in the <code>Control.Monad.ST</code> module. To see how it works, we need to look at the types of its actions:</p>
-<pre><code class="language-haskell">new :: forall a r. a -&gt; ST r (STRef r a)
+<pre><code class="language-hs">new :: forall a r. a -&gt; ST r (STRef r a)
 
 read :: forall a r. STRef r a -&gt; ST r a
 
@@ -504,7 +523,7 @@ modify :: forall r a. (a -&gt; a) -&gt; STRef r a -&gt; ST r a
 <p><code>new</code> is used to create a new mutable reference cell of type <code>STRef r a</code>, which can be read using the <code>read</code> action, and modified using the <code>write</code> and <code>modify</code> actions. The type <code>a</code> is the type of the value stored in the cell, and the type <code>r</code> is used to indicate a <em>memory region</em> (or <em>heap</em>) in the type system.</p>
 <p>Here is an example. Suppose we want to simulate the movement of a particle falling under gravity by iterating a simple update function over a large number of small time steps.</p>
 <p>We can do this by creating a mutable reference cell to hold the position and velocity of the particle, and then using a <code>for</code> loop to update the value stored in that cell:</p>
-<pre><code class="language-haskell">import Prelude
+<pre><code class="language-hs">import Prelude
 
 import Control.Monad.ST.Ref (modify, new, read)
 import Control.Monad.ST (ST, for, run)
@@ -526,11 +545,11 @@ simulate x0 v0 time = do
 <p>At the end of the computation, we read the final value of the reference cell, and return the position of the particle.</p>
 <p>Note that even though this function uses mutable state, it is still a pure function, so long as the reference cell <code>ref</code> is not allowed to be used by other parts of the program. We will see that this is exactly what the <code>ST</code> effect disallows.</p>
 <p>To run a computation with the <code>ST</code> effect, we have to use the <code>run</code> function:</p>
-<pre><code class="language-haskell">run :: forall a. (forall r. ST r a) -&gt; a
+<pre><code class="language-hs">run :: forall a. (forall r. ST r a) -&gt; a
 </code></pre>
 <p>The thing to notice here is that the region type <code>r</code> is quantified <em>inside the parentheses</em> on the left of the function arrow. That means that whatever action we pass to <code>run</code> has to work with <em>any region</em> <code>r</code> whatsoever.</p>
 <p>However, once a reference cell has been created by <code>new</code>, its region type is already fixed, so it would be a type error to try to use the reference cell outside the code delimited by <code>run</code>.  This is what allows <code>run</code> to safely remove the <code>ST</code> effect, and turn <code>simulate</code> into a pure function!</p>
-<pre><code class="language-haskell">simulate' :: Number -&gt; Number -&gt; Int -&gt; Number
+<pre><code class="language-hs">simulate' :: Number -&gt; Number -&gt; Int -&gt; Number
 simulate' x0 v0 time = run (simulate x0 v0 time)
 </code></pre>
 <p>You can even try running this function in PSCi:</p>
@@ -552,7 +571,7 @@ simulate' x0 v0 time = run (simulate x0 v0 time)
 21.54
 </code></pre>
 <p>In fact, if we inline the definition of <code>simulate</code> at the call to <code>run</code>, as follows:</p>
-<pre><code class="language-haskell">simulate :: Number -&gt; Number -&gt; Int -&gt; Number
+<pre><code class="language-hs">simulate :: Number -&gt; Number -&gt; Int -&gt; Number
 simulate x0 v0 time =
   run do
     ref &lt;- new { x: x0, v: v0 }
@@ -619,7 +638,7 @@ simulate x0 v0 time =
 <p>The <code>ST</code> effect is a good way to generate short JavaScript when working with locally-scoped mutable state, especially when used together with actions like <code>for</code>, <code>foreach</code>, and <code>while</code> which generate efficient loops.</p>
 <h2><a class="header" href="#exercises-1" id="exercises-1">Exercises</a></h2>
 <ol>
-<li>(Medium) Rewrite the <code>safeDivide</code> function to throw an exception using <code>throwException</code> if the denominator is zero.</li>
+<li>(Medium) Rewrite the <code>safeDivide</code> function as <code>exceptionDivide</code> and throw an exception using <code>throwException</code> if the denominator is zero. <em>Note:</em> There is no unit test for this exercise because it's tricky to check for an expected exception within our unit test framework. Feel free to work on adding this test.</li>
 <li>(Skip) There is no exercise for <code>ST</code> yet. Feel free to propose one. See <a href="https://github.com/purescript-contrib/purescript-book/issues/120">this issue</a> for more details.</li>
 </ol>
 <h2><a class="header" href="#dom-effects" id="dom-effects">DOM Effects</a></h2>
@@ -670,7 +689,7 @@ $ npx parcel src/index.html --open
 </code></pre>
 <p>It calls our generated JavaScript equivalent of the <code>main</code> function of <code>module Main</code> (<code>src/main.purs</code>). Recall that <code>spago build</code> puts all generated JavaScript in the <code>output</code> directory.</p>
 <p>The <code>main</code> function uses the DOM and HTML APIs to render our address book component within the <code>container</code> element we defined in <code>index.html</code>:</p>
-<pre><code class="language-haskell">main :: Effect Unit
+<pre><code class="language-hs">main :: Effect Unit
 main = do
   log &quot;Rendering address book component&quot;
   -- Get window object
@@ -691,28 +710,28 @@ main = do
       D.render app c
 </code></pre>
 <p>Note that these three lines:</p>
-<pre><code class="language-haskell">w &lt;- window
+<pre><code class="language-hs">w &lt;- window
 doc &lt;- document w
 ctr &lt;- getElementById &quot;container&quot; $ toNonElementParentNode doc
 </code></pre>
 <p>Can be consolidated to:</p>
-<pre><code class="language-haskell">doc &lt;- document =&lt;&lt; window
+<pre><code class="language-hs">doc &lt;- document =&lt;&lt; window
 ctr &lt;- getElementById &quot;container&quot; $ toNonElementParentNode doc
 </code></pre>
 <p>Or consolidated even further to:</p>
-<pre><code class="language-haskell">ctr &lt;- getElementById &quot;container&quot; =&lt;&lt; (map toNonElementParentNode $ document =&lt;&lt; window)
+<pre><code class="language-hs">ctr &lt;- getElementById &quot;container&quot; =&lt;&lt; (map toNonElementParentNode $ document =&lt;&lt; window)
 </code></pre>
 <p>It is a matter of personal preference whether the intermediate <code>w</code> and <code>doc</code> variables aid in readability.</p>
 <p>Let's dig into our AddressBook <code>reactComponent</code>. We'll start with a simplified component, and then build up to the actual code in <code>Main.purs</code>.</p>
 <p>Take a look at this minimal component. Feel free to substitute the full component with this one to see it run:</p>
-<pre><code class="language-haskell">mkAddressBookApp :: Effect (ReactComponent {})
+<pre><code class="language-hs">mkAddressBookApp :: Effect (ReactComponent {})
 mkAddressBookApp =
   reactComponent
     &quot;AddressBookApp&quot;
     (\props -&gt; pure $ D.text &quot;Hi! I'm an address book&quot;)
 </code></pre>
 <p><code>reactComponent</code> has this intimidating signature:</p>
-<pre><code class="language-haskell">reactComponent ::
+<pre><code class="language-hs">reactComponent ::
   forall hooks props.
   Lacks &quot;children&quot; props =&gt;
   Lacks &quot;key&quot; props =&gt;
@@ -723,18 +742,18 @@ mkAddressBookApp =
 </code></pre>
 <p>The important points to note are the arguments after all the type class constraints. It takes a <code>String</code> (an arbitrary component name), a function that describes how to convert <code>props</code> into rendered <code>JSX</code>, and returns our <code>ReactComponent</code> wrapped in an <code>Effect</code>.</p>
 <p>The props-to-JSX function is simply:</p>
-<pre><code class="language-haskell">\props -&gt; pure $ D.text &quot;Hi! I'm an address book&quot;
+<pre><code class="language-hs">\props -&gt; pure $ D.text &quot;Hi! I'm an address book&quot;
 </code></pre>
 <p><code>props</code> are ignored, <code>D.text</code> returns <code>JSX</code>, and <code>pure</code> lifts to rendered JSX. Now <code>component</code> has everything it needs to produce the <code>ReactComponent</code>.</p>
 <p>Next we'll examine some of the additional complexities of the full Address Book component.</p>
 <p>These are the first few lines of our full component:</p>
-<pre><code class="language-haskell">mkAddressBookApp :: Effect (ReactComponent {})
+<pre><code class="language-hs">mkAddressBookApp :: Effect (ReactComponent {})
 mkAddressBookApp = do
   reactComponent &quot;AddressBookApp&quot; \props -&gt; R.do
     Tuple person setPerson &lt;- useState examplePerson
 </code></pre>
 <p>We track <code>person</code> as a piece of state with the <code>useState</code> hook.</p>
-<pre><code class="language-haskell">Tuple person setPerson &lt;- useState examplePerson
+<pre><code class="language-hs">Tuple person setPerson &lt;- useState examplePerson
 </code></pre>
 <p>Note that you are free to break-up component state into multiple pieces of state with multiple calls to <code>useState</code>. For example, we could rewrite this app to use a separate piece of state for each record field of <code>Person</code>, but that happens to result in a slightly less convenient architecture in this case.</p>
 <p>In other examples, you may encounter the <code>/\</code> infix operator for <code>Tuple</code>. This is equivalent to the above line:</p>
@@ -799,7 +818,7 @@ setPerson :: (state -&gt; state) -&gt; Effect Unit
 <li><code>div'</code>: Same as <code>div</code>, but returns the <code>ReactComponent</code> before conversion to <code>JSX</code>.</li>
 </ul>
 <p>To display validation errors (if any) at the top of our form, we create a <code>renderValidationErrors</code> helper function that turns the <code>Errors</code> structure into an array of JSX. This array is prepended to the rest of our form.</p>
-<pre><code class="language-haskell">renderValidationErrors :: Errors -&gt; Array R.JSX
+<pre><code class="language-hs">renderValidationErrors :: Errors -&gt; Array R.JSX
 renderValidationErrors [] = []
 renderValidationErrors xs =
   let
@@ -851,7 +870,7 @@ formField name placeholder value setValue =
 </code></pre>
 <p>Putting the <code>input</code> and display <code>text</code> in a <code>label</code> aids in accessibility for screen readers.</p>
 <p>The <code>onChange</code> attribute allows us to describe how to respond to user input. We use the <code>handler</code> function, which has the following type:</p>
-<pre><code class="language-haskell">handler :: forall a. EventFn SyntheticEvent a -&gt; (a -&gt; Effect Unit) -&gt; EventHandler
+<pre><code class="language-hs">handler :: forall a. EventFn SyntheticEvent a -&gt; (a -&gt; Effect Unit) -&gt; EventHandler
 </code></pre>
 <p>For the first argument to <code>handler</code> we use we use <code>targetValue</code>, which provides the value of the text within the HTML <code>input</code> element. It matches the signature expected by <code>handler</code> where the type variable <code>a</code> in this case is <code>Maybe String</code>:</p>
 <pre><code class="language-hs">targetValue :: EventFn SyntheticEvent (Maybe String)
@@ -861,7 +880,7 @@ formField name placeholder value setValue =
 <pre><code class="language-hs">Maybe String -&gt; Effect Unit
 </code></pre>
 <p>It is a function that describes how to convert this <code>Maybe String</code> value into our desired effect. We define a custom <code>handleValue</code> function for this purpose and pass it to <code>handler</code> as follows:</p>
-<pre><code class="language-haskell">onChange:
+<pre><code class="language-hs">onChange:
   let
     handleValue :: Maybe String -&gt; Effect Unit
     handleValue (Just v) = setValue v
@@ -877,13 +896,19 @@ formField name placeholder value setValue =
 <p>That covers the basics of our component implementation. However, you should read the source accompanying this chapter in order to get a full understanding of the way the component works.</p>
 <p>Obviously, this user interface can be improved in a number of ways. The exercises will explore some ways in which we can make the application more usable.</p>
 <h2><a class="header" href="#exercises-2" id="exercises-2">Exercises</a></h2>
+<p>Modify <code>src/Main.purs</code> in the following exercises. There are no unit tests for these exercises.</p>
 <ol>
-<li>(Easy) Modify the application to include a work phone number text box.</li>
-<li>(Medium) Instead of using a <code>ul</code> element to show the validation errors in a list, modify the code to create one <code>div</code> with the <code>alert</code> style for each error.</li>
-<li>(Difficult, Extended) One problem with this user interface is that the validation errors are not displayed next to the form fields they originated from. Modify the code to fix this problem.</li>
-</ol>
+<li>
+<p>(Easy) Modify the application to include a work phone number text box.</p>
+</li>
+<li>
+<p>(Medium) Right now the application shows validation errors collected in a single &quot;pink-alert&quot; background.  Modify to give each validation error its own pink-alert background by separating them  with blank lines.</p>
+<p><em>Hint</em>: Instead of using a <code>ul</code> element to show the validation errors in a list, modify the code to create one <code>div</code> with the <code>alert</code> and <code>alert-danger</code> styles for each error.</p>
+</li>
+<li>
+<p>(Difficult, Extended) One problem with this user interface is that the validation errors are not displayed next to the form fields they originated from. Modify the code to fix this problem.</p>
 <p><em>Hint</em>: the error type returned by the validator should be extended to indicate which field caused the error. You might want to use the following modified <code>Errors</code> type:</p>
-<pre><code class="language-haskell">data Field = FirstNameField
+<pre><code class="language-hs">data Field = FirstNameField
            | LastNameField
            | StreetField
            | CityField
@@ -895,6 +920,8 @@ data ValidationError = ValidationError String Field
 type Errors = Array ValidationError
 </code></pre>
 <p>You will need to write a function which extracts the validation error for a particular <code>Field</code> from the <code>Errors</code> structure.</p>
+</li>
+</ol>
 <h2><a class="header" href="#conclusion" id="conclusion">Conclusion</a></h2>
 <p>This chapter has covered a lot of ideas about handling side-effects in PureScript:</p>
 <ul>
