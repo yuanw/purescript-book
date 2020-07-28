@@ -1468,7 +1468,7 @@ redundantCase false = false
 <li>The constructors of an algebraic data type might have the same name as the ADT itself. This is quite common, and it is important not to confuse the <code>Point</code> <em>type constructor</em> with the <code>Point</code> <em>data constructor</em> - they live in different namespaces.</li>
 </ul>
 <p>This declaration defines <code>Shape</code> as a sum of different constructors, and for each constructor identifies the data that is included. A <code>Shape</code> is either a <code>Circle</code> which contains a center <code>Point</code> and a radius (a number), or a <code>Rectangle</code>, or a <code>Line</code>, or <code>Text</code>. There are no other ways to construct a value of type <code>Shape</code>.</p>
-<p>An algebraic data type is introduced using the <code>data</code> keyword, followed by the name of the new type and any type arguments. The type's constructors are defined after the equals symbol, and are separated by pipe characters (<code>|</code>).</p>
+<p>An algebraic data type is introduced using the <code>data</code> keyword, followed by the name of the new type and any type arguments. The type's constructors (i.e. its <em>data constructors</em>) are defined after the equals symbol, and are separated by pipe characters (<code>|</code>).</p>
 <p>Let's see another example from PureScript's standard libraries. We saw the <code>Maybe</code> type, which is used to define optional values, earlier in the book. Here is its definition from the <code>maybe</code> package:</p>
 <pre><code class="language-haskell">data Maybe a = Nothing | Just a
 </code></pre>
