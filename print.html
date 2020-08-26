@@ -4945,7 +4945,7 @@ modify  :: forall s. (s -&gt; s) -&gt; State s s
 modify_ :: forall s. (s -&gt; s) -&gt; State s Unit
 </code></pre>
 <p>Note that these API signatures are presented in a simplified form using the <code>State</code> type constructor for now. The actual API involves <code>MonadState</code> which we'll cover in the later &quot;Type Classes&quot; section of this chapter, so don't worry if you see different signatures in your IDE tooltips or on Pursuit.</p>
-<p>Let's see an example. One use of the <code>State</code> monad might be to add the values in an array of numbers to the current state. We could do that by choosing <code>Number</code> as the state type <code>s</code>, and using <code>traverse_</code> to traverse the array, with a call to <code>modify</code> for each array element:</p>
+<p>Let's see an example. One use of the <code>State</code> monad might be to add the values in an array of integers to the current state. We could do that by choosing <code>Int</code> as the state type <code>s</code>, and using <code>traverse_</code> to traverse the array, with a call to <code>modify</code> for each array element:</p>
 <pre><code class="language-haskell">import Data.Foldable (traverse_)
 import Control.Monad.State
 import Control.Monad.State.Class
