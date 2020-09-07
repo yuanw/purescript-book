@@ -394,7 +394,7 @@ forall a. Semiring a =&gt; a -&gt; a
 </code></pre>
 <p>Here, we might have annotated this function as <code>Int -&gt; Int</code>, or <code>Number -&gt; Number</code>, but PSCi shows us that the most general type works for any <code>Semiring</code>, allowing us to use our function with both <code>Int</code>s and <code>Number</code>s.</p>
 <h2><a class="header" href="#overlapping-and-orphan-instances" id="overlapping-and-orphan-instances">Overlapping and Orphan Instances</a></h2>
-<p>PureScript has another rule regarding type class instances, called the <em>overlapping instances rule</em>. Whenever a type class instance is required at a function call site, PureScript will use the information inferred by the type checker to choose the correct instance. At that time, there should be exactly one appropriate instance for that type. If there are multiple valid instances, then it is unclear which instance to select, and the compiler will issue a error.</p>
+<p>PureScript has another rule regarding type class instances, called the <em>overlapping instances rule</em>. Whenever a type class instance is required at a function call site, PureScript will use the information inferred by the type checker to choose the correct instance. At that time, there should be exactly one appropriate instance for that type. If there are multiple valid instances, then it is unclear which instance to select, and the compiler will issue an error.</p>
 <p>To demonstrate this, we can try creating two conflicting type class instances for an example type. In the following code, we create two overlapping <code>Show</code> instances for the type <code>T</code>:</p>
 <pre><code class="language-haskell">module Overlapped where
 
