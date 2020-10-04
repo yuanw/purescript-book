@@ -588,10 +588,10 @@ allFiles' file = file : do
 </li>
 <li>
 <p>(Difficult) Write a function <code>whereIs</code> to search for a file by name. The function should return a value of type <code>Maybe Path</code>, indicating the directory containing the file, if it exists. It should behave as follows:</p>
-<pre><code class="language-text">&gt; whereIs &quot;/bin/ls&quot;
+<pre><code class="language-text">&gt; whereIs root &quot;ls&quot;
 Just (/bin/)
 
-&gt; whereIs &quot;/bin/cat&quot;
+&gt; whereIs root &quot;cat&quot;
 Nothing
 </code></pre>
 <p><em>Hint</em>: Try to write this function as an array comprehension using do notation.</p>
