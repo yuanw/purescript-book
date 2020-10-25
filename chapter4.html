@@ -584,10 +584,7 @@ allFiles' file = file : do
 <p>(Easy) Write a function <code>onlyFiles</code> which returns all <em>files</em> (not directories) in all subdirectories of a directory.</p>
 </li>
 <li>
-<p>(Medium) Write a function <code>largestSmallest</code> which returns an array containing the single largest and single smallest files in the filesystem.</p>
-</li>
-<li>
-<p>(Difficult) Write a function <code>whereIs</code> to search for a file by name. The function should return a value of type <code>Maybe Path</code>, indicating the directory containing the file, if it exists. It should behave as follows:</p>
+<p>(Medium) Write a function <code>whereIs</code> to search for a file by name. The function should return a value of type <code>Maybe Path</code>, indicating the directory containing the file, if it exists. It should behave as follows:</p>
 <pre><code class="language-text">&gt; whereIs root &quot;ls&quot;
 Just (/bin/)
 
@@ -595,6 +592,9 @@ Just (/bin/)
 Nothing
 </code></pre>
 <p><em>Hint</em>: Try to write this function as an array comprehension using do notation.</p>
+</li>
+<li>
+<p>(Difficult) Write a function <code>largestSmallest</code> which takes a <code>Path</code> and returns an array containing the single largest and single smallest files in the <code>Path</code>. <em>Note</em>: consider the cases where there are zero or one files in the <code>Path</code> by returning an empty array or a one-element array respectively.</p>
 </li>
 </ol>
 <h2><a class="header" href="#conclusion" id="conclusion">Conclusion</a></h2>
