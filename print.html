@@ -2127,7 +2127,7 @@ hashEqual = eq `on` hash
 <p>(Easy) Use PSCi to test the hash functions for each of the defined instances. <em>Note</em>: There is no provided unit test for this exercise.</p>
 </li>
 <li>
-<p>(Medium) Write a function <code>arrayHasDuplicates</code> which tests if an array has any duplicate elements. Use hash-equality from the <code>hashEqual</code> function as an approximation to value equality. Remember to check for value equality using <code>==</code> if a duplicate pair is found. <em>Hint</em>: the <code>nubByEq</code> function in <code>Data.Array</code> should make this task much simpler.</p>
+<p>(Medium) Write a function <code>arrayHasDuplicates</code> which tests if an array has any duplicate elements based on both hash and value equality. First check for hash equality with the <code>hashEqual</code> function, then check for value equality with <code>==</code> if a duplicate pair of hashes is found. <em>Hint</em>: the <code>nubByEq</code> function in <code>Data.Array</code> should make this task much simpler.</p>
 </li>
 <li>
 <p>(Medium) Write a <code>Hashable</code> instance for the following newtype which satisfies the type class law:</p>
