@@ -612,10 +612,16 @@ instance semigroupMultiply :: Semigroup Multiply where
 instance monoidMultiply :: Monoid Multiply where
   mempty = Multiply 1
 </code></pre>
-<p>This monoid acts on strings by repeating an input string some number of times. Write an instance which implements this action:</p>
-<pre><code class="language-haskell">instance repeatAction :: Action Multiply String
+<p>Write an instance which implements this action:</p>
+<pre><code class="language-haskell">instance actionMultiplyInt :: Action Multiply Int
 </code></pre>
-<p><em>Hint</em>: Search Pursuit for a helper-function with the signature <code>String -&gt; Int -&gt; String</code>. Note that <code>String</code> might appear as a more generic type.</p>
+<p>Does this instance satisfy the laws listed above?</p>
+</li>
+<li>
+<p>(Medium) Write an <code>Action</code> instance which repeats an input string some number of times:</p>
+<pre><code class="language-haskell">instance actionMultiplyString :: Action Multiply String
+</code></pre>
+<p><em>Hint</em>: Search Pursuit for a helper-function with the signature <a href="https://pursuit.purescript.org/search?q=String%20-%3E%20Int%20-%3E%20String"><code>String -&gt; Int -&gt; String</code></a>. Note that <code>String</code> might appear as a more generic type (such as <code>Monoid</code>).</p>
 <p>Does this instance satisfy the laws listed above?</p>
 </li>
 <li>
@@ -625,6 +631,7 @@ instance monoidMultiply :: Monoid Multiply where
 <p>(Difficult) Given the following newtype, write an instance for <code>Action m (Self m)</code>, where the monoid <code>m</code> acts on itself using <code>append</code>:</p>
 <pre><code class="language-haskell">newtype Self m = Self m
 </code></pre>
+<p><em>Note</em>: The testing framework requires <code>Show</code> and <code>Eq</code> instances for the <code>Self</code> and <code>Multiply</code> types. You may either write these instances manually, or let the compiler handle this for you with <a href="https://github.com/purescript/documentation/blob/master/language/Type-Classes.md#derive-from-newtype"><code>derive newtype instance</code></a> shorthand.</p>
 </li>
 <li>
 <p>(Difficult) Should the arguments of the multi-parameter type class <code>Action</code> be related by some functional dependency? Why or why not? <em>Note</em>: There is no test for this exercise.</p>
