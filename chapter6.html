@@ -283,7 +283,7 @@ LT
 <pre><code class="language-haskell">class EuclideanRing a &lt;= Field a
 </code></pre>
 <p>The <code>Field</code> type class is composed from several more general <em>superclasses</em>. This allows us to talk abstractly about types which support some but not all of the <code>Field</code> operations. For example, a type of natural numbers would be closed under addition and multiplication, but not necessarily under subtraction, so that type might have an instance of the <code>Semiring</code> class (which is a superclass of <code>Num</code>), but not an instance of <code>Ring</code> or <code>Field</code>.</p>
-<p>Superclasses will be explained later in this chapter, but the full numeric type class hierarchy is beyond the scope of this chapter. The interested reader is encouraged to read the documentation for the superclasses of <code>Field</code> in <code>prelude</code>.</p>
+<p>Superclasses will be explained later in this chapter, but the full <a href="https://a-guide-to-the-purescript-numeric-hierarchy.readthedocs.io/en/latest/introduction.html">numeric type class hierarchy</a> (<a href="https://harry.garrood.me/numeric-hierarchy-overview/">cheatsheet</a>) is beyond the scope of this chapter. The interested reader is encouraged to read the documentation for the superclasses of <code>Field</code> in <code>prelude</code>.</p>
 <h3><a class="header" href="#semigroups-and-monoids" id="semigroups-and-monoids">Semigroups and Monoids</a></h3>
 <p>The <code>Semigroup</code> type class identifies those types which support an <code>append</code> operation to combine two values:</p>
 <pre><code class="language-haskell">class Semigroup a where
