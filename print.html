@@ -2457,25 +2457,25 @@ examplePerson =
 }
 </code></pre>
 <p>We saw in a previous section how we could use the <code>Either String</code> functor to validate a data structure of type <code>Person</code>. For example, provided functions to validate the two names in the structure, we might validate the entire data structure as follows:</p>
-<pre><code class="language-haskell">nonEmpty1 :: String -&gt; Either String Unit
-nonEmpty1 &quot;&quot; = Left &quot;Field cannot be empty&quot;
-nonEmpty1 _  = Right unit
+<pre><code class="language-haskell">nonEmpty1 :: String -&gt; Either String String
+nonEmpty1 &quot;&quot;     = Left &quot;Field cannot be empty&quot;
+nonEmpty1 value  = Right value
 
 validatePerson1 :: Person -&gt; Either String Person
 validatePerson1 p =
-  person &lt;$&gt; (nonEmpty1 p.firstName *&gt; pure p.firstName)
-         &lt;*&gt; (nonEmpty1 p.lastName  *&gt; pure p.lastName)
+  person &lt;$&gt; nonEmpty1 p.firstName
+         &lt;*&gt; nonEmpty1 p.lastName
          &lt;*&gt; pure p.homeAddress
          &lt;*&gt; pure p.phones
 </code></pre>
 <p>or with <em>applicative do</em></p>
 <pre><code class="language-haskell">validatePerson1Ado :: Person -&gt; Either String Person
 validatePerson1Ado p = ado
-  f &lt;- nonEmpty1 p.firstName *&gt; pure p.firstName
-  l &lt;- nonEmpty1 p.lastName *&gt; pure p.firstName
+  f &lt;- nonEmpty1 p.firstName
+  l &lt;- nonEmpty1 p.lastName
   in person f l p.homeAddress p.phones
 </code></pre>
-<p>In the first two lines, we use the <code>nonEmpty</code> function to validate a non-empty string. <code>nonEmpty</code> returns an error (indicated with the <code>Left</code> constructor) if its input is empty, or a successful empty value (<code>unit</code>) using the <code>Right</code> constructor otherwise. We use the sequencing operator <code>*&gt;</code> to indicate that we want to perform two validations, returning the result from the validator on the right. In this case, the validator on the right simply uses <code>pure</code> to return the input unchanged.</p>
+<p>In the first two lines, we use the <code>nonEmpty1</code> function to validate a non-empty string. <code>nonEmpty1</code> returns an error indicated with the <code>Left</code> constructor if its input is empty, otherwise it returns the value wrapped with the <code>Right</code> constructor.</p>
 <p>The final lines do not perform any validation but simply provide the <code>address</code> and <code>phones</code> fields to the <code>person</code> function as the remaining arguments.</p>
 <p>This function can be seen to work in PSCi, but has a limitation which we have seen before:</p>
 <pre><code class="language-text">&gt; validatePerson $ person &quot;&quot; &quot;&quot; (address &quot;&quot; &quot;&quot; &quot;&quot;) []
@@ -2488,27 +2488,27 @@ validatePerson1Ado p = ado
 <pre><code class="language-haskell">type Errors
   = Array String
 
-nonEmpty :: String -&gt; String -&gt; V Errors Unit
-nonEmpty field &quot;&quot; = invalid [ &quot;Field '&quot; &lt;&gt; field &lt;&gt; &quot;' cannot be empty&quot; ]
-nonEmpty _     _  = pure unit
+nonEmpty :: String -&gt; String -&gt; V Errors String
+nonEmpty field &quot;&quot;     = invalid [ &quot;Field '&quot; &lt;&gt; field &lt;&gt; &quot;' cannot be empty&quot; ]
+nonEmpty _     value  = pure value
 
-lengthIs :: String -&gt; Int -&gt; String -&gt; V Errors Unit
+lengthIs :: String -&gt; Int -&gt; String -&gt; V Errors String
 lengthIs field len value | length value /= len =
   invalid [ &quot;Field '&quot; &lt;&gt; field &lt;&gt; &quot;' must have length &quot; &lt;&gt; show len ]
-lengthIs _     _   _     = pure unit
+lengthIs _     _   value = pure value
 
 validateAddress :: Address -&gt; V Errors Address
 validateAddress a =
-  address &lt;$&gt; (nonEmpty &quot;Street&quot;  a.street *&gt; pure a.street)
-          &lt;*&gt; (nonEmpty &quot;City&quot;    a.city   *&gt; pure a.city)
-          &lt;*&gt; (lengthIs &quot;State&quot; 2 a.state  *&gt; pure a.state)
+  address &lt;$&gt; nonEmpty &quot;Street&quot;  a.street
+          &lt;*&gt; nonEmpty &quot;City&quot;    a.city
+          &lt;*&gt; lengthIs &quot;State&quot; 2 a.state
 </code></pre>
 <p>or with <em>applicative do</em></p>
 <pre><code class="language-haskell">validateAddressAdo :: Address -&gt; V Errors Address
 validateAddressAdo a = ado
-  street &lt;- (nonEmpty &quot;Street&quot;  a.street *&gt; pure a.street)
-  city   &lt;- (nonEmpty &quot;City&quot;    a.city   *&gt; pure a.city)
-  state  &lt;- (lengthIs &quot;State&quot; 2 a.state  *&gt; pure a.state)
+  street &lt;- nonEmpty &quot;Street&quot;  a.street
+  city   &lt;- nonEmpty &quot;City&quot;    a.city
+  state  &lt;- lengthIs &quot;State&quot; 2 a.state
   in address street city state
 </code></pre>
 <p><code>validateAddress</code> validates an <code>Address</code> structure. It checks that the <code>street</code> and <code>city</code> fields are non-empty, and checks that the string in the <code>state</code> field has length 2.</p>
@@ -2531,9 +2531,9 @@ validateAddressAdo a = ado
 <p>This time, we receive an array of all validation errors.</p>
 <h2><a class="header" href="#regular-expression-validators" id="regular-expression-validators">Regular Expression Validators</a></h2>
 <p>The <code>validatePhoneNumber</code> function uses a regular expression to validate the form of its argument. The key is a <code>matches</code> validation function, which uses a <code>Regex</code> from the <code>Data.String.Regex</code> module to validate its input:</p>
-<pre><code class="language-haskell">matches :: String -&gt; Regex -&gt; String -&gt; V Errors Unit
+<pre><code class="language-haskell">matches :: String -&gt; Regex -&gt; String -&gt; V Errors String
 matches _     regex value | test regex value =
-  pure unit
+  pure value
 matches field _     _     =
   invalid [ &quot;Field '&quot; &lt;&gt; field &lt;&gt; &quot;' did not match the required format&quot; ]
 </code></pre>
@@ -2542,13 +2542,13 @@ matches field _     _     =
 <pre><code class="language-haskell">validatePhoneNumber :: PhoneNumber -&gt; V Errors PhoneNumber
 validatePhoneNumber pn =
   phoneNumber &lt;$&gt; pure pn.&quot;type&quot;
-              &lt;*&gt; (matches &quot;Number&quot; phoneNumberRegex pn.number *&gt; pure pn.number)
+              &lt;*&gt; matches &quot;Number&quot; phoneNumberRegex pn.number
 </code></pre>
 <p>or with <em>applicative do</em></p>
 <pre><code class="language-haskell">validatePhoneNumberAdo :: PhoneNumber -&gt; V Errors PhoneNumber
 validatePhoneNumberAdo pn = ado
   tpe    &lt;- pure pn.&quot;type&quot;
-  number &lt;- (matches &quot;Number&quot; phoneNumberRegex pn.number *&gt; pure pn.number)
+  number &lt;- matches &quot;Number&quot; phoneNumberRegex pn.number
   in phoneNumber tpe number
 </code></pre>
 <p>Again, try running this validator against some valid and invalid inputs in PSCi:</p>
@@ -2565,32 +2565,30 @@ invalid ([&quot;Field 'Number' did not match the required format&quot;])
 <li>(Medium) Write a function <code>validateAddressImproved</code> that is similar to <code>validateAddress</code>, but uses the above <code>stateRegex</code> to validate the <code>state</code> field and <code>nonEmptyRegex</code> to validate the <code>street</code> and <code>city</code> fields. <em>Hint</em>: see the source for <code>validatePhoneNumber</code> for an example of how to use <code>matches</code>.</li>
 </ol>
 <h2><a class="header" href="#traversable-functors" id="traversable-functors">Traversable Functors</a></h2>
-<p>The remaining validator is <code>validatePerson</code>, which combines the validators we have seen so far to validate an entire <code>Person</code> structure:</p>
-<pre><code class="language-haskell">arrayNonEmpty :: forall a. String -&gt; Array a -&gt; V Errors Unit
-arrayNonEmpty field [] =
+<p>The remaining validator is <code>validatePerson</code>, which combines the validators we have seen so far to validate an entire <code>Person</code> structure, including the following new <code>validatePhoneNumbers</code> function:</p>
+<pre><code class="language-haskell">validatePhoneNumbers :: String -&gt; Array PhoneNumber -&gt; V Errors (Array PhoneNumber)
+validatePhoneNumbers field []      =
   invalid [ &quot;Field '&quot; &lt;&gt; field &lt;&gt; &quot;' must contain at least one value&quot; ]
-arrayNonEmpty _     _  =
-  pure unit
+validatePhoneNumbers _     phones  =
+  traverse validatePhoneNumber phones
 
 validatePerson :: Person -&gt; V Errors Person
 validatePerson p =
-  person &lt;$&gt; (nonEmpty &quot;First Name&quot; p.firstName *&gt; pure p.firstName)
-         &lt;*&gt; (nonEmpty &quot;Last Name&quot; p.lastName   *&gt; pure p.lastName)
+  person &lt;$&gt; nonEmpty &quot;First Name&quot; p.firstName
+         &lt;*&gt; nonEmpty &quot;Last Name&quot; p.lastName
          &lt;*&gt; validateAddress p.homeAddress
-         &lt;*&gt; (arrayNonEmpty &quot;Phone Numbers&quot; p.phones *&gt;
-              traverse validatePhoneNumber p.phones)
+         &lt;*&gt; validatePhoneNumbers &quot;Phone Numbers&quot; p.phones
 </code></pre>
 <p>or with <em>applicative do</em></p>
 <pre><code class="language-haskell">validatePersonAdo :: Person -&gt; V Errors Person
 validatePersonAdo p = ado
-  firstName &lt;- (nonEmpty &quot;First Name&quot; p.firstName *&gt; pure p.firstName)
-  lastName  &lt;- (nonEmpty &quot;Last Name&quot; p.lastName   *&gt; pure p.lastName)
+  firstName &lt;- nonEmpty &quot;First Name&quot; p.firstName
+  lastName  &lt;- nonEmpty &quot;Last Name&quot; p.lastName
   address   &lt;- validateAddress p.homeAddress
-  numbers   &lt;- (arrayNonEmpty &quot;Phone Numbers&quot; p.phones *&gt;
-                traverse validatePhoneNumber p.phones)
+  numbers   &lt;- validatePhoneNumbers &quot;Phone Numbers&quot; p.phones
   in person firstName lastName address numbers
 </code></pre>
-<p>There is one more interesting function here, which we haven't seen yet - <code>traverse</code>, which appears in the final line.</p>
+<p><code>validatePhoneNumbers</code> uses a new function we haven't seen before - <code>traverse</code>.</p>
 <p><code>traverse</code> is defined in the <code>Data.Traversable</code> module, in the <code>Traversable</code> type class:</p>
 <pre><code class="language-haskell">class (Functor t, Foldable t) &lt;= Traversable t where
   traverse :: forall a b m. Applicative m =&gt; (a -&gt; m b) -&gt; t a -&gt; m (t b)
@@ -2614,10 +2612,10 @@ validatePersonAdo p = ado
 <pre><code class="language-haskell">combineList :: forall f a. Applicative f =&gt; List (f a) -&gt; f (List a)
 </code></pre>
 <p>Traversable functors capture the idea of traversing a data structure, collecting a set of effectful computations, and combining their effects. In fact, <code>sequence</code> and <code>traverse</code> are equally important to the definition of <code>Traversable</code> - each can be implemented in terms of each other. This is left as an exercise for the interested reader.</p>
-<p>The <code>Traversable</code> instance for lists is given in the <code>Data.List</code> module. The definition of <code>traverse</code> is given here:</p>
+<p>The <code>Traversable</code> instance for lists given in the <code>Data.List</code> module is:</p>
 <pre><code class="language-haskell">instance traversableList :: Traversable List where
 -- traverse :: forall a b m. Applicative m =&gt; (a -&gt; m b) -&gt; List a -&gt; m (List b)
-traverse _ Nil = pure Nil
+traverse _ Nil         = pure Nil
 traverse f (Cons x xs) = Cons &lt;$&gt; f x &lt;*&gt; traverse f xs
 </code></pre>
 <p>(The actual definition was later modified to improve stack safety. You can read more about that change <a href="https://github.com/purescript/purescript-lists/pull/87">here</a>.)</p>
@@ -2713,7 +2711,7 @@ countThrows n = do
   x &lt;- 1 .. 6
   y &lt;- 1 .. 6
   if x + y == n
-    then pure [x, y]
+    then pure [ x, y ]
     else empty
 </code></pre>
 <p>We can see that this function works in PSCi:</p>
@@ -2824,20 +2822,10 @@ userCity root =
 <h2><a class="header" href="#folding-with-monads" id="folding-with-monads">Folding With Monads</a></h2>
 <p>As an example of working with monads abstractly, this section will present a function which works with any type constructor in the <code>Monad</code> type class. This should serve to solidify the intuition that monadic code corresponds to programming &quot;in a larger language&quot; with side-effects, and also illustrate the generality which programming with monads brings.</p>
 <p>The function we will write is called <code>foldM</code>. It generalizes the <code>foldl</code> function that we met earlier to a monadic context. Here is its type signature:</p>
-<pre><code class="language-hs">foldM :: forall m a b
-       . Monad m
-      =&gt; (a -&gt; b -&gt; m a)
-      -&gt; a
-      -&gt; List b
-      -&gt; m a
+<pre><code class="language-hs">foldM :: forall m a b. Monad m =&gt; (a -&gt; b -&gt; m a) -&gt; a -&gt; List b -&gt; m a
+foldl :: forall   a b.            (a -&gt; b -&gt;   a) -&gt; a -&gt; List b -&gt;   a
 </code></pre>
-<p>Notice that this is the same as the type of <code>foldl</code>, except for the appearance of the monad <code>m</code>:</p>
-<pre><code class="language-hs">foldl :: forall a b
-       . (a -&gt; b -&gt; a)
-      -&gt; a
-      -&gt; List b
-      -&gt; a
-</code></pre>
+<p>Notice that this is the same as the type of <code>foldl</code>, except for the appearance of the monad <code>m</code>.</p>
 <p>Intuitively, <code>foldM</code> performs a fold over a list in some context supporting some set of side-effects.</p>
 <p>For example, if we picked <code>m</code> to be <code>Maybe</code>, then our fold would be allowed to fail by returning <code>Nothing</code> at any stage - every step returns an optional result, and the result of the fold is therefore also optional.</p>
 <p>If we picked <code>m</code> to be the <code>Array</code> type constructor, then every step of the fold would be allowed to return zero or more results, and the fold would proceed to the next step independently for each result. At the end, the set of results would consist of all folds over all possible paths. This corresponds to a traversal of a graph!</p>
@@ -2972,6 +2960,8 @@ lift2 f a b = f &lt;$&gt; a &lt;*&gt; b
 </code></pre>
 <blockquote>
 <p><em>Aside:</em> You may encounter IDE suggestions for the more general (and more elaborately typed) <code>log</code> function from <code>Effect.Class.Console</code>. This is interchangeable with the one from <code>Effect.Console</code> when dealing with the basic <code>Effect</code> monad. Reasons for the more general version will become clearer after reading about &quot;Monad Transformers&quot; in the &quot;Monadic Adventures&quot; chapter. For the curious (and impatient), this works because there's a <code>MonadEffect</code> instance for <code>Effect</code>.</p>
+</blockquote>
+<blockquote>
 <pre><code class="language-hs">log :: forall m. MonadEffect m =&gt; String -&gt; m Unit
 </code></pre>
 </blockquote>
@@ -3006,7 +2996,7 @@ main = random &gt;&gt;= logShow
 <p>As mentioned previously, the <code>Effect</code> monad is of central importance to PureScript. The reason why it's central is because it is the conventional way to interoperate with PureScript's <code>Foreign Function Interface</code>, which provides the mechanism to execute a program and perform side effects. While it's desireable to avoid using the <code>Foreign Function Interface</code>, it's fairly critical to understand how it works and how to use it, so I recommend reading that chapter before doing any serious PureScript work. That said, the <code>Effect</code> monad is fairly simple. It has a few helper functions, but aside from that it doesn't do much except encapsulate side effects.</p>
 <h2><a class="header" href="#exceptions" id="exceptions">Exceptions</a></h2>
 <p>Let's examine a function from the <code>node-fs</code> package that involves two <em>native</em> side effects: reading mutable state, and exceptions:</p>
-<pre><code class="language-hs">readTextFile :: Encoding → String → Effect String
+<pre><code class="language-hs">readTextFile :: Encoding -&gt; String -&gt; Effect String
 </code></pre>
 <p>If we attempt to read a file that does not exist:</p>
 <pre><code class="language-hs">import Node.Encoding (Encoding(..))
@@ -3033,7 +3023,7 @@ main = do
   result &lt;- try $ readTextFile UTF8 &quot;iDoNotExist.md&quot;
   case result of
     Right lines -&gt; log $ &quot;Contents: \n&quot; &lt;&gt; lines
-    Left error -&gt; log $ &quot;Couldn't open file. Error was: &quot; &lt;&gt; message error
+    Left  error -&gt; log $ &quot;Couldn't open file. Error was: &quot; &lt;&gt; message error
 </code></pre>
 <p><code>try</code> runs an <code>Effect</code> and returns eventual exceptions as a <code>Left</code> value. If the computation succeeds, the result gets wrapped in a <code>Right</code>:</p>
 <pre><code class="language-hs">try :: forall a. Effect a -&gt; Effect (Either Error a)
@@ -3311,6 +3301,7 @@ setPerson :: (state -&gt; state) -&gt; Effect Unit
 <p><code>person</code> is how we access the current state at each rerender.</p>
 <p><code>setPerson</code> is how we update the state. We simply provide a function that describes how to transform the current state to the new state. The record update syntax is perfect for this when the type of <code>state</code> happens to be a <code>Record</code>, for example:</p>
 <pre><code class="language-hs">setPerson (\currentPerson -&gt; currentPerson {firstName = &quot;NewName&quot;})
+
 </code></pre>
 <p>or as shorthand:</p>
 <pre><code class="language-hs">setPerson _ {firstName = &quot;NewName&quot;}
@@ -3395,8 +3386,7 @@ formField name placeholder value setValue =
                         let
                           handleValue :: Maybe String -&gt; Effect Unit
                           handleValue (Just v) = setValue v
-
-                          handleValue Nothing = pure unit
+                          handleValue Nothing  = pure unit
                         in
                           handler targetValue handleValue
                     }
@@ -3421,7 +3411,7 @@ formField name placeholder value setValue =
   let
     handleValue :: Maybe String -&gt; Effect Unit
     handleValue (Just v) = setValue v
-    handleValue Nothing = pure unit
+    handleValue Nothing  = pure unit
   in
     handler targetValue handleValue
 </code></pre>
@@ -3958,7 +3948,7 @@ M -&gt; MRFRMLFLMLFLMRFRM
 <h2><a class="header" href="#project-setup-7" id="project-setup-7">Project Setup</a></h2>
 <p>The source code for this module is a continuation of the source code from chapters 3, 7 and 8. As such, the source tree includes the appropriate source files from those chapters.</p>
 <p>This chapter introduces the <code>argonaut</code> library as a dependency. This library is used for encoding and decoding JSON.</p>
-<p>The exercises for this chapter should be written in <code>test/Solutions.purs</code> and can be checked against the unit tests in <code>test/Main.purs</code> by running <code>spago test</code>.</p>
+<p>The exercises for this chapter should be written in <code>test/MySolutions.purs</code> and can be checked against the unit tests in <code>test/Main.purs</code> by running <code>spago test</code>.</p>
 <p>The Address Book app can be launched with <code>parcel src/index.html --open</code>. It uses the same workflow from Chapter 8, so refer to that chapter for more detailed instructions.</p>
 <h2><a class="header" href="#a-disclaimer" id="a-disclaimer">A Disclaimer</a></h2>
 <p>PureScript provides a straightforward foreign function interface to make working with JavaScript as simple as possible. However, it should be noted that the FFI is an <em>advanced</em> feature of the language. To use it safely and effectively, you should have an understanding of the runtime representation of the data you plan to work with. This chapter aims to impart such an understanding as pertains to code in PureScript's standard libraries.</p>
@@ -3988,19 +3978,17 @@ exports.encodeURIComponent = encodeURIComponent;
 <p>With these two pieces in place, we can now use the <code>encodeURIComponent</code> function from PureScript like any function written in PureScript. For example, if this declaration is saved as a module and loaded into PSCi, we can reproduce the calculation above:</p>
 <pre><code class="language-text">$ spago repl
 
-&gt; import Data.URI
+&gt; import Test.URI
 &gt; encodeURIComponent &quot;Hello World&quot;
 &quot;Hello%20World&quot;
 </code></pre>
 <p>We can also define our own functions in foreign modules. Here's an example of how to create and call a custom JavaScript function that squares a <code>Number</code>:</p>
-<p><code>src/Test/Examples.js</code>:</p>
+<p><code>test/Examples.js</code>:</p>
 <pre><code class="language-js">&quot;use strict&quot;;
 
-exports.square = function(n) {
-  return n * n;
-};
+
 </code></pre>
-<p><code>src/Test/Examples.purs</code>:</p>
+<p><code>test/Examples.purs</code>:</p>
 <pre><code class="language-hs">module Test.Examples where
 
 foreign import square :: Number -&gt; Number
@@ -4106,7 +4094,7 @@ lebab --replace output/ --transform arrow,arrow-return
 <p>The remaining examples in this book will use arrow functions instead of nested functions.</p>
 <h2><a class="header" href="#exercises-25" id="exercises-25">Exercises</a></h2>
 <ol>
-<li>(Medium) Write a JavaScript function <code>volumeFn</code> in the <code>Test.Solutions</code> module that finds the volume of a box. Use an <code>Fn</code> wrapper from <code>Data.Function.Uncurried</code>.</li>
+<li>(Medium) Write a JavaScript function <code>volumeFn</code> in the <code>Test.MySolutions</code> module that finds the volume of a box. Use an <code>Fn</code> wrapper from <code>Data.Function.Uncurried</code>.</li>
 <li>(Medium) Rewrite <code>volumeFn</code> with arrow functions as <code>volumeArrow</code>.</li>
 </ol>
 <h2><a class="header" href="#passing-simple-types" id="passing-simple-types">Passing Simple Types</a></h2>
@@ -4255,14 +4243,16 @@ isEmpty = isUndefined &lt;&lt;&lt; undefinedHead
 </code></pre>
 <h2><a class="header" href="#exercises-27" id="exercises-27">Exercises</a></h2>
 <ol>
-<li>(Medium) Given a record that represents a quadratic polynomial <code>a*x^2 + b*x + c = 0</code>:
+<li>
+<p>(Medium) Given a record that represents a quadratic polynomial <code>a*x^2 + b*x + c = 0</code>:</p>
 <pre><code class="language-hs">type Quadratic = {
   a :: Number,
   b :: Number,
   c :: Number
 }
 </code></pre>
-Write a JavaScript function <code>quadraticRootsImpl</code> and a wrapper <code>quadraticRoots :: Quadratic -&gt; Pair Complex</code> that uses the quadratic formula to find the roots of this polynomial. Return the two roots as a <code>Pair</code> of <code>Complex</code> numbers. <em>Hint:</em> Use the <code>quadraticRoots</code> wrapper to pass a constructor for <code>Pair</code> to <code>quadraticRootsImpl</code>.</li>
+<p>Write a JavaScript function <code>quadraticRootsImpl</code> and a wrapper <code>quadraticRoots :: Quadratic -&gt; Pair Complex</code> that uses the quadratic formula to find the roots of this polynomial. Return the two roots as a <code>Pair</code> of <code>Complex</code> numbers. <em>Hint:</em> Use the <code>quadraticRoots</code> wrapper to pass a constructor for <code>Pair</code> to <code>quadraticRootsImpl</code>.</p>
+</li>
 </ol>
 <h2><a class="header" href="#using-type-class-member-functions" id="using-type-class-member-functions">Using Type Class Member Functions</a></h2>
 <p>Just like our earlier guide on passing the <code>Maybe</code> constructor over FFI, this is another case of writing PureScript that calls JavaScript, which in turn calls PureScript functions again. Here we will explore how to pass type class member functions over the FFI.</p>
@@ -4633,19 +4623,15 @@ validateAndSave = do
 <pre><code class="language-text">  No type class instance was found for
     Data.Argonaut.Encode.Class.EncodeJson PhoneType
 </code></pre>
-<p>This is because <code>PhoneType</code> in the <code>Person</code> record needs an <code>EncodeJson</code> instance. We'll just derive a generic encode instance, and an encode instance too while we're at it. More information how this works is available in the argonaut docs:</p>
+<p>This is because <code>PhoneType</code> in the <code>Person</code> record needs an <code>EncodeJson</code> instance. We'll just derive a generic encode instance, and a decode instance too while we're at it. More information how this works is available in the argonaut docs:</p>
 <pre><code class="language-hs">import Data.Argonaut (class DecodeJson, class EncodeJson)
-import Data.Argonaut.Encode.Generic.Rep (genericEncodeJson)
 import Data.Argonaut.Decode.Generic.Rep (genericDecodeJson)
+import Data.Argonaut.Encode.Generic.Rep (genericEncodeJson)
 import Data.Generic.Rep (class Generic)
 
-derive instance genericPhoneType :: Generic PhoneType _
-
-instance encodeJsonPhoneType :: EncodeJson PhoneType where
-  encodeJson = genericEncodeJson
-
-instance decodeJsonPhoneType :: DecodeJson PhoneType where
-  decodeJson = genericDecodeJson
+derive instance genericPhoneType    :: Generic    PhoneType _
+instance        encodeJsonPhoneType :: EncodeJson PhoneType where encodeJson = genericEncodeJson
+instance        decodeJsonPhoneType :: DecodeJson PhoneType where decodeJson = genericDecodeJson
 </code></pre>
 <p>Now we can save our <code>person</code> to local storage, but this isn't very useful unless we can retrieve the data. We'll tackle that next.</p>
 <p>We'll start with retrieving the &quot;person&quot; string from local storage:</p>
@@ -4655,16 +4641,15 @@ instance decodeJsonPhoneType :: DecodeJson PhoneType where
 <pre><code class="language-hs">processItem :: Json -&gt; Either String Person
 processItem item = do
   jsonString &lt;- decodeJson item
-  j &lt;- jsonParser jsonString
-  (p :: Person) &lt;- decodeJson j
-  pure p
+  j          &lt;- jsonParser jsonString
+  decodeJson j
 </code></pre>
 <p>Then we inspect this result to see if it succeeded. If it failed, we'll log the errors and use our default <code>examplePerson</code>, otherwise we'll use the person retrieved from local storage.</p>
 <pre><code class="language-hs">initialPerson &lt;- case processItem item of
-  Left err -&gt; do
+  Left  err -&gt; do
     log $ &quot;Error: &quot; &lt;&gt; err &lt;&gt; &quot;. Loading examplePerson&quot;
     pure examplePerson
-  Right p -&gt; pure p
+  Right p   -&gt; pure p
 </code></pre>
 <p>Finally, we'll pass this <code>initialPerson</code> to our component via the <code>props</code> record:</p>
 <pre><code class="language-hs">-- Create JSX node from react component.
@@ -4680,9 +4665,8 @@ mkAddressBookApp =
 <pre><code class="language-hs">processItem :: Json -&gt; Either String Person
 processItem item = do
   jsonString &lt;- lmap (&quot;No string in local storage: &quot; &lt;&gt; _) $ decodeJson item
-  j &lt;- lmap (&quot;Cannot parse JSON string: &quot; &lt;&gt; _) $ jsonParser jsonString
-  (p :: Person) &lt;- lmap (&quot;Cannot decode Person: &quot; &lt;&gt; _) $ decodeJson j
-  pure p
+  j          &lt;- lmap (&quot;Cannot parse JSON string: &quot;   &lt;&gt; _) $ jsonParser jsonString
+  lmap               (&quot;Cannot decode Person: &quot;       &lt;&gt; _) $ decodeJson j
 </code></pre>
 <p>Only the first error should ever occur during normal operation of this app. You can trigger the other errors by opening your web browser's dev tools, editing the saved &quot;person&quot; string in local storage, and refreshing the page. How you modify the JSON string determines which error is triggered. See if you can trigger each of them.</p>
 <p>That covers local storage. Next we'll implement the <code>alert</code> action, which is very similar to the <code>log</code> action from the <code>Effect.Console</code> module. The only difference is that the <code>alert</code> action uses the <code>window.alert</code> method, whereas the <code>log</code> action uses the <code>console.log</code> method. As such, <code>alert</code> can only be used in environments where <code>window.alert</code> is defined, such as a web browser.</p>

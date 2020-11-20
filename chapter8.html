@@ -180,7 +180,7 @@ countThrows n = do
   x &lt;- 1 .. 6
   y &lt;- 1 .. 6
   if x + y == n
-    then pure [x, y]
+    then pure [ x, y ]
     else empty
 </code></pre>
 <p>We can see that this function works in PSCi:</p>
@@ -291,20 +291,10 @@ userCity root =
 <h2><a class="header" href="#folding-with-monads" id="folding-with-monads">Folding With Monads</a></h2>
 <p>As an example of working with monads abstractly, this section will present a function which works with any type constructor in the <code>Monad</code> type class. This should serve to solidify the intuition that monadic code corresponds to programming &quot;in a larger language&quot; with side-effects, and also illustrate the generality which programming with monads brings.</p>
 <p>The function we will write is called <code>foldM</code>. It generalizes the <code>foldl</code> function that we met earlier to a monadic context. Here is its type signature:</p>
-<pre><code class="language-hs">foldM :: forall m a b
-       . Monad m
-      =&gt; (a -&gt; b -&gt; m a)
-      -&gt; a
-      -&gt; List b
-      -&gt; m a
+<pre><code class="language-hs">foldM :: forall m a b. Monad m =&gt; (a -&gt; b -&gt; m a) -&gt; a -&gt; List b -&gt; m a
+foldl :: forall   a b.            (a -&gt; b -&gt;   a) -&gt; a -&gt; List b -&gt;   a
 </code></pre>
-<p>Notice that this is the same as the type of <code>foldl</code>, except for the appearance of the monad <code>m</code>:</p>
-<pre><code class="language-hs">foldl :: forall a b
-       . (a -&gt; b -&gt; a)
-      -&gt; a
-      -&gt; List b
-      -&gt; a
-</code></pre>
+<p>Notice that this is the same as the type of <code>foldl</code>, except for the appearance of the monad <code>m</code>.</p>
 <p>Intuitively, <code>foldM</code> performs a fold over a list in some context supporting some set of side-effects.</p>
 <p>For example, if we picked <code>m</code> to be <code>Maybe</code>, then our fold would be allowed to fail by returning <code>Nothing</code> at any stage - every step returns an optional result, and the result of the fold is therefore also optional.</p>
 <p>If we picked <code>m</code> to be the <code>Array</code> type constructor, then every step of the fold would be allowed to return zero or more results, and the fold would proceed to the next step independently for each result. At the end, the set of results would consist of all folds over all possible paths. This corresponds to a traversal of a graph!</p>
@@ -439,6 +429,8 @@ lift2 f a b = f &lt;$&gt; a &lt;*&gt; b
 </code></pre>
 <blockquote>
 <p><em>Aside:</em> You may encounter IDE suggestions for the more general (and more elaborately typed) <code>log</code> function from <code>Effect.Class.Console</code>. This is interchangeable with the one from <code>Effect.Console</code> when dealing with the basic <code>Effect</code> monad. Reasons for the more general version will become clearer after reading about &quot;Monad Transformers&quot; in the &quot;Monadic Adventures&quot; chapter. For the curious (and impatient), this works because there's a <code>MonadEffect</code> instance for <code>Effect</code>.</p>
+</blockquote>
+<blockquote>
 <pre><code class="language-hs">log :: forall m. MonadEffect m =&gt; String -&gt; m Unit
 </code></pre>
 </blockquote>
@@ -473,7 +465,7 @@ main = random &gt;&gt;= logShow
 <p>As mentioned previously, the <code>Effect</code> monad is of central importance to PureScript. The reason why it's central is because it is the conventional way to interoperate with PureScript's <code>Foreign Function Interface</code>, which provides the mechanism to execute a program and perform side effects. While it's desireable to avoid using the <code>Foreign Function Interface</code>, it's fairly critical to understand how it works and how to use it, so I recommend reading that chapter before doing any serious PureScript work. That said, the <code>Effect</code> monad is fairly simple. It has a few helper functions, but aside from that it doesn't do much except encapsulate side effects.</p>
 <h2><a class="header" href="#exceptions" id="exceptions">Exceptions</a></h2>
 <p>Let's examine a function from the <code>node-fs</code> package that involves two <em>native</em> side effects: reading mutable state, and exceptions:</p>
-<pre><code class="language-hs">readTextFile :: Encoding → String → Effect String
+<pre><code class="language-hs">readTextFile :: Encoding -&gt; String -&gt; Effect String
 </code></pre>
 <p>If we attempt to read a file that does not exist:</p>
 <pre><code class="language-hs">import Node.Encoding (Encoding(..))
@@ -500,7 +492,7 @@ main = do
   result &lt;- try $ readTextFile UTF8 &quot;iDoNotExist.md&quot;
   case result of
     Right lines -&gt; log $ &quot;Contents: \n&quot; &lt;&gt; lines
-    Left error -&gt; log $ &quot;Couldn't open file. Error was: &quot; &lt;&gt; message error
+    Left  error -&gt; log $ &quot;Couldn't open file. Error was: &quot; &lt;&gt; message error
 </code></pre>
 <p><code>try</code> runs an <code>Effect</code> and returns eventual exceptions as a <code>Left</code> value. If the computation succeeds, the result gets wrapped in a <code>Right</code>:</p>
 <pre><code class="language-hs">try :: forall a. Effect a -&gt; Effect (Either Error a)
@@ -778,6 +770,7 @@ setPerson :: (state -&gt; state) -&gt; Effect Unit
 <p><code>person</code> is how we access the current state at each rerender.</p>
 <p><code>setPerson</code> is how we update the state. We simply provide a function that describes how to transform the current state to the new state. The record update syntax is perfect for this when the type of <code>state</code> happens to be a <code>Record</code>, for example:</p>
 <pre><code class="language-hs">setPerson (\currentPerson -&gt; currentPerson {firstName = &quot;NewName&quot;})
+
 </code></pre>
 <p>or as shorthand:</p>
 <pre><code class="language-hs">setPerson _ {firstName = &quot;NewName&quot;}
@@ -862,8 +855,7 @@ formField name placeholder value setValue =
                         let
                           handleValue :: Maybe String -&gt; Effect Unit
                           handleValue (Just v) = setValue v
-
-                          handleValue Nothing = pure unit
+                          handleValue Nothing  = pure unit
                         in
                           handler targetValue handleValue
                     }
@@ -888,7 +880,7 @@ formField name placeholder value setValue =
   let
     handleValue :: Maybe String -&gt; Effect Unit
     handleValue (Just v) = setValue v
-    handleValue Nothing = pure unit
+    handleValue Nothing  = pure unit
   in
     handler targetValue handleValue
 </code></pre>

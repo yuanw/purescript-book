@@ -172,7 +172,7 @@
 <h2><a class="header" href="#project-setup" id="project-setup">Project Setup</a></h2>
 <p>The source code for this module is a continuation of the source code from chapters 3, 7 and 8. As such, the source tree includes the appropriate source files from those chapters.</p>
 <p>This chapter introduces the <code>argonaut</code> library as a dependency. This library is used for encoding and decoding JSON.</p>
-<p>The exercises for this chapter should be written in <code>test/Solutions.purs</code> and can be checked against the unit tests in <code>test/Main.purs</code> by running <code>spago test</code>.</p>
+<p>The exercises for this chapter should be written in <code>test/MySolutions.purs</code> and can be checked against the unit tests in <code>test/Main.purs</code> by running <code>spago test</code>.</p>
 <p>The Address Book app can be launched with <code>parcel src/index.html --open</code>. It uses the same workflow from Chapter 8, so refer to that chapter for more detailed instructions.</p>
 <h2><a class="header" href="#a-disclaimer" id="a-disclaimer">A Disclaimer</a></h2>
 <p>PureScript provides a straightforward foreign function interface to make working with JavaScript as simple as possible. However, it should be noted that the FFI is an <em>advanced</em> feature of the language. To use it safely and effectively, you should have an understanding of the runtime representation of the data you plan to work with. This chapter aims to impart such an understanding as pertains to code in PureScript's standard libraries.</p>
@@ -202,19 +202,17 @@ exports.encodeURIComponent = encodeURIComponent;
 <p>With these two pieces in place, we can now use the <code>encodeURIComponent</code> function from PureScript like any function written in PureScript. For example, if this declaration is saved as a module and loaded into PSCi, we can reproduce the calculation above:</p>
 <pre><code class="language-text">$ spago repl
 
-&gt; import Data.URI
+&gt; import Test.URI
 &gt; encodeURIComponent &quot;Hello World&quot;
 &quot;Hello%20World&quot;
 </code></pre>
 <p>We can also define our own functions in foreign modules. Here's an example of how to create and call a custom JavaScript function that squares a <code>Number</code>:</p>
-<p><code>src/Test/Examples.js</code>:</p>
+<p><code>test/Examples.js</code>:</p>
 <pre><code class="language-js">&quot;use strict&quot;;
 
-exports.square = function(n) {
-  return n * n;
-};
+
 </code></pre>
-<p><code>src/Test/Examples.purs</code>:</p>
+<p><code>test/Examples.purs</code>:</p>
 <pre><code class="language-hs">module Test.Examples where
 
 foreign import square :: Number -&gt; Number
@@ -320,7 +318,7 @@ lebab --replace output/ --transform arrow,arrow-return
 <p>The remaining examples in this book will use arrow functions instead of nested functions.</p>
 <h2><a class="header" href="#exercises" id="exercises">Exercises</a></h2>
 <ol>
-<li>(Medium) Write a JavaScript function <code>volumeFn</code> in the <code>Test.Solutions</code> module that finds the volume of a box. Use an <code>Fn</code> wrapper from <code>Data.Function.Uncurried</code>.</li>
+<li>(Medium) Write a JavaScript function <code>volumeFn</code> in the <code>Test.MySolutions</code> module that finds the volume of a box. Use an <code>Fn</code> wrapper from <code>Data.Function.Uncurried</code>.</li>
 <li>(Medium) Rewrite <code>volumeFn</code> with arrow functions as <code>volumeArrow</code>.</li>
 </ol>
 <h2><a class="header" href="#passing-simple-types" id="passing-simple-types">Passing Simple Types</a></h2>
@@ -469,14 +467,16 @@ isEmpty = isUndefined &lt;&lt;&lt; undefinedHead
 </code></pre>
 <h2><a class="header" href="#exercises-2" id="exercises-2">Exercises</a></h2>
 <ol>
-<li>(Medium) Given a record that represents a quadratic polynomial <code>a*x^2 + b*x + c = 0</code>:
+<li>
+<p>(Medium) Given a record that represents a quadratic polynomial <code>a*x^2 + b*x + c = 0</code>:</p>
 <pre><code class="language-hs">type Quadratic = {
   a :: Number,
   b :: Number,
   c :: Number
 }
 </code></pre>
-Write a JavaScript function <code>quadraticRootsImpl</code> and a wrapper <code>quadraticRoots :: Quadratic -&gt; Pair Complex</code> that uses the quadratic formula to find the roots of this polynomial. Return the two roots as a <code>Pair</code> of <code>Complex</code> numbers. <em>Hint:</em> Use the <code>quadraticRoots</code> wrapper to pass a constructor for <code>Pair</code> to <code>quadraticRootsImpl</code>.</li>
+<p>Write a JavaScript function <code>quadraticRootsImpl</code> and a wrapper <code>quadraticRoots :: Quadratic -&gt; Pair Complex</code> that uses the quadratic formula to find the roots of this polynomial. Return the two roots as a <code>Pair</code> of <code>Complex</code> numbers. <em>Hint:</em> Use the <code>quadraticRoots</code> wrapper to pass a constructor for <code>Pair</code> to <code>quadraticRootsImpl</code>.</p>
+</li>
 </ol>
 <h2><a class="header" href="#using-type-class-member-functions" id="using-type-class-member-functions">Using Type Class Member Functions</a></h2>
 <p>Just like our earlier guide on passing the <code>Maybe</code> constructor over FFI, this is another case of writing PureScript that calls JavaScript, which in turn calls PureScript functions again. Here we will explore how to pass type class member functions over the FFI.</p>
@@ -847,19 +847,15 @@ validateAndSave = do
 <pre><code class="language-text">  No type class instance was found for
     Data.Argonaut.Encode.Class.EncodeJson PhoneType
 </code></pre>
-<p>This is because <code>PhoneType</code> in the <code>Person</code> record needs an <code>EncodeJson</code> instance. We'll just derive a generic encode instance, and an encode instance too while we're at it. More information how this works is available in the argonaut docs:</p>
+<p>This is because <code>PhoneType</code> in the <code>Person</code> record needs an <code>EncodeJson</code> instance. We'll just derive a generic encode instance, and a decode instance too while we're at it. More information how this works is available in the argonaut docs:</p>
 <pre><code class="language-hs">import Data.Argonaut (class DecodeJson, class EncodeJson)
-import Data.Argonaut.Encode.Generic.Rep (genericEncodeJson)
 import Data.Argonaut.Decode.Generic.Rep (genericDecodeJson)
+import Data.Argonaut.Encode.Generic.Rep (genericEncodeJson)
 import Data.Generic.Rep (class Generic)
 
-derive instance genericPhoneType :: Generic PhoneType _
-
-instance encodeJsonPhoneType :: EncodeJson PhoneType where
-  encodeJson = genericEncodeJson
-
-instance decodeJsonPhoneType :: DecodeJson PhoneType where
-  decodeJson = genericDecodeJson
+derive instance genericPhoneType    :: Generic    PhoneType _
+instance        encodeJsonPhoneType :: EncodeJson PhoneType where encodeJson = genericEncodeJson
+instance        decodeJsonPhoneType :: DecodeJson PhoneType where decodeJson = genericDecodeJson
 </code></pre>
 <p>Now we can save our <code>person</code> to local storage, but this isn't very useful unless we can retrieve the data. We'll tackle that next.</p>
 <p>We'll start with retrieving the &quot;person&quot; string from local storage:</p>
@@ -869,16 +865,15 @@ instance decodeJsonPhoneType :: DecodeJson PhoneType where
 <pre><code class="language-hs">processItem :: Json -&gt; Either String Person
 processItem item = do
   jsonString &lt;- decodeJson item
-  j &lt;- jsonParser jsonString
-  (p :: Person) &lt;- decodeJson j
-  pure p
+  j          &lt;- jsonParser jsonString
+  decodeJson j
 </code></pre>
 <p>Then we inspect this result to see if it succeeded. If it failed, we'll log the errors and use our default <code>examplePerson</code>, otherwise we'll use the person retrieved from local storage.</p>
 <pre><code class="language-hs">initialPerson &lt;- case processItem item of
-  Left err -&gt; do
+  Left  err -&gt; do
     log $ &quot;Error: &quot; &lt;&gt; err &lt;&gt; &quot;. Loading examplePerson&quot;
     pure examplePerson
-  Right p -&gt; pure p
+  Right p   -&gt; pure p
 </code></pre>
 <p>Finally, we'll pass this <code>initialPerson</code> to our component via the <code>props</code> record:</p>
 <pre><code class="language-hs">-- Create JSX node from react component.
@@ -894,9 +889,8 @@ mkAddressBookApp =
 <pre><code class="language-hs">processItem :: Json -&gt; Either String Person
 processItem item = do
   jsonString &lt;- lmap (&quot;No string in local storage: &quot; &lt;&gt; _) $ decodeJson item
-  j &lt;- lmap (&quot;Cannot parse JSON string: &quot; &lt;&gt; _) $ jsonParser jsonString
-  (p :: Person) &lt;- lmap (&quot;Cannot decode Person: &quot; &lt;&gt; _) $ decodeJson j
-  pure p
+  j          &lt;- lmap (&quot;Cannot parse JSON string: &quot;   &lt;&gt; _) $ jsonParser jsonString
+  lmap               (&quot;Cannot decode Person: &quot;       &lt;&gt; _) $ decodeJson j
 </code></pre>
 <p>Only the first error should ever occur during normal operation of this app. You can trigger the other errors by opening your web browser's dev tools, editing the saved &quot;person&quot; string in local storage, and refreshing the page. How you modify the JSON string determines which error is triggered. See if you can trigger each of them.</p>
 <p>That covers local storage. Next we'll implement the <code>alert</code> action, which is very similar to the <code>log</code> action from the <code>Effect.Console</code> module. The only difference is that the <code>alert</code> action uses the <code>window.alert</code> method, whereas the <code>log</code> action uses the <code>console.log</code> method. As such, <code>alert</code> can only be used in environments where <code>window.alert</code> is defined, such as a web browser.</p>
