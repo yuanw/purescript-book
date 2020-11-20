@@ -240,7 +240,15 @@ No type class instance was found for
 </code></pre>
 <h2><a class="header" href="#exercises" id="exercises">Exercises</a></h2>
 <ol>
-<li>(Easy) Use the <code>showShape</code> function from the previous chapter to define a <code>Show</code> instance for the <code>Shape</code> type.</li>
+<li>
+<p>(Easy) Define a <code>Show</code> instance for <code>Point</code>. Match the same output as the <code>showPoint</code> function from the previous chapter.</p>
+<pre><code class="language-haskell">data Point
+  = Point
+  { x :: Number
+  , y :: Number
+  }
+</code></pre>
+</li>
 </ol>
 <h2><a class="header" href="#common-type-classes" id="common-type-classes">Common Type Classes</a></h2>
 <p>In this section, we'll look at some standard type classes defined in the Prelude and standard libraries. These type classes form the basis of many common patterns of abstraction in idiomatic PureScript code, so a basic understanding of their functions is highly recommended.</p>
@@ -355,17 +363,39 @@ LT
 <p>The second law is the <em>composition law</em>. It states that mapping one function over a structure, and then mapping a second, is the same thing as mapping the composition of the two functions over the structure.</p>
 <p>Whatever &quot;lifting&quot; means in the general sense, it should be true that any reasonable definition of lifting a function over a data structure should obey these rules.</p>
 <p>Many standard type classes come with their own set of similar laws. The laws given to a type class give structure to the functions of that type class and allow us to study its instances in generality. The interested reader can research the laws ascribed to the standard type classes that we have seen already.</p>
+<h3><a class="header" href="#deriving-instances" id="deriving-instances">Deriving Instances</a></h3>
+<p>Rather than writing instances manually, you can let the compiler to most of the work for you. Take a look at this <a href="https://github.com/purescript/documentation/blob/master/guides/Type-Class-Deriving.md">Type Class Deriving guide</a>. That information will help you solve the following exercises.</p>
 <h2><a class="header" href="#exercises-1" id="exercises-1">Exercises</a></h2>
-<ol>
-<li>
-<p>(Easy) The following newtype represents a complex number:</p>
-<pre><code class="language-haskell">newtype Complex = Complex
+<p>The following newtype represents a complex number:</p>
+<pre><code class="language-haskell">newtype Complex
+  = Complex
   { real :: Number
   , imaginary :: Number
   }
 </code></pre>
-<p>Define <code>Show</code> and <code>Eq</code> instances for <code>Complex</code>.</p>
+<ol>
+<li>
+<p>(Easy) Define a <code>Show</code> instance for <code>Complex</code>. Match the output format expected by the tests (e.g. <code>1.2+3.4i</code>, <code>5.6-7.8i</code>, etc.).</p>
 </li>
+<li>
+<p>(Easy) Derive an <code>Eq</code> instance for <code>Complex</code>. <em>Note</em>: You may instead write this instance manually, but why do more work if you don't have to?</p>
+</li>
+<li>
+<p>(Medium) Define a <code>Semiring</code> instance for <code>Complex</code>. <em>Note</em>: You can use <code>wrap</code> and <code>over2</code> from <a href="https://pursuit.purescript.org/packages/purescript-newtype/docs/Data.Newtype"><code>Data.Newtype</code></a> to create a more concise solution.</p>
+</li>
+<li>
+<p>(Easy) Derive (via <code>newtype</code>) a <code>Ring</code> instance for <code>Complex</code>. <em>Note</em>: You may instead write this instance manually, but that's not as convenient.</p>
+</li>
+</ol>
+<p>Here's the <code>Shape</code> ADT from the previous chapter:</p>
+<pre><code class="language-haskell">data Shape
+  = Circle Point Number
+  | Rectangle Point Number Number
+  | Line Point Point
+  | Text Point String
+</code></pre>
+<ol start="5">
+<li>(Medium) Derive (via <code>Generic</code>) a <code>Show</code> instance for <code>Shape</code>. How does the amount of code written and <code>String</code> output compare to <code>showShape</code> from the previous chapter? <em>Note</em>: You may instead write this instance manually, but you'll need to pay close attention to the output format expected by the tests.</li>
 </ol>
 <h2><a class="header" href="#type-class-constraints" id="type-class-constraints">Type Class Constraints</a></h2>
 <p>Types of functions can be constrained by using type classes. Here is an example: suppose we want to write a function which tests if three values are equal, by using equality defined using an <code>Eq</code> type class instance.</p>
@@ -465,7 +495,7 @@ commas on the left hand side of the <code>=&gt;</code> symbol:</p>
 <p>(Easy) The following declaration defines a type of non-empty arrays of elements of type <code>a</code>:</p>
 <pre><code class="language-haskell">data NonEmpty a = NonEmpty a (Array a)
 </code></pre>
-<p>Write an <code>Eq</code> instance for the type <code>NonEmpty a</code> which reuses the instances for <code>Eq a</code> and <code>Eq (Array a)</code>.</p>
+<p>Write an <code>Eq</code> instance for the type <code>NonEmpty a</code> which reuses the instances for <code>Eq a</code> and <code>Eq (Array a)</code>. <em>Note:</em> you may instead derive the <code>Eq</code> instance.</p>
 </li>
 <li>
 <p>(Medium) Write a <code>Semigroup</code> instance for <code>NonEmpty a</code> by reusing the <code>Semigroup</code> instance for <code>Array</code>.</p>
@@ -475,7 +505,7 @@ commas on the left hand side of the <code>=&gt;</code> symbol:</p>
 </li>
 <li>
 <p>(Medium) Given any type <code>a</code> with an instance of <code>Ord</code>, we can add a new &quot;infinite&quot; value which is greater than any other value:</p>
-<pre><code class="language-haskell">data Extended a = Finite a | Infinite
+<pre><code class="language-haskell">data Extended a = Infinite | Finite a
 </code></pre>
 <p>Write an <code>Ord</code> instance for <code>Extended a</code> which reuses the <code>Ord</code> instance for <code>a</code>.</p>
 </li>
@@ -490,6 +520,12 @@ commas on the left hand side of the <code>=&gt;</code> symbol:</p>
 <pre><code class="language-haskell">instance foldableOneMore :: Foldable f =&gt; Foldable (OneMore f) where
 ...
 </code></pre>
+</li>
+<li>
+<p>(Medium) Write a <code>dedupShapes :: Array Shape -&gt; Array Shape</code> function which removes duplicate <code>Shape</code>s from an array using the <code>nubEq</code> function.</p>
+</li>
+<li>
+<p>(Medium) Write a <code>dedupShapesFast</code> function which is the same as <code>dudupShapes</code>, but uses the more efficient <code>nub</code> function.</p>
 </li>
 </ol>
 <h2><a class="header" href="#multi-parameter-type-classes" id="multi-parameter-type-classes">Multi Parameter Type Classes</a></h2>
