@@ -636,6 +636,10 @@ pure ((Just unit))
 <p>(Easy) Write <code>Eq</code> and <code>Show</code> instances for the following binary tree data structure:</p>
 <pre><code class="language-haskell">data Tree a = Leaf | Branch (Tree a) a (Tree a)
 </code></pre>
+<p>Recall from the previous chapter that you may either write these instances manually or let the compiler derive them for you.</p>
+<p>There are many &quot;correct&quot; formatting options for <code>Show</code> output. The test for this exercise expects the following whitespace style. This happens to match the default formatting of generic show, so you only need to make note of this if you're planning on writing this instance manually.</p>
+<pre><code>(Branch (Branch Leaf 8 Leaf) 42 Leaf)
+</code></pre>
 </li>
 <li>
 <p>(Medium) Write a <code>Traversable</code> instance for <code>Tree a</code>, which combines side-effects from left-to-right. <em>Hint</em>: There are some additional instance dependencies that need to be defined for <code>Traversable</code>.</p>
