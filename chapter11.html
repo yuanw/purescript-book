@@ -856,7 +856,6 @@ lineHandler currentState input = do
 <p>Because we separated our implementation from the user interface, it would be possible to create other front-ends for our game. For example, we could use the <code>Effect</code> monad to render the game in the browser using the Canvas API or the DOM.</p>
 <p>We have seen how monad transformers allow us to write safe code in an imperative style, where effects are tracked by the type system. In addition, type classes provide a powerful way to abstract over the actions provided by a monad, enabling code reuse. We were able to use standard abstractions like <code>Alternative</code> and <code>MonadPlus</code> to build useful monads by combining standard monad transformers.</p>
 <p>Monad transformers are an excellent demonstration of the sort of expressive code that can be written by relying on advanced type system features such as higher-kinded polymorphism and multi-parameter type classes.</p>
-<p>In the next chapter, we will see how monad transformers can be used to give an elegant solution to a common complaint when working with asynchronous JavaScript code - the problem of <em>callback hell</em>.</p>
 
                     </main>
 
