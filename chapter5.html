@@ -219,11 +219,11 @@ toString false = &quot;false&quot;
 <h2><a class="header" href="#guards" id="guards">Guards</a></h2>
 <p>In the Euclidean algorithm example, we used an <code>if .. then .. else</code> expression to switch between the two alternatives when <code>m &gt; n</code> and <code>m &lt;= n</code>. Another option in this case would be to use a <em>guard</em>.</p>
 <p>A guard is a boolean-valued expression which must be satisfied in addition to the constraints imposed by the patterns. Here is the Euclidean algorithm rewritten to use a guard:</p>
-<pre><code class="language-haskell">gcd :: Int -&gt; Int -&gt; Int
-gcd n 0 = n
-gcd 0 n = n
-gcd n m | n &gt; m     = gcd (n - m) m
-        | otherwise = gcd n (m - n)
+<pre><code class="language-haskell">gcdV2 :: Int -&gt; Int -&gt; Int
+gcdV2 n 0 = n
+gcdV2 0 n = n
+gcdV2 n m | n &gt; m     = gcdV2 (n - m) m
+          | otherwise = gcdV2 n (m - n)
 </code></pre>
 <p>In this case, the third line uses a guard to impose the extra condition that the first argument is strictly larger than the second.</p>
 <p>As this example demonstrates, guards appear on the left of the equals symbol, separated from the list of patterns by a pipe character (<code>|</code>).</p>
@@ -291,6 +291,20 @@ Type of expression lacks required label &quot;last&quot;
 <pre><code class="language-haskell">&gt; showPerson p = p.last &lt;&gt; &quot;, &quot; &lt;&gt; p.first
 </code></pre>
 <p>and PSCi would have inferred the same type.</p>
+<h2><a class="header" href="#record-puns" id="record-puns">Record Puns</a></h2>
+<p>Recall that the <code>showPerson</code> function matches a record inside its argument, binding the <code>first</code> and <code>last</code> fields to values named <code>x</code> and <code>y</code>. We could alternatively just reuse the field names themselves, and simplify this sort of pattern match as follows:</p>
+<pre><code class="language-haskell">showPersonV2 :: { first :: String, last :: String } -&gt; String
+showPersonV2 { first, last } = last &lt;&gt; &quot;, &quot; &lt;&gt; first
+</code></pre>
+<p>Here, we only specify the names of the fields, and we do not need to specify the names of the values we want to introduce. This is called a <em>record pun</em>.</p>
+<p>It is also possible to use record puns to <em>construct</em> records. For example, if we have values named <code>first</code> and <code>last</code> in scope, we can construct a person record using <code>{ first, last }</code>:</p>
+<pre><code class="language-haskell">unknownPerson :: { first :: String, last :: String }
+unknownPerson = { first, last }
+  where
+    first = &quot;Jane&quot;
+    last  = &quot;Doe&quot;
+</code></pre>
+<p>This may improve readability of code in some circumstances.</p>
 <h2><a class="header" href="#nested-patterns" id="nested-patterns">Nested Patterns</a></h2>
 <p>Array patterns and record patterns both combine smaller patterns to build larger patterns. For the most part, the examples above have only used simple patterns inside array patterns and record patterns, but it is important to note that patterns can be arbitrarily <em>nested</em>, which allows functions to be defined using conditions on potentially complex data types.</p>
 <p>For example, this code combines two record patterns:</p>
@@ -311,7 +325,7 @@ sortPair arr@[x, y]
   | otherwise = [y, x]
 sortPair arr = arr
 </code></pre>
-<p>This way, we save ourselves from allocating a new array if the pair is already sorted.</p>
+<p>This way, we save ourselves from allocating a new array if the pair is already sorted. Note that if the input array does not contain <em>exactly</em> two elements, then this function simply returns it unchanged, even if it's unsorted.</p>
 <h2><a class="header" href="#exercises-1" id="exercises-1">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a function <code>sameCity</code> which uses record patterns to test whether two <code>Person</code> records belong to the same city.</li>
@@ -394,21 +408,14 @@ redundantCase false = false
   | Rectangle Point Number Number
   | Line Point Point
   | Text Point String
-</code></pre>
-<p>The <code>Point</code> type might also be defined as an algebraic data type, as follows:</p>
-<pre><code class="language-haskell">data Point = Point
+
+type Point =
   { x :: Number
   , y :: Number
   }
 </code></pre>
-<p>The <code>Point</code> data type illustrates some interesting points:</p>
-<ul>
-<li>The data carried by an ADT's constructors doesn't have to be restricted to primitive types: constructors can include records, arrays, or even other ADTs.</li>
-<li>Even though ADTs are useful for describing data with multiple constructors, they can also be useful when there is only a single constructor.</li>
-<li>The constructors of an algebraic data type might have the same name as the ADT itself. This is quite common, and it is important not to confuse the <code>Point</code> <em>type constructor</em> with the <code>Point</code> <em>data constructor</em> - they live in different namespaces.</li>
-</ul>
 <p>This declaration defines <code>Shape</code> as a sum of different constructors, and for each constructor identifies the data that is included. A <code>Shape</code> is either a <code>Circle</code> which contains a center <code>Point</code> and a radius (a number), or a <code>Rectangle</code>, or a <code>Line</code>, or <code>Text</code>. There are no other ways to construct a value of type <code>Shape</code>.</p>
-<p>An algebraic data type is introduced using the <code>data</code> keyword, followed by the name of the new type and any type arguments. The type's constructors (i.e. its <em>data constructors</em>) are defined after the equals symbol, and are separated by pipe characters (<code>|</code>).</p>
+<p>An algebraic data type is introduced using the <code>data</code> keyword, followed by the name of the new type and any type arguments. The type's constructors (i.e. its <em>data constructors</em>) are defined after the equals symbol, and are separated by pipe characters (<code>|</code>). The data carried by an ADT's constructors doesn't have to be restricted to primitive types: constructors can include records, arrays, or even other ADTs.</p>
 <p>Let's see another example from PureScript's standard libraries. We saw the <code>Maybe</code> type, which is used to define optional values, earlier in the book. Here is its definition from the <code>maybe</code> package:</p>
 <pre><code class="language-haskell">data Maybe a = Nothing | Just a
 </code></pre>
@@ -424,40 +431,29 @@ redundantCase false = false
 exampleLine = Line p1 p2
   where
     p1 :: Point
-    p1 = Point { x: 0.0, y: 0.0 }
+    p1 = { x: 0.0, y: 0.0 }
 
     p2 :: Point
-    p2 = Point { x: 100.0, y: 50.0 }
+    p2 = { x: 100.0, y: 50.0 }
 </code></pre>
 <p>To construct the points <code>p1</code> and <code>p2</code>, we apply the <code>Point</code> constructor to its single argument, which is a record.</p>
 <p>So, constructing values of algebraic data types is simple, but how do we use them? This is where the important connection with pattern matching appears: the only way to consume a value of an algebraic data type is to use a pattern to match its constructor.</p>
 <p>Let's see an example. Suppose we want to convert a <code>Shape</code> into a <code>String</code>. We have to use pattern matching to discover which constructor was used to construct the <code>Shape</code>. We can do this as follows:</p>
-<pre><code class="language-haskell">showPoint :: Point -&gt; String
-showPoint (Point { x: x, y: y }) =
-  &quot;(&quot; &lt;&gt; show x &lt;&gt; &quot;, &quot; &lt;&gt; show y &lt;&gt; &quot;)&quot;
+<pre><code class="language-haskell">showShape :: Shape -&gt; String
+showShape (Circle c r) =
+  &quot;Circle [center: &quot; &lt;&gt; showPoint c &lt;&gt; &quot;, radius: &quot; &lt;&gt; show r &lt;&gt; &quot;]&quot;
+showShape (Rectangle c w h) =
+  &quot;Rectangle [center: &quot; &lt;&gt; showPoint c &lt;&gt; &quot;, width: &quot; &lt;&gt; show w &lt;&gt; &quot;, height: &quot; &lt;&gt; show h &lt;&gt; &quot;]&quot;
+showShape (Line start end) =
+  &quot;Line [start: &quot; &lt;&gt; showPoint start &lt;&gt; &quot;, end: &quot; &lt;&gt; showPoint end &lt;&gt; &quot;]&quot;
+showShape (Text loc text) =
+  &quot;Text [location: &quot; &lt;&gt; showPoint loc &lt;&gt; &quot;, text: &quot; &lt;&gt; show text &lt;&gt; &quot;]&quot;
 
-showShape :: Shape -&gt; String
-showShape (Circle c r)      = ...
-showShape (Rectangle c w h) = ...
-showShape (Line start end)  = ...
-showShape (Text p text) = ...
+showPoint :: Point -&gt; String
+showPoint { x, y } =
+  &quot;(&quot; &lt;&gt; show x &lt;&gt; &quot;, &quot; &lt;&gt; show y &lt;&gt; &quot;)&quot;
 </code></pre>
 <p>Each constructor can be used as a pattern, and the arguments to the constructor can themselves be bound using patterns of their own. Consider the first case of <code>showShape</code>: if the <code>Shape</code> matches the <code>Circle</code> constructor, then we bring the arguments of <code>Circle</code> (center and radius) into scope using two variable patterns, <code>c</code> and <code>r</code>. The other cases are similar.</p>
-<p><code>showPoint</code> is another example of pattern matching. In this case, there is only a single case, but we use a nested pattern to match the fields of the record contained inside the <code>Point</code> constructor.</p>
-<h2><a class="header" href="#record-puns" id="record-puns">Record Puns</a></h2>
-<p>The <code>showPoint</code> function matches a record inside its argument, binding the <code>x</code> and <code>y</code> properties to values with the same names. In PureScript, we can simplify this sort of pattern match as follows:</p>
-<pre><code class="language-haskell">showPoint :: Point -&gt; String
-showPoint (Point { x, y }) = ...
-</code></pre>
-<p>Here, we only specify the names of the properties, and we do not need to specify the names of the values we want to introduce. This is called a <em>record pun</em>.</p>
-<p>It is also possible to use record puns to <em>construct</em> records. For example, if we have values named <code>x</code> and <code>y</code> in scope, we can construct a <code>Point</code> using <code>Point { x, y }</code>:</p>
-<pre><code class="language-haskell">origin :: Point
-origin = Point { x, y }
-  where
-    x = 0.0
-    y = 0.0
-</code></pre>
-<p>This can be useful for improving readability of code in some circumstances.</p>
 <h2><a class="header" href="#exercises-2" id="exercises-2">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a function <code>circleAtOrigin</code> which constructs a <code>Circle</code> (of type <code>Shape</code>) centered at the origin with radius <code>10.0</code>.</li>
@@ -465,14 +461,59 @@ origin = Point { x, y }
 <li>(Medium) Write a function <code>shapeText</code> which extracts the text from a <code>Shape</code>. It should return <code>Maybe String</code>, and use the <code>Nothing</code> constructor if the input is not constructed using <code>Text</code>.</li>
 </ol>
 <h2><a class="header" href="#newtypes" id="newtypes">Newtypes</a></h2>
-<p>There is an important special case of algebraic data types, called <em>newtypes</em>. Newtypes are introduced using the <code>newtype</code> keyword instead of the <code>data</code> keyword.</p>
-<p>Newtypes must define <em>exactly one</em> constructor, and that constructor must take <em>exactly one</em> argument. That is, a newtype gives a new name to an existing type. In fact, the values of a newtype have the same runtime representation as the underlying type. They are, however, distinct from the point of view of the type system. This gives an extra layer of type safety.</p>
-<p>As an example, we might want to define newtypes as type-level aliases for <code>Number</code>, to ascribe units like pixels and inches:</p>
-<pre><code class="language-haskell">newtype Pixels = Pixels Number
-newtype Inches = Inches Number
+<p>There is a special case of algebraic data types, called <em>newtypes</em>. Newtypes are introduced using the <code>newtype</code> keyword instead of the <code>data</code> keyword.</p>
+<p>Newtypes must define <em>exactly one</em> constructor, and that constructor must take <em>exactly one</em> argument. That is, a newtype gives a new name to an existing type. In fact, the values of a newtype have the same runtime representation as the underlying type, so there is no runtime performance overhead. They are, however, distinct from the point of view of the type system. This gives an extra layer of type safety.</p>
+<p>As an example, we might want to define newtypes as type-level aliases for <code>Number</code>, to ascribe units like volts, amps, and ohms:</p>
+<pre><code class="language-haskell">newtype Volt = Volt Number
+newtype Ohm = Ohm Number
+newtype Amp = Amp Number
 </code></pre>
-<p>This way, it is impossible to pass a value of type <code>Pixels</code> to a function which expects <code>Inches</code>, but there is no runtime performance overhead.</p>
-<p>Newtypes will become important when we cover <em>type classes</em> in the next chapter, since they allow us to attach different behavior to a type without changing its representation at runtime.</p>
+<p>Then we define functions and values using these types:</p>
+<pre><code class="language-haskell">calculateCurrent :: Volt -&gt; Ohm -&gt; Amp
+calculateCurrent (Volt v) (Ohm r) = Amp (v / r)
+
+battery :: Volt
+battery = Volt 1.5
+
+lightbulb :: Ohm
+lightbulb = Ohm 500.0
+
+current :: Amp
+current = calculateCurrent battery lightbulb
+</code></pre>
+<p>This prevents us from making silly mistakes, such as attempting to calculate the current produced by <em>two</em> lightbulbs <em>without</em> a voltage source.</p>
+<pre><code class="language-haskell">current :: Amp
+current = calculateCurrent lightbulb lightbulb
+{-
+TypesDoNotUnify:
+  current = calculateCurrent lightbulb lightbulb
+                             ^^^^^^^^^
+  Could not match type
+    Ohm
+  with type
+    Volt
+-}
+</code></pre>
+<p>If we instead just used <code>Number</code> without <code>newtype</code>, then the compiler can't help us catch this mistake:</p>
+<pre><code class="language-haskell">-- This also compiles, but is not as type safe.
+calculateCurrent :: Number -&gt; Number -&gt; Number
+calculateCurrent v r = v / r
+
+battery :: Number
+battery = 1.5
+
+lightbulb :: Number
+lightbulb = 500.0
+
+current :: Number
+current = calculateCurrent lightbulb lightbulb -- uncaught mistake
+</code></pre>
+<p>This design principle is perhaps better <a href="https://twitter.com/jusrin00/status/875238742621028355/photo/1">communicated visually</a>.</p>
+<p>Note that the constructor of a newtype often has the same name as the newtype itself, but this is not a requirement. For example, unique names are also valid:</p>
+<pre><code class="language-haskell">newtype Watt = MakeWatt Number
+</code></pre>
+<p>In this case, <code>Watt</code> is the <em>type constructor</em> and <code>MakeWatt</code> is the <em>data constructor</em>. These constructors live in different namespaces, even when the names are identical, such as with the <code>Volt</code> example. This is true for all ADTs.</p>
+<p>Another application of newtypes is to attach different <em>behavior</em> to an existing type without changing its representation at runtime. We cover that use case in the next chapter when we discuss <em>type classes</em>.</p>
 <h2><a class="header" href="#a-library-for-vector-graphics" id="a-library-for-vector-graphics">A Library for Vector Graphics</a></h2>
 <p>Let's use the data types we have defined above to create a simple library for using vector graphics.</p>
 <p>Define a type synonym for a <code>Picture</code> - just an array of <code>Shape</code>s:</p>
@@ -488,19 +529,14 @@ $ spago repl
 
 &gt; import Data.Picture
 
-&gt; :paste
-… showPicture
-…   [ Line (Point { x: 0.0, y: 0.0 })
-…          (Point { x: 1.0, y: 1.0 })
-…   ]
-… ^D
+&gt; showPicture [ Line { x: 0.0, y: 0.0 } { x: 1.0, y: 1.0 } ]
 
 [&quot;Line [start: (0.0, 0.0), end: (1.0, 1.0)]&quot;]
 </code></pre>
 <h2><a class="header" href="#computing-bounding-rectangles" id="computing-bounding-rectangles">Computing Bounding Rectangles</a></h2>
 <p>The example code for this module contains a function <code>bounds</code> which computes the smallest bounding rectangle for a <code>Picture</code>.</p>
-<p>The <code>Bounds</code> data type defines a bounding rectangle. It is also defined as an algebraic data type with a single constructor:</p>
-<pre><code class="language-haskell">data Bounds = Bounds
+<p>The <code>Bounds</code> type defines a bounding rectangle.</p>
+<pre><code class="language-haskell">type Bounds =
   { top    :: Number
   , left   :: Number
   , bottom :: Number
@@ -511,8 +547,8 @@ $ spago repl
 <pre><code class="language-haskell">bounds :: Picture -&gt; Bounds
 bounds = foldl combine emptyBounds
   where
-    combine :: Bounds -&gt; Shape -&gt; Bounds
-    combine b shape = union (shapeBounds shape) b
+  combine :: Bounds -&gt; Shape -&gt; Bounds
+  combine b shape = union (shapeBounds shape) b
 </code></pre>
 <p>In the base case, we need to find the smallest bounding rectangle of an empty <code>Picture</code>, and the empty bounding rectangle defined by <code>emptyBounds</code> suffices.</p>
 <p>The accumulating function <code>combine</code> is defined in a <code>where</code> block. <code>combine</code> takes a bounding rectangle computed from <code>foldl</code>'s recursive call, and the next <code>Shape</code> in the array, and uses the <code>union</code> function to compute the union of the two bounding rectangles. The <code>shapeBounds</code> function computes the bounds of a single shape using pattern matching.</p>

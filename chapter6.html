@@ -241,8 +241,8 @@ No type class instance was found for
 <h2><a class="header" href="#exercises" id="exercises">Exercises</a></h2>
 <ol>
 <li>
-<p>(Easy) Define a <code>Show</code> instance for <code>Point</code>. Match the same output as the <code>showPoint</code> function from the previous chapter.</p>
-<pre><code class="language-haskell">data Point
+<p>(Easy) Define a <code>Show</code> instance for <code>Point</code>. Match the same output as the <code>showPoint</code> function from the previous chapter. <em>Note:</em> Point is now a <code>newtype</code> (instead of a <code>type</code> synonym), which allows us to customize how to <code>show</code> it. Otherwise, we'd be stuck with the default <code>Show</code> instance for records.</p>
+<pre><code class="language-haskell">newtype Point
   = Point
   { x :: Number
   , y :: Number
