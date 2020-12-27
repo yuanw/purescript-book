@@ -168,11 +168,11 @@
 <h2><a class="header" href="#asynchronous-javascript" id="asynchronous-javascript">Asynchronous JavaScript</a></h2>
 <p>A convenient way to work with asynchronous code in JavaScript is with <a href="https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Async_await"><code>async</code> and <code>await</code></a>. See <a href="https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Introducing">this article on asynchronous JavaScript</a> for more background information.</p>
 <p>Here is an example of using this technique to copy the contents of one file to another file:</p>
-<pre><code class="language-js">var fs = require('fs');
+<pre><code class="language-js">var fsPromises = require('fs').promises;
 
 async function copyFile(file1, file2) {
-  let data = await fs.readFile(file1, { encoding: 'utf-8' })
-  fs.writeFile(file2, data, { encoding: 'utf-8' })
+  let data = await fsPromises.readFile(file1, { encoding: 'utf-8' });
+  fsPromises.writeFile(file2, data, { encoding: 'utf-8' });
 }
 
 copyFile('file1.txt', 'file2.txt')
