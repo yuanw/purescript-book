@@ -887,9 +887,9 @@ forall a b f. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 <li>(Easy) Write a function <code>keepNonNegative</code> which removes the negative numbers from an array of numbers. <em>Hint</em>: Use the <code>filter</code> function.</li>
 <li>(Medium)
 <ul>
-<li>Define an infix synonym <code>&lt;$?&gt;</code> for <code>filter</code>.</li>
+<li>Define an infix synonym <code>&lt;$?&gt;</code> for <code>filter</code>. <em>Note</em>: Infix synonyms may not be defined in the REPL, but you can define it in a file.</li>
 <li>Write a <code>keepNonNegativeRewrite</code> function, which is the same as <code>keepNonNegative</code>, but replaces <code>filter</code> with your new infix operator <code>&lt;$?&gt;</code>.</li>
-<li>Experiment with the precedence level and associativity of your operator in PSCi. NOTE: no unit tests for this.</li>
+<li>Experiment with the precedence level and associativity of your operator in PSCi. <em>Note</em>: There are no unit tests for this step.</li>
 </ul>
 </li>
 </ol>
