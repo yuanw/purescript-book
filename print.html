@@ -1576,10 +1576,17 @@ current = calculateCurrent lightbulb lightbulb -- uncaught mistake
 </code></pre>
 <p>This design principle is perhaps better <a href="https://twitter.com/jusrin00/status/875238742621028355/photo/1">communicated visually</a>.</p>
 <p>Note that the constructor of a newtype often has the same name as the newtype itself, but this is not a requirement. For example, unique names are also valid:</p>
-<pre><code class="language-haskell">newtype Watt = MakeWatt Number
+<pre><code class="language-haskell">newtype Coulomb = MakeCoulomb Number
 </code></pre>
-<p>In this case, <code>Watt</code> is the <em>type constructor</em> and <code>MakeWatt</code> is the <em>data constructor</em>. These constructors live in different namespaces, even when the names are identical, such as with the <code>Volt</code> example. This is true for all ADTs.</p>
+<p>In this case, <code>Coulomb</code> is the <em>type constructor</em> and <code>MakeCoulomb</code> is the <em>data constructor</em>. These constructors live in different namespaces, even when the names are identical, such as with the <code>Volt</code> example. This is true for all ADTs.</p>
 <p>Another application of newtypes is to attach different <em>behavior</em> to an existing type without changing its representation at runtime. We cover that use case in the next chapter when we discuss <em>type classes</em>.</p>
+<h2><a class="header" href="#exercises-10" id="exercises-10">Exercises</a></h2>
+<ol>
+<li>(Easy) Use <code>newtype</code> to define a <code>Watt</code> unit for <code>Number</code> with <code>MakeWatt</code> as the data constructor, then define a <code>calculateWattage</code> function using this new <code>Watt</code> type and the above definitions <code>Amp</code> and <code>Volt</code>:</li>
+</ol>
+<pre><code class="language-haskell">calculateWattage :: Amp -&gt; Volt -&gt; Watt
+</code></pre>
+<p>A wattage in <code>Watt</code>s can be calculated as the product of a given current in <code>Amp</code>s and a given voltage in <code>Volt</code>s.</p>
 <h2><a class="header" href="#a-library-for-vector-graphics" id="a-library-for-vector-graphics">A Library for Vector Graphics</a></h2>
 <p>Let's use the data types we have defined above to create a simple library for using vector graphics.</p>
 <p>Define a type synonym for a <code>Picture</code> - just an array of <code>Shape</code>s:</p>
@@ -1618,7 +1625,7 @@ bounds = foldl combine emptyBounds
 </code></pre>
 <p>In the base case, we need to find the smallest bounding rectangle of an empty <code>Picture</code>, and the empty bounding rectangle defined by <code>emptyBounds</code> suffices.</p>
 <p>The accumulating function <code>combine</code> is defined in a <code>where</code> block. <code>combine</code> takes a bounding rectangle computed from <code>foldl</code>'s recursive call, and the next <code>Shape</code> in the array, and uses the <code>union</code> function to compute the union of the two bounding rectangles. The <code>shapeBounds</code> function computes the bounds of a single shape using pattern matching.</p>
-<h2><a class="header" href="#exercises-10" id="exercises-10">Exercises</a></h2>
+<h2><a class="header" href="#exercises-11" id="exercises-11">Exercises</a></h2>
 <ol>
 <li>(Medium) Extend the vector graphics library with a new operation <code>area</code> which computes the area of a <code>Shape</code>. For the purpose of this exercise, the area of a line or a piece of text is assumed to be zero.</li>
 <li>(Difficult) Extend the <code>Shape</code> type with a new data constructor <code>Clipped</code>, which clips another <code>Picture</code> to a rectangle. Extend the <code>shapeBounds</code> function to compute the bounds of a clipped picture. Note that this makes <code>Shape</code> into a recursive data type.</li>
@@ -1715,7 +1722,7 @@ No type class instance was found for
 
   Data.Show.Show (Int -&gt; Int)
 </code></pre>
-<h2><a class="header" href="#exercises-11" id="exercises-11">Exercises</a></h2>
+<h2><a class="header" href="#exercises-12" id="exercises-12">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Define a <code>Show</code> instance for <code>Point</code>. Match the same output as the <code>showPoint</code> function from the previous chapter. <em>Note:</em> Point is now a <code>newtype</code> (instead of a <code>type</code> synonym), which allows us to customize how to <code>show</code> it. Otherwise, we'd be stuck with the default <code>Show</code> instance for records.</p>
@@ -1842,7 +1849,7 @@ LT
 <p>Many standard type classes come with their own set of similar laws. The laws given to a type class give structure to the functions of that type class and allow us to study its instances in generality. The interested reader can research the laws ascribed to the standard type classes that we have seen already.</p>
 <h3><a class="header" href="#deriving-instances" id="deriving-instances">Deriving Instances</a></h3>
 <p>Rather than writing instances manually, you can let the compiler to most of the work for you. Take a look at this <a href="https://github.com/purescript/documentation/blob/master/guides/Type-Class-Deriving.md">Type Class Deriving guide</a>. That information will help you solve the following exercises.</p>
-<h2><a class="header" href="#exercises-12" id="exercises-12">Exercises</a></h2>
+<h2><a class="header" href="#exercises-13" id="exercises-13">Exercises</a></h2>
 <p>The following newtype represents a complex number:</p>
 <pre><code class="language-haskell">newtype Complex
   = Complex
@@ -1917,7 +1924,7 @@ commas on the left hand side of the <code>=&gt;</code> symbol:</p>
 </code></pre>
 <p>These two type class instances are provided in the <code>prelude</code> library.</p>
 <p>When the program is compiled, the correct type class instance for <code>Show</code> is chosen based on the inferred type of the argument to <code>show</code>. The selected instance might depend on many such instance relationships, but this complexity is not exposed to the developer.</p>
-<h2><a class="header" href="#exercises-13" id="exercises-13">Exercises</a></h2>
+<h2><a class="header" href="#exercises-14" id="exercises-14">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) The following declaration defines a type of non-empty arrays of elements of type <code>a</code>:</p>
@@ -2051,7 +2058,7 @@ secondElement xs = head (tail xs)
 <p>We've already seen some examples of superclass relationships: the <code>Eq</code> class is a superclass of <code>Ord</code>, and the <code>Semigroup</code> class is a superclass of <code>Monoid</code>. For every type class instance of the <code>Ord</code> class, there must be a corresponding <code>Eq</code> instance for the same type. This makes sense, since in many cases, when the <code>compare</code> function reports that two values are incomparable, we often want to use the <code>Eq</code> class to determine if they are in fact equal.</p>
 <p>In general, it makes sense to define a superclass relationship when the laws for the subclass mention the members of the superclass. For example, it is reasonable to assume, for any pair of <code>Ord</code> and <code>Eq</code> instances, that if two values are equal under the <code>Eq</code> instance, then the <code>compare</code> function should return <code>EQ</code>. In other words, <code>a == b</code> should be true exactly when <code>compare a b</code> evaluates to <code>EQ</code>. This relationship on the level of laws justifies the superclass relationship between <code>Eq</code> and <code>Ord</code>.</p>
 <p>Another reason to define a superclass relationship is in the case where there is a clear &quot;is-a&quot; relationship between the two classes. That is, every member of the subclass <em>is a</em> member of the superclass as well.</p>
-<h2><a class="header" href="#exercises-14" id="exercises-14">Exercises</a></h2>
+<h2><a class="header" href="#exercises-15" id="exercises-15">Exercises</a></h2>
 <ol>
 <li>
 <p>(Medium) Define a partial function <code>unsafeMaximum :: Partial =&gt; Array Int -&gt; Int</code> which finds the maximum of a non-empty array of integers. Test out your function in PSCi using <code>unsafePartial</code>. <em>Hint</em>: Use the <code>maximum</code> function from <code>Data.Foldable</code>.</p>
@@ -2157,7 +2164,7 @@ hashEqual = eq `on` hash
 <p>How can we prove that these <code>Hashable</code> instances satisfy the type class law that we stated above? We need to make sure that equal values have equal hash codes. In cases like <code>Int</code>, <code>Char</code>, <code>String</code> and <code>Boolean</code>, this is simple because there are no values of those types which are equal in the sense of <code>Eq</code> but not equal identically.</p>
 <p>What about some more interesting types? To prove the type class law for the <code>Array</code> instance, we can use induction on the length of the array. The only array with length zero is <code>[]</code>. Any two non-empty arrays are equal only if they have equal head elements and equal tails, by the definition of <code>Eq</code> on arrays. By the inductive hypothesis, the tails have equal hashes, and we know that the head elements have equal hashes if the <code>Hashable a</code> instance must satisfy the law. Therefore, the two arrays have equal hashes, and so the <code>Hashable (Array a)</code> obeys the type class law as well.</p>
 <p>The source code for this chapter includes several other examples of <code>Hashable</code> instances, such as instances for the <code>Maybe</code> and <code>Tuple</code> type.</p>
-<h2><a class="header" href="#exercises-15" id="exercises-15">Exercises</a></h2>
+<h2><a class="header" href="#exercises-16" id="exercises-16">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Use PSCi to test the hash functions for each of the defined instances. <em>Note</em>: There is no provided unit test for this exercise.</p>
@@ -2429,7 +2436,7 @@ Nothing
 <p>When specialized to <code>Maybe</code>, our function returns a <code>Just</code> only if every list element was <code>Just</code>, otherwise it returns <code>Nothing</code>. This is consistent with our intuition of working in a larger language supporting optional values - a list of computations which return optional results only has a result itself if every computation contained a result.</p>
 <p>But the <code>combineList</code> function works for any <code>Applicative</code>! We can use it to combine computations which possibly signal an error using <code>Either err</code>, or which read from a global configuration using <code>r -&gt;</code>.</p>
 <p>We will see the <code>combineList</code> function again later, when we consider <code>Traversable</code> functors.</p>
-<h2><a class="header" href="#exercises-16" id="exercises-16">Exercises</a></h2>
+<h2><a class="header" href="#exercises-17" id="exercises-17">Exercises</a></h2>
 <ol>
 <li>(Medium) Write versions of the numeric operators <code>+</code>, <code>-</code>, <code>*</code> and <code>/</code> which work with optional arguments (i.e. arguments wrapped in <code>Maybe</code>) and return a value wrapped in <code>Maybe</code>. Name these functions <code>addMaybe</code>, <code>subMaybe</code>, <code>mulMaybe</code>, and <code>divMaybe</code>. <em>Hint</em>: Use <code>lift2</code>.</li>
 <li>(Medium) Extend the above exercise to work with all <code>Apply</code> types (not just <code>Maybe</code>). Name these new functions <code>addApply</code>, <code>subApply</code>, <code>mulApply</code>, and <code>divApply</code>.</li>
@@ -2582,7 +2589,7 @@ pure ({ type: HomePhone, number: &quot;555-555-5555&quot; })
 &gt; validatePhoneNumber $ phoneNumber HomePhone &quot;555.555.5555&quot;
 invalid ([&quot;Field 'Number' did not match the required format&quot;])
 </code></pre>
-<h2><a class="header" href="#exercises-17" id="exercises-17">Exercises</a></h2>
+<h2><a class="header" href="#exercises-18" id="exercises-18">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a regular expression <code>stateRegex :: Either String Regex</code> to check that a string only contains two alphabetic characters. <em>Hint</em>: see the source code for <code>phoneNumberRegex</code>.</li>
 <li>(Medium) Write a regular expression <code>nonEmptyRegex :: Either String Regex</code> to check that a string is not entirely whitespace. <em>Hint</em>: If you need help developing this regex expression, check out <a href="https://regexr.com">RegExr</a> which has a great cheatsheet and interactive test environment.</li>
@@ -2660,7 +2667,7 @@ pure ((Just unit))
 </code></pre>
 <p>These examples show that traversing the <code>Nothing</code> value returns <code>Nothing</code> with no validation, and traversing <code>Just x</code> uses the validation function to validate <code>x</code>. That is, <code>traverse</code> takes a validation function for type <code>a</code> and returns a validation function for <code>Maybe a</code>, i.e. a validation function for optional values of type <code>a</code>.</p>
 <p>Other traversable functors include <code>Array</code>, and <code>Tuple a</code> and <code>Either a</code> for any type <code>a</code>. Generally, most &quot;container&quot; data type constructors have <code>Traversable</code> instances. As an example, the exercises will include writing a <code>Traversable</code> instance for a type of binary trees.</p>
-<h2><a class="header" href="#exercises-18" id="exercises-18">Exercises</a></h2>
+<h2><a class="header" href="#exercises-19" id="exercises-19">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Write <code>Eq</code> and <code>Show</code> instances for the following binary tree data structure:</p>
@@ -2908,7 +2915,7 @@ userCity root = do
 <p>Do notation allows the second computation to depend on the result <code>prof</code> of the first, and the third computation to depend on the result <code>addr</code> of the second, and so on. This dependence on previous values is not possible using only the interface of the <code>Applicative</code> type class.</p>
 <p>Try writing <code>userCity</code> using only <code>pure</code> and <code>apply</code>: you will see that it is impossible. Applicative functors only allow us to lift function arguments which are independent of each other, but monads allow us to write computations which involve more interesting data dependencies.</p>
 <p>In the last chapter, we saw that the <code>Applicative</code> type class can be used to express parallelism. This was precisely because the function arguments being lifted were independent of one another. Since the <code>Monad</code> type class allows computations to depend on the results of previous computations, the same does not apply - a monad has to combine its side-effects in sequence.</p>
-<h2><a class="header" href="#exercises-19" id="exercises-19">Exercises</a></h2>
+<h2><a class="header" href="#exercises-20" id="exercises-20">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Write a function <code>third</code> which returns the third element of an array with three or more elements. Your function should return an appropriate <code>Maybe</code> type. <em>Hint:</em> Look up the types of the <code>head</code> and <code>tail</code> functions from the <code>Data.Array</code> module in the <code>arrays</code> package. Use do notation with the <code>Maybe</code> monad to combine these functions.</p>
@@ -3191,7 +3198,7 @@ simulate x0 v0 time =
 };
 </code></pre>
 <p>The <code>ST</code> effect is a good way to generate short JavaScript when working with locally-scoped mutable state, especially when used together with actions like <code>for</code>, <code>foreach</code>, and <code>while</code> which generate efficient loops.</p>
-<h2><a class="header" href="#exercises-20" id="exercises-20">Exercises</a></h2>
+<h2><a class="header" href="#exercises-21" id="exercises-21">Exercises</a></h2>
 <ol>
 <li>(Medium) Rewrite the <code>safeDivide</code> function as <code>exceptionDivide</code> and throw an exception using <code>throwException</code> if the denominator is zero. <em>Note:</em> There is no unit test for this exercise because it's tricky to check for an expected exception within our unit test framework. Feel free to work on adding this test.</li>
 <li>(Skip) There is no exercise for <code>ST</code> yet. Feel free to propose one. See <a href="https://github.com/purescript-contrib/purescript-book/issues/120">this issue</a> for more details.</li>
@@ -3450,7 +3457,7 @@ formField name placeholder value setValue =
 <p>Feel free to investigate the definition of <code>traverse_</code> to see how both forms are indeed equivalent.</p>
 <p>That covers the basics of our component implementation. However, you should read the source accompanying this chapter in order to get a full understanding of the way the component works.</p>
 <p>Obviously, this user interface can be improved in a number of ways. The exercises will explore some ways in which we can make the application more usable.</p>
-<h2><a class="header" href="#exercises-21" id="exercises-21">Exercises</a></h2>
+<h2><a class="header" href="#exercises-22" id="exercises-22">Exercises</a></h2>
 <p>Modify <code>src/Main.purs</code> in the following exercises. There are no unit tests for these exercises.</p>
 <ol>
 <li>
@@ -3559,7 +3566,7 @@ main = do
 <pre><code class="language-hs">attempt :: forall a. Aff a -&gt; Aff (Either Error a)
 </code></pre>
 <p>You should hopefully be able to draw on your knowledge of concepts from previous chapters and combine this with the new <code>Aff</code> patterns learned in the above <code>copyFile</code> example to tackle the following exercises:</p>
-<h2><a class="header" href="#exercises-22" id="exercises-22">Exercises</a></h2>
+<h2><a class="header" href="#exercises-23" id="exercises-23">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Write a <code>concatenateFiles</code> function which concatenates two text files.</p>
@@ -3609,7 +3616,7 @@ getUrl url = do
 unit
 {&quot;data&quot;:{&quot;id&quot;:1,&quot;email&quot;:&quot;george.bluth@reqres.in&quot;,&quot;first_name&quot;:&quot;George&quot;,&quot;last_name&quot;:&quot;Bluth&quot;, ...}}
 </code></pre>
-<h2><a class="header" href="#exercises-23" id="exercises-23">Exercises</a></h2>
+<h2><a class="header" href="#exercises-24" id="exercises-24">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a function <code>writeGet</code> which makes an HTTP <code>GET</code> request to a provided url, and writes the response body to a file.</li>
 </ol>
@@ -3687,7 +3694,7 @@ unit
 ]
 </code></pre>
 <p>A full listing of available parallel functions can be found in the <a href="https://pursuit.purescript.org/packages/purescript-parallel/docs/Control.Parallel"><code>parallel</code> docs on Pursuit</a>. The <a href="https://github.com/purescript-contrib/purescript-aff#parallel-execution">aff docs section on parallel</a> also contains more examples.</p>
-<h2><a class="header" href="#exercises-24" id="exercises-24">Exercises</a></h2>
+<h2><a class="header" href="#exercises-25" id="exercises-25">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Write a <code>concatenateManyParallel</code> function which has the same signature as the earlier <code>concatenateMany</code> function, but reads all input files in parallel.</p>
@@ -3896,7 +3903,7 @@ lebab --replace output/ --transform arrow,arrow-return
   m + n | 0;
 </code></pre>
 <p>The remaining examples in this book will use arrow functions instead of nested functions.</p>
-<h2><a class="header" href="#exercises-25" id="exercises-25">Exercises</a></h2>
+<h2><a class="header" href="#exercises-26" id="exercises-26">Exercises</a></h2>
 <ol>
 <li>(Medium) Write a JavaScript function <code>volumeFn</code> in the <code>Test.MySolutions</code> module that finds the volume of a box. Use an <code>Fn</code> wrapper from <code>Data.Function.Uncurried</code>.</li>
 <li>(Medium) Rewrite <code>volumeFn</code> with arrow functions as <code>volumeArrow</code>.</li>
@@ -3952,7 +3959,7 @@ foreign import addComplex :: Complex -&gt; Complex -&gt; Complex
 { imag: 6.0, real: 4.0 }
 </code></pre>
 <p>Note that the above techniques require trusting that JavaScript will return the expected types, as PureScript is not able to apply type checking to JavaScript code. We will describe this type safety concern in more detail later on in the JSON section, as well as cover techniques to protect against type mismatches.</p>
-<h2><a class="header" href="#exercises-26" id="exercises-26">Exercises</a></h2>
+<h2><a class="header" href="#exercises-27" id="exercises-27">Exercises</a></h2>
 <ol>
 <li>(Medium) Write a JavaScript function <code>cumulativeSumsComplex</code> (and corresponding PureScript foreign import) that takes an <code>Array</code> of <code>Complex</code> numbers and returns the cumulative sum as another array of complex numbers.</li>
 </ol>
@@ -4045,7 +4052,7 @@ isEmpty = isUndefined &lt;&lt;&lt; undefinedHead
   }
 };
 </code></pre>
-<h2><a class="header" href="#exercises-27" id="exercises-27">Exercises</a></h2>
+<h2><a class="header" href="#exercises-28" id="exercises-28">Exercises</a></h2>
 <ol>
 <li>
 <p>(Medium) Given a record that represents a quadratic polynomial <code>a*x^2 + b*x + c = 0</code>:</p>
@@ -4205,7 +4212,7 @@ import Effect.Aff
 unit
 5.0
 </code></pre>
-<h2><a class="header" href="#exercises-28" id="exercises-28">Exercises</a></h2>
+<h2><a class="header" href="#exercises-29" id="exercises-29">Exercises</a></h2>
 <p>Exercises for the above sections are still on the ToDo list. If you have any ideas for good exercises, please make a suggestion.</p>
 <h2><a class="header" href="#json" id="json">JSON</a></h2>
 <p>There are many reasons to use JSON in an application, for example, it's a common means of communicating with web APIs. This section will discuss other use-cases too, beginning with a technique to improve type safety when passing structural data over the FFI.</p>
@@ -4339,7 +4346,7 @@ Map String Int
 &gt; mapSetFoo myMap
 (Right (fromFoldable [(Tuple &quot;Foo&quot; 42),(Tuple &quot;cat&quot; 2),(Tuple &quot;hat&quot; 1)]))
 </code></pre>
-<h2><a class="header" href="#exercises-29" id="exercises-29">Exercises</a></h2>
+<h2><a class="header" href="#exercises-30" id="exercises-30">Exercises</a></h2>
 <ol>
 <li>
 <p>(Medium) Write a JavaScript function and PureScript wrapper <code>valuesOfMap :: Map String Int -&gt; Either String (Set Int)</code> that returns a <code>Set</code> of all the values in a <code>Map</code>. <em>Hint</em>: The <code>.values()</code> instance method for Map may be useful in your JavaScript code.</p>
@@ -4490,7 +4497,7 @@ processItem item = do
 
 alert $ &quot;Error: &quot; &lt;&gt; err &lt;&gt; &quot;. Loading examplePerson&quot;
 </code></pre>
-<h2><a class="header" href="#exercises-30" id="exercises-30">Exercises</a></h2>
+<h2><a class="header" href="#exercises-31" id="exercises-31">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a wrapper for the <code>removeItem</code> method on the <code>localStorage</code> object, and add your foreign function to the <code>Effect.Storage</code> module.</li>
 <li>(Medium) Add a &quot;Reset&quot; button that, when clicked, calls the newly-created <code>removeItem</code> function to delete the &quot;person&quot; entry from local storage.</li>
@@ -4636,7 +4643,7 @@ shout a = show a &lt;&gt; &quot;!!!&quot;
 <p>We can call this function from JavaScript by passing an explicit type class dictionary from <code>Data.Show</code> as the first parameter:</p>
 <pre><code class="language-javascript">shout(require('Data.Show').showNumber)(42);
 </code></pre>
-<h2><a class="header" href="#exercises-31" id="exercises-31">Exercises</a></h2>
+<h2><a class="header" href="#exercises-32" id="exercises-32">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) What are the runtime representations of these types?</p>
@@ -4774,7 +4781,7 @@ runState  :: forall s a. State s a -&gt; s -&gt; Tuple a s
 … ^D
 21
 </code></pre>
-<h2><a class="header" href="#exercises-32" id="exercises-32">Exercises</a></h2>
+<h2><a class="header" href="#exercises-33" id="exercises-33">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) What is the result of replacing <code>execState</code> with <code>runState</code> or <code>evalState</code> in our example above?</p>
@@ -4833,7 +4840,7 @@ createUserAsAdmin = runAsAdmin createUser
 <p>To run a computation in the <code>Reader</code> monad, the <code>runReader</code> function can be used to provide the global configuration:</p>
 <pre><code class="language-haskell">runReader :: forall r a. Reader r a -&gt; r -&gt; a
 </code></pre>
-<h2><a class="header" href="#exercises-33" id="exercises-33">Exercises</a></h2>
+<h2><a class="header" href="#exercises-34" id="exercises-34">Exercises</a></h2>
 <p>In these exercises, we will use the <code>Reader</code> monad to build a small library for rendering documents with indentation. The &quot;global configuration&quot; will be a number indicating the current indentation level:</p>
 <pre><code class="language-haskell">type Level = Int
 
@@ -4918,7 +4925,7 @@ runWriter  :: forall w a. Writer w a -&gt; Tuple a w
 &gt; runWriter (gcdLog 21 15)
 Tuple 3 [&quot;gcdLog 21 15&quot;,&quot;gcdLog 6 15&quot;,&quot;gcdLog 6 9&quot;,&quot;gcdLog 6 3&quot;,&quot;gcdLog 3 3&quot;]
 </code></pre>
-<h2><a class="header" href="#exercises-34" id="exercises-34">Exercises</a></h2>
+<h2><a class="header" href="#exercises-35" id="exercises-35">Exercises</a></h2>
 <ol>
 <li>
 <p>(Medium) Rewrite the <code>sumArray</code> function above using the <code>Writer</code> monad and the <code>Additive Int</code> monoid from the <code>monoid</code> package.</p>
@@ -5058,7 +5065,7 @@ split = do
 <p>This is because of the way in which the side-effects provided by the <code>ExceptT</code> monad transformer interact with the side-effects provided by the <code>WriterT</code> monad transformer. We can address this by changing the order in which the monad transformer stack is composed. If we move the <code>ExceptT</code> transformer to the top of the stack, then the log will contain all messages written up until the first error, as we saw earlier when we transformed <code>Writer</code> with <code>ExceptT</code>.</p>
 <p>One problem with this code is that we have to use the <code>lift</code> function multiple times to lift computations over multiple monad transformers: for example, the call to <code>throwError</code> has to be lifted twice, once over <code>WriterT</code> and a second time over <code>StateT</code>. This is fine for small monad transformer stacks, but quickly becomes inconvenient.</p>
 <p>Fortunately, as we will see, we can use the automatic code generation provided by type class inference to do most of this &quot;heavy lifting&quot; for us.</p>
-<h2><a class="header" href="#exercises-35" id="exercises-35">Exercises</a></h2>
+<h2><a class="header" href="#exercises-36" id="exercises-36">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Use the <code>ExceptT</code> monad transformer over the <code>Identity</code> functor to write a function <code>safeDivide</code> which divides two numbers, throwing an error if the denominator is zero.</p>
@@ -5187,7 +5194,7 @@ lower = do
               ]))
 </code></pre>
 <p>Again, this illustrates the power of reusability that monad transformers bring - we were able to write a backtracking parser in a declarative style with only a few lines of code, by reusing standard abstractions!</p>
-<h2><a class="header" href="#exercises-36" id="exercises-36">Exercises</a></h2>
+<h2><a class="header" href="#exercises-37" id="exercises-37">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Remove the calls to the <code>lift</code> function from your implementation of the <code>string</code> parser. Verify that the new implementation type checks, and convince yourself that it should.</p>
@@ -5340,7 +5347,7 @@ lineHandler currentState input = do
 <pre><code class="language-haskell">  RL.setLineHandler interface $ lineHandler initialGameState
   RL.prompt interface
 </code></pre>
-<h2><a class="header" href="#exercises-37" id="exercises-37">Exercises</a></h2>
+<h2><a class="header" href="#exercises-38" id="exercises-38">Exercises</a></h2>
 <ol>
 <li>
 <p>(Medium) Implement a new command <code>cheat</code>, which moves all game items from the game grid into the user's inventory.</p>
@@ -5373,7 +5380,7 @@ lineHandler currentState input = do
 <p>Here, the <code>gameEnvironment</code> function, which has the type <code>PlayerName -&gt; Boolean -&gt; GameEnvironment</code>, is lifted over <code>Y</code>. The two arguments specify how to read the player name and debug flag from the command line options. The first argument describes the player name option, which is specified by the <code>-p</code> or <code>--player</code> options, and the second describes the debug mode flag, which is turned on using the <code>-d</code> or <code>--debug</code> options.</p>
 <p>This demonstrates two basic functions defined in the <code>Node.Yargs.Applicative</code> module: <code>yarg</code>, which defines a command line option which takes an optional argument (of type <code>String</code>, <code>Number</code> or <code>Boolean</code>), and <code>flag</code> which defines a command line flag of type <code>Boolean</code>.</p>
 <p>Notice how we were able to use the notation afforded by the applicative operators to give a compact, declarative specification of our command line interface. In addition, it is simple to add new command line arguments, simply by adding a new function argument to <code>runGame</code>, and then using <code>&lt;*&gt;</code> to lift <code>runGame</code> over an additional argument in the definition of <code>env</code>.</p>
-<h2><a class="header" href="#exercises-38" id="exercises-38">Exercises</a></h2>
+<h2><a class="header" href="#exercises-39" id="exercises-39">Exercises</a></h2>
 <ol>
 <li>(Medium) Add a new Boolean-valued property <code>cheatMode</code> to the <code>GameEnvironment</code> record. Add a new command line flag <code>-c</code> to the <code>yargs</code> configuration which enables cheat mode. The <code>cheat</code> command from the previous exercise should be disallowed if cheat mode is not enabled.</li>
 </ol>
@@ -5496,7 +5503,7 @@ translate dx dy shape = shape
 <pre><code class="language-text">$ spago bundle-app --main Example.Shapes --to dist/Main.js
 </code></pre>
 <p>and open <code>html/index.html</code> again to see the result. You should see the three different types of shapes rendered to the canvas.</p>
-<h2><a class="header" href="#exercises-39" id="exercises-39">Exercises</a></h2>
+<h2><a class="header" href="#exercises-40" id="exercises-40">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Experiment with the <code>strokePath</code> and <code>setStrokeStyle</code> functions in each of the examples so far.</p>
@@ -5659,7 +5666,7 @@ Type -&gt; Type
 <pre><code class="language-text">$ spago bundle-app --main Example.Refs --to dist/Main.js
 </code></pre>
 <p>and open the <code>html/index.html</code> file. If you click the canvas repeatedly, you should see a green rectangle rotating around the center of the canvas.</p>
-<h2><a class="header" href="#exercises-40" id="exercises-40">Exercises</a></h2>
+<h2><a class="header" href="#exercises-41" id="exercises-41">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a higher-order function which strokes and fills a path simultaneously. Rewrite the <code>Random.purs</code> example using your function.</li>
 <li>(Medium) Use <code>Random</code> and <code>Dom</code> to create an application which renders a circle with random position, color and radius to the canvas when the mouse is clicked.</li>
@@ -5795,7 +5802,7 @@ lsystem init prod interpret n state = go init n
 <pre><code class="language-text">$ spago bundle-app --main Example.LSystem --to dist/Main.js
 </code></pre>
 <p>and open <code>html/index.html</code>. You should see the Koch curve rendered to the canvas.</p>
-<h2><a class="header" href="#exercises-41" id="exercises-41">Exercises</a></h2>
+<h2><a class="header" href="#exercises-42" id="exercises-42">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Modify the L-system example above to use <code>fillPath</code> instead of <code>strokePath</code>. <em>Hint</em>: you will need to include a call to <code>closePath</code>, and move the call to <code>moveTo</code> outside of the <code>interpret</code> function.</p>
@@ -5906,7 +5913,7 @@ not equal to expected:
 [-888285,-822215,-196136,-116841,618343,887447]
 </code></pre>
 <p>Notice how the input <code>xs</code> and <code>ys</code> were generated as arrays of randomly-selected integers.</p>
-<h2><a class="header" href="#exercises-42" id="exercises-42">Exercises</a></h2>
+<h2><a class="header" href="#exercises-43" id="exercises-43">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a property which asserts that merging an array with the empty array does not modify the original array. <em>Note</em>: This new property is redundant, since this situation is already covered by our existing property. We're just trying to give you readers a simple way to practice using quickCheck.</li>
 <li>(Easy) Add an appropriate error message to the remaining property for <code>merge</code>.</li>
@@ -5936,7 +5943,7 @@ ints = id
   eq (ints $ mergePoly (sort xs) (sort ys)) (sort $ xs &lt;&gt; ys)
 </code></pre>
 <p>Here, <code>xs</code> and <code>ys</code> both have type <code>Array Int</code>, since the <code>ints</code> function has been used to disambiguate the unknown type.</p>
-<h2><a class="header" href="#exercises-43" id="exercises-43">Exercises</a></h2>
+<h2><a class="header" href="#exercises-44" id="exercises-44">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a function <code>bools</code> which forces the types of <code>xs</code> and <code>ys</code> to be <code>Array Boolean</code>, and add additional properties which test <code>mergePoly</code> at that type.</li>
 <li>(Medium) Choose a pure function from the core libraries (for example, from the <code>arrays</code> package), and write a QuickCheck property for it, including an appropriate error message. Your property should use a helper function to fix any polymorphic type arguments to either <code>Int</code> or <code>Boolean</code>.</li>
@@ -6006,7 +6013,7 @@ false
   member a $ insert a $ treeOfInt t
 </code></pre>
 <p>Here, the argument <code>t</code> is a randomly-generated tree of type <code>Tree Int</code>, where the type argument disambiguated by the identity function <code>treeOfInt</code>.</p>
-<h2><a class="header" href="#exercises-44" id="exercises-44">Exercises</a></h2>
+<h2><a class="header" href="#exercises-45" id="exercises-45">Exercises</a></h2>
 <ol>
 <li>(Medium) Create a newtype for <code>String</code> with an associated <code>Arbitrary</code> instance which generates collections of randomly-selected characters in the range <code>a-z</code>. <em>Hint</em>: use the <code>elements</code> and <code>arrayOf</code> functions from the <code>Test.QuickCheck.Gen</code> module.</li>
 <li>(Difficult) Write a property which asserts that a value inserted into a tree is still a member of that tree after arbitrarily many more insertions.</li>
@@ -6098,7 +6105,7 @@ Success : Success : ...
 </code></pre>
 <p><code>quickCheckPure</code> takes three arguments: the random seed, the number of test cases to generate, and the property to test. If all tests pass, you should see an array of <code>Success</code> data constructors printed to the console.</p>
 <p><code>quickCheckPure</code> might be useful in other situations, such as generating random input data for performance benchmarks, or generating sample form data for web applications.</p>
-<h2><a class="header" href="#exercises-45" id="exercises-45">Exercises</a></h2>
+<h2><a class="header" href="#exercises-46" id="exercises-46">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Write <code>Coarbitrary</code> instances for the <code>Byte</code> and <code>Sorted</code> type constructors.</p>
@@ -6320,7 +6327,7 @@ height = AttributeKey &quot;height&quot;
 unit
 </code></pre>
 <p>Note, however, that no changes had to be made to the <code>render</code> function, because the underlying data representation never changed. This is one of the benefits of the smart constructors approach - it allows us to separate the internal data representation for a module from the representation which is perceived by users of its external API.</p>
-<h2><a class="header" href="#exercises-46" id="exercises-46">Exercises</a></h2>
+<h2><a class="header" href="#exercises-47" id="exercises-47">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Use the <code>Data.DOM.Smart</code> module to experiment by creating new HTML documents using <code>render</code>.</p>
@@ -6399,7 +6406,7 @@ height = AttributeKey &quot;height&quot;
 &lt;img src=&quot;cat.jpg&quot; width=&quot;100&quot; height=&quot;200&quot; /&gt;
 unit
 </code></pre>
-<h2><a class="header" href="#exercises-47" id="exercises-47">Exercises</a></h2>
+<h2><a class="header" href="#exercises-48" id="exercises-48">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Create a data type which represents either pixel or percentage lengths. Write an instance of <code>IsValue</code> for your type. Modify the <code>width</code> and <code>height</code> attributes to use your new type.</p>
@@ -6554,7 +6561,7 @@ render = execWriter &lt;&lt;&lt; renderElement
 &lt;p&gt;&lt;img src=&quot;cat.jpg&quot; /&gt;A cat&lt;/p&gt;
 unit
 </code></pre>
-<h2><a class="header" href="#exercises-48" id="exercises-48">Exercises</a></h2>
+<h2><a class="header" href="#exercises-49" id="exercises-49">Exercises</a></h2>
 <ol>
 <li>(Medium) Add a new data constructor to the <code>ContentF</code> type to support a new action <code>comment</code>, which renders a comment in the generated HTML. Implement the new action using <code>liftF</code>. Update the interpretation <code>renderContentItem</code> to interpret your new constructor appropriately.</li>
 </ol>
@@ -6646,7 +6653,7 @@ render e = evalState (execWriterT (renderElement e)) 0
 unit
 </code></pre>
 <p>You can verify that multiple calls to <code>newName</code> do in fact result in unique names.</p>
-<h2><a class="header" href="#exercises-49" id="exercises-49">Exercises</a></h2>
+<h2><a class="header" href="#exercises-50" id="exercises-50">Exercises</a></h2>
 <ol>
 <li>
 <p>(Medium) We can simplify the API further by hiding the <code>Element</code> type from its users. Make these changes in the following steps:</p>

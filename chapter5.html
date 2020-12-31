@@ -510,10 +510,17 @@ current = calculateCurrent lightbulb lightbulb -- uncaught mistake
 </code></pre>
 <p>This design principle is perhaps better <a href="https://twitter.com/jusrin00/status/875238742621028355/photo/1">communicated visually</a>.</p>
 <p>Note that the constructor of a newtype often has the same name as the newtype itself, but this is not a requirement. For example, unique names are also valid:</p>
-<pre><code class="language-haskell">newtype Watt = MakeWatt Number
+<pre><code class="language-haskell">newtype Coulomb = MakeCoulomb Number
 </code></pre>
-<p>In this case, <code>Watt</code> is the <em>type constructor</em> and <code>MakeWatt</code> is the <em>data constructor</em>. These constructors live in different namespaces, even when the names are identical, such as with the <code>Volt</code> example. This is true for all ADTs.</p>
+<p>In this case, <code>Coulomb</code> is the <em>type constructor</em> and <code>MakeCoulomb</code> is the <em>data constructor</em>. These constructors live in different namespaces, even when the names are identical, such as with the <code>Volt</code> example. This is true for all ADTs.</p>
 <p>Another application of newtypes is to attach different <em>behavior</em> to an existing type without changing its representation at runtime. We cover that use case in the next chapter when we discuss <em>type classes</em>.</p>
+<h2><a class="header" href="#exercises-3" id="exercises-3">Exercises</a></h2>
+<ol>
+<li>(Easy) Use <code>newtype</code> to define a <code>Watt</code> unit for <code>Number</code> with <code>MakeWatt</code> as the data constructor, then define a <code>calculateWattage</code> function using this new <code>Watt</code> type and the above definitions <code>Amp</code> and <code>Volt</code>:</li>
+</ol>
+<pre><code class="language-haskell">calculateWattage :: Amp -&gt; Volt -&gt; Watt
+</code></pre>
+<p>A wattage in <code>Watt</code>s can be calculated as the product of a given current in <code>Amp</code>s and a given voltage in <code>Volt</code>s.</p>
 <h2><a class="header" href="#a-library-for-vector-graphics" id="a-library-for-vector-graphics">A Library for Vector Graphics</a></h2>
 <p>Let's use the data types we have defined above to create a simple library for using vector graphics.</p>
 <p>Define a type synonym for a <code>Picture</code> - just an array of <code>Shape</code>s:</p>
@@ -552,7 +559,7 @@ bounds = foldl combine emptyBounds
 </code></pre>
 <p>In the base case, we need to find the smallest bounding rectangle of an empty <code>Picture</code>, and the empty bounding rectangle defined by <code>emptyBounds</code> suffices.</p>
 <p>The accumulating function <code>combine</code> is defined in a <code>where</code> block. <code>combine</code> takes a bounding rectangle computed from <code>foldl</code>'s recursive call, and the next <code>Shape</code> in the array, and uses the <code>union</code> function to compute the union of the two bounding rectangles. The <code>shapeBounds</code> function computes the bounds of a single shape using pattern matching.</p>
-<h2><a class="header" href="#exercises-3" id="exercises-3">Exercises</a></h2>
+<h2><a class="header" href="#exercises-4" id="exercises-4">Exercises</a></h2>
 <ol>
 <li>(Medium) Extend the vector graphics library with a new operation <code>area</code> which computes the area of a <code>Shape</code>. For the purpose of this exercise, the area of a line or a piece of text is assumed to be zero.</li>
 <li>(Difficult) Extend the <code>Shape</code> type with a new data constructor <code>Clipped</code>, which clips another <code>Picture</code> to a rectangle. Extend the <code>shapeBounds</code> function to compute the bounds of a clipped picture. Note that this makes <code>Shape</code> into a recursive data type.</li>
