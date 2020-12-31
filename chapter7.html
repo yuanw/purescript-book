@@ -212,7 +212,7 @@ forall a b c d f. Apply f =&gt; (a -&gt; b -&gt; c -&gt; d) -&gt; f a -&gt; f b 
 <pre><code class="language-haskell">forall a b c d. (a -&gt; b -&gt; c -&gt; d) -&gt; Maybe a -&gt; Maybe b -&gt; Maybe c -&gt; Maybe d
 </code></pre>
 <p>This type says that we can take any function with three arguments, and lift it to give a new function whose argument and result types are wrapped with <code>Maybe</code>.</p>
-<p>Certainly, this is not possible for any type constructor <code>f</code>, so what is it about the <code>Maybe</code> type which allowed us to do this? Well, in specializing the type above, we removed a type class constraint on <code>f</code> from the <code>Apply</code> type class. <code>Apply</code> is defined in the Prelude as follows:</p>
+<p>Certainly, this is not possible for every type constructor <code>f</code>, so what is it about the <code>Maybe</code> type which allowed us to do this? Well, in specializing the type above, we removed a type class constraint on <code>f</code> from the <code>Apply</code> type class. <code>Apply</code> is defined in the Prelude as follows:</p>
 <pre><code class="language-haskell">class Functor f where
   map :: forall a b. (a -&gt; b) -&gt; f a -&gt; f b
 
