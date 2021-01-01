@@ -786,17 +786,23 @@ infixr 0 apply as $
 <p>Let's see some simple examples of recursion in PureScript.</p>
 <p>Here is the usual <em>factorial function</em> example:</p>
 <pre><code class="language-haskell">fact :: Int -&gt; Int
-fact 0 = 1
-fact n = n * fact (n - 1)
+fact n =
+  if n == 0 then
+    1
+  else
+    n * fact (n - 1)
 </code></pre>
 <p>Here, we can see how the factorial function is computed by reducing the problem to a subproblem - that of computing the factorial of a smaller integer. When we reach zero, the answer is immediate.</p>
 <p>Here is another common example, which computes the <em>Fibonacci function</em>:</p>
 <pre><code class="language-haskell">fib :: Int -&gt; Int
-fib 0 = 1
-fib 1 = 1
-fib n = fib (n - 1) + fib (n - 2)
+fib n =
+  if n == 0 || n == 1 then
+    1
+  else
+    fib (n - 1) + fib (n - 2)
 </code></pre>
 <p>Again, this problem is solved by considering the solutions to subproblems. In this case, there are two subproblems, corresponding to the expressions <code>fib (n - 1)</code> and <code>fib (n - 2)</code>. When these two subproblems are solved, we assemble the result by adding the partial results.</p>
+<p>Note that, while the above examples of <code>fact</code> and <code>fib</code> work as intended, a more idiomatic implementation would use pattern matching instead of <code>if</code>/<code>then</code>/<code>else</code>. Pattern matching techniques are discussed in a later chapter.</p>
 <h2><a class="header" href="#recursion-on-arrays" id="recursion-on-arrays">Recursion on Arrays</a></h2>
 <p>We are not limited to defining recursive functions over the <code>Int</code> type! We will see recursive functions defined over a wide array of data types when we cover <em>pattern matching</em> later in the book, but for now, we will restrict ourselves to numbers and arrays.</p>
 <p>Just as we branch based on whether the input is non-zero, in the array case, we will branch based on whether the input is non-empty. Consider this function, which computes the length of an array using recursion:</p>
