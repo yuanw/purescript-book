@@ -688,6 +688,25 @@ insertEntry = Cons
 </code></pre>
 <p>This process is called <em>eta conversion</em>, and can be used (along with some other techniques) to rewrite functions in <em>point-free form</em>, which means functions defined without reference to their arguments.</p>
 <p>In the case of <code>insertEntry</code>, <em>eta conversion</em> has resulted in a very clear definition of our function - &quot;<code>insertEntry</code> is just cons on lists&quot;. However, it is arguable whether point-free form is better in general.</p>
+<h2><a class="header" href="#property-accessors" id="property-accessors">Property Accessors</a></h2>
+<p>One common pattern is to use a function to access individual fields (or &quot;properties&quot;) of a record. An inline function to extract an <code>Address</code> from an <code>Entry</code> could be written as:</p>
+<pre><code class="language-haskell">\entry -&gt; entry.address
+</code></pre>
+<p>PureScript also allows <a href="https://github.com/purescript/documentation/blob/master/language/Syntax.md#property-accessors"><em>property accessor</em></a> shorthand, where an underscore acts as the anonymous fuction argument, so the inline function above is equivalent to:</p>
+<pre><code class="language-haskell">_.address
+</code></pre>
+<p>This works with any number of levels or properties, so a function to extract the city associated with an <code>Entry</code> could be written as:</p>
+<pre><code class="language-haskell">_.address.city
+</code></pre>
+<p>For example:</p>
+<pre><code class="language-text">&gt; address = { street: &quot;123 Fake St.&quot;, city: &quot;Faketown&quot;, state: &quot;CA&quot; }
+&gt; entry = { firstName: &quot;John&quot;, lastName: &quot;Smith&quot;, address: address }
+&gt; _.lastName entry
+&quot;Smith&quot;
+
+&gt; _.address.city entry
+&quot;Faketown&quot;
+</code></pre>
 <h2><a class="header" href="#querying-the-address-book" id="querying-the-address-book">Querying the Address Book</a></h2>
 <p>The last function we need to implement for our minimal address book application will look up a person by name and return the correct <code>Entry</code>. This will be a nice application of building programs by composing small functions - a key idea from functional programming.</p>
 <p>We can first filter the address book, keeping only those entries with the correct first and last names. Then we can simply return the head (i.e. first) element of the resulting list.</p>
@@ -718,7 +737,7 @@ head :: AddressBook -&gt; Maybe Entry
 </code></pre>
 <p>This type signature says that <code>findEntry</code> takes two strings, the first and last names, and a <code>AddressBook</code>, and returns an optional <code>Entry</code>. The optional result will contain a value only if the name is found in the address book.</p>
 <p>And here is the definition of <code>findEntry</code>:</p>
-<pre><code class="language-haskell">findEntry firstName lastName book = head $ filter filterEntry book
+<pre><code class="language-haskell">findEntry firstName lastName book = head (filter filterEntry book)
   where
     filterEntry :: Entry -&gt; Boolean
     filterEntry entry = entry.firstName == firstName &amp;&amp; entry.lastName == lastName
@@ -729,21 +748,75 @@ head :: AddressBook -&gt; Maybe Entry
 <p>The predicate function <code>filterEntry</code> is defined as an auxiliary declaration inside a <code>where</code> clause. This way, the <code>filterEntry</code> function is available inside the definition of our function, but not outside it. Also, it can depend on the arguments to the enclosing function, which is essential here because <code>filterEntry</code> uses the <code>firstName</code> and <code>lastName</code> arguments to filter the specified <code>Entry</code>.</p>
 <p>Note that, just like for top-level declarations, it was not necessary to specify a type signature for <code>filterEntry</code>. However, doing so is recommended as a form of documentation.</p>
 <h2><a class="header" href="#infix-function-application" id="infix-function-application">Infix Function Application</a></h2>
-<p>In the code for <code>findEntry</code> above, we used a different form of function application: the <code>head</code> function was applied to the expression <code>filter filterEntry book</code> by using the infix <code>$</code> symbol.</p>
-<p>This is equivalent to the usual application <code>head (filter filterEntry book)</code></p>
-<p><code>($)</code> is just an alias for a regular function called <code>apply</code>, which is defined in the Prelude. It is defined as follows:</p>
+<p>Most of the functions discussed so far used <em>prefix</em> function application, where the function name was put <em>before</em> the arguments. For example, when using the <code>insertEntry</code> function to add an <code>Entry</code> (<code>john</code>) to an empty <code>AddressBook</code>, we might write:</p>
+<pre><code class="language-haskell">&gt; book1 = insertEntry john emptyBook
+</code></pre>
+<p>However, this chapter has also included examples of <em>infix</em> <a href="https://github.com/purescript/documentation/blob/master/language/Syntax.md#binary-operators">binary operators</a>, such as  the <code>==</code> operator in the definition of <code>filterEntry</code>, where the operator is put <em>between</em> the two arguments. These infix operators are actually defined in the PureScript source as infix aliases for their underlying <em>prefix</em> implementations. For example, <code>==</code> is defined as an infix alias for the prefix <code>eq</code> function with the line:</p>
+<pre><code class="language-haskell">infix 4 eq as ==
+</code></pre>
+<p>and therefore <code>entry.firstName == firstName</code> in <code>filterEntry</code> could be replaced with the <code>eq entry.firstName firstName</code>. We'll cover a few more examples of defining infix operators later in this section.</p>
+<p>There are situations where putting a prefix function in an infix position as an operator leads to more readable code. One example is the <code>mod</code> function:</p>
+<pre><code class="language-text">&gt; mod 8 3
+2
+</code></pre>
+<p>This is fine, but doesn't line up with common usage (in conversation, one might say &quot;eight mod three&quot;). Wrapping a prefix function in backticks (`) lets you use that it in infix position as an operator, e.g.,</p>
+<pre><code class="language-text">&gt; 8 `mod` 3
+2
+</code></pre>
+<p>In the same way, wrapping <code>insertEntry</code> in backticks turns it into an infix operator, such that <code>book1</code> and <code>book2</code> below are equivalent:</p>
+<pre><code class="language-haskell">book1 = insertEntry john emptyBook
+book2 = john `insertEntry` emptyBook
+</code></pre>
+<p>We can make an <code>AddressBook</code> with multiple entries by using multiple applications of <code>insertEntry</code> as a prefix function (<code>book3</code>) or as an infix operator (<code>book4</code>) as shown below:</p>
+<pre><code class="language-haskell">book3 = insertEntry john (insertEntry peggy (insertEntry ned emptyBook))
+book4 = john `insertEntry` (peggy `insertEntry` (ned `insertEntry` emptyBook))
+</code></pre>
+<p>We can also define an infix operator alias (or synonym) for <code>insertEntry.</code> We'll arbitrarily choose <code>++</code> for this operator, give it a <a href="https://github.com/purescript/documentation/blob/master/language/Syntax.md#precedence">precedence</a> of <code>5</code>, and make it right <a href="https://github.com/purescript/documentation/blob/master/language/Syntax.md#associativity">associative</a> using <code>infixr</code>:</p>
+<pre><code class="language-haskell">infixr 5 insertEntry as ++
+</code></pre>
+<p>This new operator lets us rewrite the above <code>book4</code> example as:</p>
+<pre><code class="language-haskell">book5 = john ++ (peggy ++ (ned ++ emptyBook))
+</code></pre>
+<p>and the right associativity of our new <code>++</code> operator lets us get rid of the parentheses without changing the meaning:</p>
+<pre><code class="language-haskell">book6 = john ++ peggy ++ ned ++ emptyBook
+</code></pre>
+<p>Another common technique for eliminating parens is to use <code>apply</code>'s infix operator <code>$</code>, along with your standard prefix functions.</p>
+<p>For example, the earlier <code>book3</code> example could be rewritten as:</p>
+<pre><code class="language-haskell">book7 = insertEntry john $ insertEntry peggy $ insertEntry ned emptyBook
+</code></pre>
+<p>Substituting <code>$</code> for parens is usually easier to type and (arguably) easier to read. A mnemonic to remember the meaning of this symbol is to think of the dollar sign as being drawn from two parens that are also being crossed-out, suggesting the parens are now unnecessary.</p>
+<p>Note that <code>$</code> isn't special syntax that's hardcoded into the language. It's simply the infix operator for a regular function called <code>apply</code>, which is defined in the Prelude as follows:</p>
 <pre><code class="language-haskell">apply :: forall a b. (a -&gt; b) -&gt; a -&gt; b
 apply f x = f x
 
 infixr 0 apply as $
 </code></pre>
-<p>So <code>apply</code> takes a function and a value and applies the function to the value. The <code>infixr</code> keyword is used to define <code>($)</code> as an alias for <code>apply</code>.</p>
-<p>But why would we want to use <code>$</code> instead of regular function application? The reason is that <code>$</code> is a right-associative, low precedence operator. This means that <code>$</code> allows us to remove sets of parentheses for deeply-nested applications.</p>
-<p>For example, the following nested function application, which finds the street in the address of an employee's boss:</p>
-<pre><code class="language-haskell">street (address (boss employee))
+<p>The <code>apply</code> function takes another function (of type <code>(a -&gt; b)</code>) as its first argument and a value (of type <code>a</code>) as its second argument, then calls that function with that value. If it seems like this function doesn't contribute anything meaningful, you are absolutely correct! Your program is logically identical without it (see <a href="https://en.wikipedia.org/wiki/Referential_transparency">referential transparency</a>). The syntactic utility of this function comes from the special properties assigned to its infix operator. <code>$</code> is a right-associative (<code>infixr</code>), low precedence (<code>0</code>) operator, which lets us remove sets of parentheses for deeply-nested applications.</p>
+<p>Another parens-busting opportunity for the <code>$</code> operator is in our earlier <code>findEntry</code> function:</p>
+<pre><code class="language-haskell">findEntry firstName lastName book = head $ filter filterEntry book
 </code></pre>
-<p>becomes (arguably) easier to read when expressed using <code>$</code>:</p>
-<pre><code class="language-haskell">street $ address $ boss employee
+<p>We'll see an even more elegant way to rewrite this line with &quot;function composition&quot; in the next section.</p>
+<p>If you'd like to use a concise infix operator alias as a prefix function, you can surround it in parentheses:</p>
+<pre><code class="language-text">&gt; 8 + 3
+11
+
+&gt; (+) 8 3
+11
+</code></pre>
+<p>Alternatively, operators can be partially applied by surrounding the expression with parentheses and using <code>_</code> as an operand in an <a href="https://github.com/purescript/documentation/blob/master/language/Syntax.md#operator-sections">operator section</a>. You can think of this as a more convenient way to create simple anonymous functions (although in the below example, we're then binding that anonymous function to a name, so it's not so anonymous anymore):</p>
+<pre><code class="language-text">&gt; add3 = (3 + _)
+&gt; add3 2
+5
+</code></pre>
+<p>To summarize, the following are equivalent definitions of a function that adds <code>5</code> to its argument:</p>
+<pre><code class="language-haskell">add5 x = 5 + x
+add5 x = add 5 x
+add5 x = (+) 5 x
+add5 x = 5 `add` x
+add5   = add 5
+add5   = \x -&gt; 5 + x
+add5   = (5 + _)
+add5 x = 5 `(+)` x  -- Yo Dawg, I herd you like infix, so we put infix in your infix!
 </code></pre>
 <h2><a class="header" href="#function-composition" id="function-composition">Function Composition</a></h2>
 <p>Just like we were able to simplify the <code>insertEntry</code> function by using eta conversion, we can simplify the definition of <code>findEntry</code> by reasoning about its arguments.</p>
@@ -766,6 +839,7 @@ infixr 0 apply as $
 <ol>
 <li>(Easy) Test your understanding of the <code>findEntry</code> function by writing down the types of each of its major subexpressions. For example, the type of the <code>head</code> function as used is specialized to <code>AddressBook -&gt; Maybe Entry</code>. <em>Note</em>: There is no test for this exercise.</li>
 <li>(Medium) Write a function <code>findEntryByStreet :: String -&gt; AddressBook -&gt; Maybe Entry</code> which looks up an <code>Entry</code> given a street address. <em>Hint</em> reusing the existing code in <code>findEntry</code>. Test your function in PSCi and by running <code>spago test</code>.</li>
+<li>(Medium) Rewrite <code>findEntryByStreet</code> to replace <code>filterEntry</code> with the composition (using <code>&lt;&lt;&lt;</code> or <code>&gt;&gt;&gt;</code>) of: a property accessor (using the <code>_.</code> notation); and a function that tests whether its given string argument is equal to the given street address.</li>
 <li>(Medium) Write a function <code>isInBook</code> which tests whether a name appears in a <code>AddressBook</code>, returning a Boolean value. <em>Hint</em>: Use PSCi to find the type of the <code>Data.List.null</code> function, which tests whether a list is empty or not.</li>
 <li>(Difficult) Write a function <code>removeDuplicates</code> which removes &quot;duplicate&quot; address book entries. We'll consider entries duplicated if they share the same first and last names, while ignoring <code>address</code> fields. <em>Hint</em>: Use PSCi to find the type of the <code>Data.List.nubBy</code> function, which removes duplicate elements from a list based on an equality predicate. Note that the first element in each set of duplicates (closest to list head) is the one that is kept.</li>
 </ol>
