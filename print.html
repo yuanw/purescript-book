@@ -1674,11 +1674,11 @@ current = calculateCurrent lightbulb lightbulb -- uncaught mistake
 <p>Note that the constructor of a newtype often has the same name as the newtype itself, but this is not a requirement. For example, unique names are also valid:</p>
 <pre><code class="language-haskell">newtype Coulomb = MakeCoulomb Number
 </code></pre>
-<p>In this case, <code>Coulomb</code> is the <em>type constructor</em> and <code>MakeCoulomb</code> is the <em>data constructor</em>. These constructors live in different namespaces, even when the names are identical, such as with the <code>Volt</code> example. This is true for all ADTs.</p>
+<p>In this case, <code>Coulomb</code> is the <em>type constructor</em> and <code>MakeCoulomb</code> is the <em>data constructor</em>. These constructors live in different namespaces, even when the names are identical, such as with the <code>Volt</code> example. This is true for all ADTs. Note that although the type constructor and data constructor can have different names, in practice it is idiomatic for them to share the same name. This is the case with <code>Amp</code> and <code>Volt</code> types above.</p>
 <p>Another application of newtypes is to attach different <em>behavior</em> to an existing type without changing its representation at runtime. We cover that use case in the next chapter when we discuss <em>type classes</em>.</p>
 <h2><a class="header" href="#exercises-10" id="exercises-10">Exercises</a></h2>
 <ol>
-<li>(Easy) Use <code>newtype</code> to define a <code>Watt</code> unit for <code>Number</code> with <code>MakeWatt</code> as the data constructor, then define a <code>calculateWattage</code> function using this new <code>Watt</code> type and the above definitions <code>Amp</code> and <code>Volt</code>:</li>
+<li>(Easy) Define <code>Watt</code> as a <code>newtype</code> of <code>Number</code>. Then define a <code>calculateWattage</code> function using this new <code>Watt</code> type and the above definitions <code>Amp</code> and <code>Volt</code>:</li>
 </ol>
 <pre><code class="language-haskell">calculateWattage :: Amp -&gt; Volt -&gt; Watt
 </code></pre>
