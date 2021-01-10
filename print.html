@@ -2056,7 +2056,7 @@ commas on the left hand side of the <code>=&gt;</code> symbol:</p>
 <p>(Medium) Write a <code>dedupShapes :: Array Shape -&gt; Array Shape</code> function which removes duplicate <code>Shape</code>s from an array using the <code>nubEq</code> function.</p>
 </li>
 <li>
-<p>(Medium) Write a <code>dedupShapesFast</code> function which is the same as <code>dudupShapes</code>, but uses the more efficient <code>nub</code> function.</p>
+<p>(Medium) Write a <code>dedupShapesFast</code> function which is the same as <code>dedupShapes</code>, but uses the more efficient <code>nub</code> function.</p>
 </li>
 </ol>
 <h2><a class="header" href="#multi-parameter-type-classes" id="multi-parameter-type-classes">Multi Parameter Type Classes</a></h2>
@@ -2147,7 +2147,13 @@ secondElement xs = head (tail xs)
 <p>We've already seen the <code>unsafePartial</code> function, which allows us to treat a partial function as a regular function (unsafely). This function is defined in the <code>Partial.Unsafe</code> module:</p>
 <pre><code class="language-haskell">unsafePartial :: forall a. (Partial =&gt; a) -&gt; a
 </code></pre>
-<p>Note that the <code>Partial</code> constraint appears <em>inside the parentheses</em> on the left of the function arrow, but not in the outer <code>forall</code>. That is, <code>unsafePartial</code> is a function from partial values to regular values.</p>
+<p>Note that the <code>Partial</code> constraint appears <em>inside the parentheses</em> on the left of the function arrow, but not in the outer <code>forall</code>. That is, <code>unsafePartial</code> is a function from partial values to regular values:</p>
+<pre><code class="language-text">&gt; unsafePartial head [1, 2, 3]
+1
+
+&gt; unsafePartial secondElement [1, 2, 3]
+2
+</code></pre>
 <h2><a class="header" href="#superclasses" id="superclasses">Superclasses</a></h2>
 <p>Just as we can express relationships between type class instances by making an instance dependent on another instance, we can express relationships between type classes themselves using so-called <em>superclasses</em>.</p>
 <p>We say that one type class is a superclass of another if every instance of the second class is required to be an instance of the first, and we indicate a superclass relationship in the class definition by using a backwards facing double arrow.</p>
