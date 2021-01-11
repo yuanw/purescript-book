@@ -2664,11 +2664,10 @@ validateAddressAdo a = ado
 <p>This time, we receive an array of all validation errors.</p>
 <h2><a class="header" href="#regular-expression-validators" id="regular-expression-validators">Regular Expression Validators</a></h2>
 <p>The <code>validatePhoneNumber</code> function uses a regular expression to validate the form of its argument. The key is a <code>matches</code> validation function, which uses a <code>Regex</code> from the <code>Data.String.Regex</code> module to validate its input:</p>
-<pre><code class="language-haskell">matches :: String -&gt; Either String Regex -&gt; String -&gt; V Errors String
-matches _    (Right regex) value | test regex value 
-                                 = pure value
-matches _    (Left  error) _     = invalid [ error ]
-matches field _            _     = invalid [ &quot;Field '&quot; &lt;&gt; field &lt;&gt; &quot;' did not match the required format&quot; ]
+<pre><code class="language-haskell">matches :: String -&gt; Regex -&gt; String -&gt; V Errors String
+matches _     regex value | test regex value
+                          = pure value
+matches field _     _     = invalid [ &quot;Field '&quot; &lt;&gt; field &lt;&gt; &quot;' did not match the required format&quot; ]
 </code></pre>
 <p>Again, notice how <code>pure</code> is used to indicate successful validation, and <code>invalid</code> is used to signal an array of errors.</p>
 <p><code>validatePhoneNumber</code> is built from the <code>matches</code> function in the same way as before:</p>
@@ -2693,8 +2692,8 @@ invalid ([&quot;Field 'Number' did not match the required format&quot;])
 </code></pre>
 <h2><a class="header" href="#exercises-18" id="exercises-18">Exercises</a></h2>
 <ol>
-<li>(Easy) Write a regular expression <code>stateRegex :: Either String Regex</code> to check that a string only contains two alphabetic characters. <em>Hint</em>: see the source code for <code>phoneNumberRegex</code>.</li>
-<li>(Medium) Write a regular expression <code>nonEmptyRegex :: Either String Regex</code> to check that a string is not entirely whitespace. <em>Hint</em>: If you need help developing this regex expression, check out <a href="https://regexr.com">RegExr</a> which has a great cheatsheet and interactive test environment.</li>
+<li>(Easy) Write a regular expression <code>stateRegex :: Regex</code> to check that a string only contains two alphabetic characters. <em>Hint</em>: see the source code for <code>phoneNumberRegex</code>.</li>
+<li>(Medium) Write a regular expression <code>nonEmptyRegex :: Regex</code> to check that a string is not entirely whitespace. <em>Hint</em>: If you need help developing this regex expression, check out <a href="https://regexr.com">RegExr</a> which has a great cheatsheet and interactive test environment.</li>
 <li>(Medium) Write a function <code>validateAddressImproved</code> that is similar to <code>validateAddress</code>, but uses the above <code>stateRegex</code> to validate the <code>state</code> field and <code>nonEmptyRegex</code> to validate the <code>street</code> and <code>city</code> fields. <em>Hint</em>: see the source for <code>validatePhoneNumber</code> for an example of how to use <code>matches</code>.</li>
 </ol>
 <h2><a class="header" href="#traversable-functors" id="traversable-functors">Traversable Functors</a></h2>
