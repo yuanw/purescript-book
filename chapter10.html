@@ -226,7 +226,9 @@ exports.encodeURIComponent = encodeURIComponent;
 <p><code>test/Examples.js</code>:</p>
 <pre><code class="language-js">&quot;use strict&quot;;
 
-
+exports.square = function (n) {
+  return n * n;
+};
 </code></pre>
 <p><code>test/Examples.purs</code>:</p>
 <pre><code class="language-hs">module Test.Examples where
