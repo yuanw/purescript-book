@@ -220,7 +220,7 @@ length arr =
     else 1 + (length $ fromMaybe [] $ tail arr)
 </code></pre>
 <p>In this function, we use an <code>if .. then .. else</code> expression to branch based on the emptiness of the array. The <code>null</code> function returns <code>true</code> on an empty array. Empty arrays have length zero, and a non-empty array has a length that is one more than the length of its tail.</p>
-<p>The <code>tail</code> function returns a <code>Maybe</code> wrapping the given array without its first element. If the array is empty (i.e. it doesn't has a tail) <code>Nothing</code> is returned. The <code>fromMaybe</code> function takes a default value and a <code>Maybe</code> value. If the latter is <code>Nothing</code> it returns the default, in the other case it returns the value wrapped by <code>Just</code>.</p>
+<p>The <code>tail</code> function returns a <code>Maybe</code> wrapping the given array without its first element. If the array is empty (i.e. it doesn't have a tail) <code>Nothing</code> is returned. The <code>fromMaybe</code> function takes a default value and a <code>Maybe</code> value. If the latter is <code>Nothing</code> it returns the default, in the other case it returns the value wrapped by <code>Just</code>.</p>
 <p>This example is obviously a very impractical way to find the length of an array in JavaScript, but should provide enough help to allow you to complete the following exercises:</p>
 <h2><a class="header" href="#exercises" id="exercises">Exercises</a></h2>
 <ol>
