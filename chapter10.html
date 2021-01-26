@@ -706,10 +706,10 @@ foreign import addComplexJson :: Complex -&gt; Complex -&gt; Json
 exports.addComplexJson = exports.addComplexBroken
 </code></pre>
 <p>And then write a wrapper to decode the returned foreign <code>Json</code> value:</p>
-<pre><code class="language-hs">cumulativeSumsDecoded :: Array Int -&gt;  Either String (Array Int)
+<pre><code class="language-hs">cumulativeSumsDecoded :: Array Int -&gt; Either JsonDecodeError (Array Int)
 cumulativeSumsDecoded arr = decodeJson $ cumulativeSumsJson arr
 
-addComplexDecoded :: Complex -&gt; Complex -&gt;  Either String Complex
+addComplexDecoded :: Complex -&gt; Complex -&gt; Either JsonDecodeError Complex
 addComplexDecoded a b = decodeJson $ addComplexJson a b
 </code></pre>
 <p>Then any values that can't be successfully decoded to our return type appear as a <code>Left</code> error <code>String</code>:</p>
@@ -742,14 +742,14 @@ exports.addComplexJson = exports.addComplex
 <p>Here's an example of a foreign function signature that modifies a <code>Map</code> of <code>String</code> keys and <code>Int</code> values, along with the wrapper function that handles JSON encoding and decoding.</p>
 <pre><code class="language-hs">foreign import mapSetFooJson :: Json -&gt; Json
 
-mapSetFoo :: Map String Int -&gt; Either String (Map String Int)
-mapSetFoo m = decodeJson $ mapSetFooJson $ encodeJson m
+mapSetFoo :: Map String Int -&gt; Either JsonDecodeError (Map String Int)
+mapSetFoo = encodeJson &gt;&gt;&gt; mapSetFooJson &gt;&gt;&gt; decodeJson
 </code></pre>
 <p>Note that this is a prime use case for function composition. Both of these alternatives are equivalent to the above:</p>
-<pre><code class="language-hs">mapSetFoo :: Map String Int -&gt; Either String (Map String Int)
+<pre><code class="language-hs">mapSetFoo :: Map String Int -&gt; Either JsonDecodeError (Map String Int)
 mapSetFoo = decodeJson &lt;&lt;&lt; mapSetFooJson &lt;&lt;&lt; encodeJson
 
-mapSetFoo :: Map String Int -&gt; Either String (Map String Int)
+mapSetFoo :: Map String Int -&gt; Either JsonDecodeError (Map String Int)
 mapSetFoo = encodeJson &gt;&gt;&gt; mapSetFooJson &gt;&gt;&gt; decodeJson
 </code></pre>
 <p>Here is the JavaScript implementation. Note the <code>Array.from</code> step which is necessary to convert the JavaScript <code>Map</code> into a JSON-friendly format before decoding converts it back to a PureScript <code>Map</code>.</p>
@@ -780,10 +780,10 @@ Map String Int
 <h2><a class="header" href="#exercises-4" id="exercises-4">Exercises</a></h2>
 <ol>
 <li>
-<p>(Medium) Write a JavaScript function and PureScript wrapper <code>valuesOfMap :: Map String Int -&gt; Either String (Set Int)</code> that returns a <code>Set</code> of all the values in a <code>Map</code>. <em>Hint</em>: The <code>.values()</code> instance method for Map may be useful in your JavaScript code.</p>
+<p>(Medium) Write a JavaScript function and PureScript wrapper <code>valuesOfMap :: Map String Int -&gt; Either JsonDecodeError (Set Int)</code> that returns a <code>Set</code> of all the values in a <code>Map</code>. <em>Hint</em>: The <code>.values()</code> instance method for Map may be useful in your JavaScript code.</p>
 </li>
 <li>
-<p>(Easy) Write a new wrapper for the previous JavaScript function with the signature <code>valuesOfMapGeneric :: forall k v. Map k v -&gt; Either String (Set v)</code> so it works with a wider variety of maps. Note that you'll need to add some type class constraints for <code>k</code> and <code>v</code>. The compiler will guide you.</p>
+<p>(Easy) Write a new wrapper for the previous JavaScript function with the signature <code>valuesOfMapGeneric :: forall k v. Map k v -&gt; Either JsonDecodeError (Set v)</code> so it works with a wider variety of maps. Note that you'll need to add some type class constraints for <code>k</code> and <code>v</code>. The compiler will guide you.</p>
 </li>
 <li>
 <p>(Medium) Rewrite the earlier <code>quadraticRoots</code> function as <code>quadraticRootsSet</code> which returns the <code>Complex</code> roots as a <code>Set</code> via JSON (instead of as a <code>Pair</code>).</p>
