@@ -179,9 +179,9 @@
 <p>The source code for the chapter is broken up into a set of modules, each of which defines a <code>main</code> method. Different sections of this chapter are implemented in different files, and the <code>Main</code> module can be changed by modifying the Spago build command to run the appropriate file's <code>main</code> method at each point.</p>
 <p>The HTML file <code>html/index.html</code> contains a single <code>canvas</code> element which will be used in each example, and a <code>script</code> element to load the compiled PureScript code. To test the code for each section, open the HTML file in your browser. Because most exercises target the browser, there are no unit tests for this chapter.</p>
 <h2><a class="header" href="#simple-shapes" id="simple-shapes">Simple Shapes</a></h2>
-<p>The <code>Example/Rectangle.purs</code> file contains a simple introductory example, which draws a single blue rectangle at the center of the canvas. The module imports the <code>Effect</code> Type from the <code>Effect</code> module, and also the <code>Graphics.Canvas</code> module, which contains actions in the <code>Effect</code> monad for working with the Canvas API.</p>
+<p>The <code>Example/Rectangle.purs</code> file contains a simple introductory example, which draws a single blue rectangle at the center of the canvas. The module imports the <code>Effect</code> type from the <code>Effect</code> module, and also the <code>Graphics.Canvas</code> module, which contains actions in the <code>Effect</code> monad for working with the Canvas API.</p>
 <p>The <code>main</code> action starts, like in the other modules, by using the <code>getCanvasElementById</code> action to get a reference to the canvas object, and the <code>getContext2D</code> action to access the 2D rendering context for the canvas:</p>
-<p>The <code>void</code> function takes a functor and replace its value with <code>Unit</code>. In the example it is used to make <code>main</code> to conform with its signature.</p>
+<p>The <code>void</code> function takes a functor and replaces its value with <code>Unit</code>. In the example it is used to make <code>main</code> conform with its signature.</p>
 <pre><code class="language-haskell">main :: Effect Unit
 main = void $ unsafePartial do
   Just canvas &lt;- getCanvasElementById &quot;canvas&quot;
@@ -202,7 +202,7 @@ getContext2D :: CanvasElement -&gt; Effect Context2D
 <p>Finally, we use the <code>fillPath</code> action to fill the rectangle. <code>fillPath</code> has the following type:</p>
 <pre><code class="language-haskell">fillPath :: forall a. Context2D -&gt; Effect a -&gt; Effect a
 </code></pre>
-<p><code>fillPath</code> takes a graphics context, and another action which builds the path to render. To build a path, we can use the <code>rect</code> action. <code>rect</code> takes a graphics context, and a record which provides the position and size of the rectangle:</p>
+<p><code>fillPath</code> takes a graphics context and another action which builds the path to render. To build a path, we can use the <code>rect</code> action. <code>rect</code> takes a graphics context, and a record which provides the position and size of the rectangle:</p>
 <pre><code class="language-haskell">  fillPath ctx $ rect ctx
     { x: 250.0
     , y: 250.0
