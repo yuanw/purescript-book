@@ -431,7 +431,10 @@ Success : Success : ...
 <p><em>Hint</em>: Use the <code>oneOf</code> function defined in <code>Test.QuickCheck.Gen</code> to define your <code>Arbitrary</code> instance.</p>
 </li>
 <li>
-<p>(Medium) Use the <code>all</code> function to simplify the result of the <code>quickCheckPure</code> function - your function should return <code>true</code> if every test passes, and <code>false</code> otherwise. Try using the <code>First</code> monoid, defined in <code>monoids</code> with the <code>foldMap</code> function to preserve the first error in case of failure.</p>
+<p>(Medium) Use <code>all</code> to simplify the result of the <code>quickCheckPure</code> function - your new function should have type <code>List Result -&gt; Boolean</code> and should return <code>true</code> if every test passes and <code>false</code> otherwise.</p>
+</li>
+<li>
+<p>(Medium) As another approach to simplifying the result of <code>quickCheckPure</code>, try writing a function <code>squashResults :: List Result -&gt; Result</code>. Consider using the <code>First</code> monoid from <code>Data.Maybe.First</code> with the <code>foldMap</code> function to preserve the first error in case of failure.</p>
 </li>
 </ol>
 <h2><a class="header" href="#conclusion" id="conclusion">Conclusion</a></h2>
