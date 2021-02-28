@@ -6278,7 +6278,7 @@ newtype Attribute = Attribute
 &gt; import Prelude
 &gt; import Data.DOM.Simple
 &gt; import Data.Maybe
-&gt; import Control.Monad.Eff.Console
+&gt; import Effect.Console
 
 &gt; :paste
 … log $ render $ Element
@@ -6427,7 +6427,7 @@ height = AttributeKey &quot;height&quot;
 
 &gt; import Prelude
 &gt; import Data.DOM.Smart
-&gt; import Control.Monad.Eff.Console
+&gt; import Effect.Console
 &gt; log $ render $ p [ _class := &quot;main&quot; ] [ text &quot;Hello World!&quot; ]
 
 &lt;p class=&quot;main&quot;&gt;Hello World!&lt;/p&gt;
@@ -6500,7 +6500,7 @@ height = AttributeKey &quot;height&quot;
 <p>Now we find it is impossible to represent these invalid HTML documents, and we are forced to use numbers to represent the <code>width</code> and <code>height</code> attributes instead:</p>
 <pre><code class="language-text">&gt; import Prelude
 &gt; import Data.DOM.Phantom
-&gt; import Control.Monad.Eff.Console
+&gt; import Effect.Console
 
 &gt; :paste
 … log $ render $ img
@@ -6657,7 +6657,7 @@ render = execWriter &lt;&lt;&lt; renderElement
 <p>That's it! We can test our new monadic API in PSCi, as follows:</p>
 <pre><code class="language-text">&gt; import Prelude
 &gt; import Data.DOM.Free
-&gt; import Control.Monad.Eff.Console
+&gt; import Effect.Console
 
 &gt; :paste
 … log $ render $ p [] $ do
@@ -6745,7 +6745,7 @@ render e = evalState (execWriterT (renderElement e)) 0
 <p>With that, we can try out our new functionality in PSCi, by generating a unique name inside the <code>Content</code> monad, and using it as both the name of an element and the target of a hyperlink:</p>
 <pre><code class="language-text">&gt; import Prelude
 &gt; import Data.DOM.Name
-&gt; import Control.Monad.Eff.Console
+&gt; import Effect.Console
 
 &gt; :paste
 … render $ p [ ] $ do
