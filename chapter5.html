@@ -175,9 +175,8 @@
 <p>The goal of the chapter will be to write a library to describe and manipulate simple vector graphics using algebraic types and pattern matching.</p>
 <h2><a class="header" href="#project-setup" id="project-setup">Project Setup</a></h2>
 <p>The source code for this chapter is defined in the file <code>src/Data/Picture.purs</code>. </p>
-<p>The project uses some packages which we have already seen, and adds the following new dependencies:</p>
+<p>The project uses some packages which we have already seen, and adds the following new dependency:</p>
 <ul>
-<li><code>globals</code>, which provides access to some common JavaScript values and functions.</li>
 <li><code>math</code>, which provides access to the JavaScript <code>Math</code> module.</li>
 </ul>
 <p>The <code>Data.Picture</code> module defines a data type <code>Shape</code> for simple shapes, and a type <code>Picture</code> for collections of shapes, along with functions for working with those types.</p>
@@ -186,12 +185,12 @@
 
 import Prelude
 import Data.Foldable (foldl)
+import Data.Number (infinity)
 </code></pre>
-<p>The <code>Data.Picture</code> module also imports the <code>Global</code> and <code>Math</code> modules, but this time using the <code>as</code> keyword:</p>
-<pre><code class="language-haskell">import Global as Global
-import Math as Math
+<p>The <code>Data.Picture</code> module also imports the <code>Math</code> module, but this time using the <code>as</code> keyword:</p>
+<pre><code class="language-haskell">import Math as Math
 </code></pre>
-<p>This makes the types and functions in those modules available for use, but only by using <em>qualified names</em>, like <code>Global.infinity</code> and <code>Math.max</code>. This can be useful to avoid overlapping imports, or just to make it clearer which modules certain things are imported from.</p>
+<p>This makes the types and functions in that module available for use, but only by using the <em>qualified name</em>, like <code>Math.max</code>. This can be useful to avoid overlapping imports, or just to make it clearer which modules certain things are imported from.</p>
 <p><em>Note</em>: it is not necessary to use the same module name as the original module for a qualified import. Shorter qualified names like <code>import Math as M</code> are possible, and quite common.</p>
 <h2><a class="header" href="#simple-pattern-matching" id="simple-pattern-matching">Simple Pattern Matching</a></h2>
 <p>Let's begin by looking at an example. Here is a function which computes the greatest common divisor of two integers using pattern matching:</p>

@@ -867,8 +867,8 @@ validateAndSave = do
 </code></pre>
 <p>This is because <code>PhoneType</code> in the <code>Person</code> record needs an <code>EncodeJson</code> instance. We'll just derive a generic encode instance, and a decode instance too while we're at it. More information how this works is available in the argonaut docs:</p>
 <pre><code class="language-hs">import Data.Argonaut (class DecodeJson, class EncodeJson)
-import Data.Argonaut.Decode.Generic.Rep (genericDecodeJson)
-import Data.Argonaut.Encode.Generic.Rep (genericEncodeJson)
+import Data.Argonaut.Decode.Generic (genericDecodeJson)
+import Data.Argonaut.Encode.Generic (genericEncodeJson)
 import Data.Generic.Rep (class Generic)
 
 derive instance genericPhoneType :: Generic PhoneType _

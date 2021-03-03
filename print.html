@@ -841,7 +841,7 @@ add5 x = 5 `(+)` x  -- Yo Dawg, I herd you like infix, so we put infix in your i
 <li>(Medium) Write a function <code>findEntryByStreet :: String -&gt; AddressBook -&gt; Maybe Entry</code> which looks up an <code>Entry</code> given a street address. <em>Hint</em> reusing the existing code in <code>findEntry</code>. Test your function in PSCi and by running <code>spago test</code>.</li>
 <li>(Medium) Rewrite <code>findEntryByStreet</code> to replace <code>filterEntry</code> with the composition (using <code>&lt;&lt;&lt;</code> or <code>&gt;&gt;&gt;</code>) of: a property accessor (using the <code>_.</code> notation); and a function that tests whether its given string argument is equal to the given street address.</li>
 <li>(Medium) Write a function <code>isInBook</code> which tests whether a name appears in a <code>AddressBook</code>, returning a Boolean value. <em>Hint</em>: Use PSCi to find the type of the <code>Data.List.null</code> function, which tests whether a list is empty or not.</li>
-<li>(Difficult) Write a function <code>removeDuplicates</code> which removes &quot;duplicate&quot; address book entries. We'll consider entries duplicated if they share the same first and last names, while ignoring <code>address</code> fields. <em>Hint</em>: Use PSCi to find the type of the <code>Data.List.nubBy</code> function, which removes duplicate elements from a list based on an equality predicate. Note that the first element in each set of duplicates (closest to list head) is the one that is kept.</li>
+<li>(Difficult) Write a function <code>removeDuplicates</code> which removes &quot;duplicate&quot; address book entries. We'll consider entries duplicated if they share the same first and last names, while ignoring <code>address</code> fields. <em>Hint</em>: Use PSCi to find the type of the <code>Data.List.nubByEq</code> function, which removes duplicate elements from a list based on an equality predicate. Note that the first element in each set of duplicates (closest to list head) is the one that is kept.</li>
 </ol>
 <h2><a class="header" href="#conclusion-1" id="conclusion-1">Conclusion</a></h2>
 <p>In this chapter, we covered several new functional programming concepts:</p>
@@ -1321,9 +1321,8 @@ Nothing
 <p>The goal of the chapter will be to write a library to describe and manipulate simple vector graphics using algebraic types and pattern matching.</p>
 <h2><a class="header" href="#project-setup-2" id="project-setup-2">Project Setup</a></h2>
 <p>The source code for this chapter is defined in the file <code>src/Data/Picture.purs</code>. </p>
-<p>The project uses some packages which we have already seen, and adds the following new dependencies:</p>
+<p>The project uses some packages which we have already seen, and adds the following new dependency:</p>
 <ul>
-<li><code>globals</code>, which provides access to some common JavaScript values and functions.</li>
 <li><code>math</code>, which provides access to the JavaScript <code>Math</code> module.</li>
 </ul>
 <p>The <code>Data.Picture</code> module defines a data type <code>Shape</code> for simple shapes, and a type <code>Picture</code> for collections of shapes, along with functions for working with those types.</p>
@@ -1332,12 +1331,12 @@ Nothing
 
 import Prelude
 import Data.Foldable (foldl)
+import Data.Number (infinity)
 </code></pre>
-<p>The <code>Data.Picture</code> module also imports the <code>Global</code> and <code>Math</code> modules, but this time using the <code>as</code> keyword:</p>
-<pre><code class="language-haskell">import Global as Global
-import Math as Math
+<p>The <code>Data.Picture</code> module also imports the <code>Math</code> module, but this time using the <code>as</code> keyword:</p>
+<pre><code class="language-haskell">import Math as Math
 </code></pre>
-<p>This makes the types and functions in those modules available for use, but only by using <em>qualified names</em>, like <code>Global.infinity</code> and <code>Math.max</code>. This can be useful to avoid overlapping imports, or just to make it clearer which modules certain things are imported from.</p>
+<p>This makes the types and functions in that module available for use, but only by using the <em>qualified name</em>, like <code>Math.max</code>. This can be useful to avoid overlapping imports, or just to make it clearer which modules certain things are imported from.</p>
 <p><em>Note</em>: it is not necessary to use the same module name as the original module for a qualified import. Shorter qualified names like <code>import Math as M</code> are possible, and quite common.</p>
 <h2><a class="header" href="#simple-pattern-matching" id="simple-pattern-matching">Simple Pattern Matching</a></h2>
 <p>Let's begin by looking at an example. Here is a function which computes the greatest common divisor of two integers using pattern matching:</p>
@@ -4540,8 +4539,8 @@ validateAndSave = do
 </code></pre>
 <p>This is because <code>PhoneType</code> in the <code>Person</code> record needs an <code>EncodeJson</code> instance. We'll just derive a generic encode instance, and a decode instance too while we're at it. More information how this works is available in the argonaut docs:</p>
 <pre><code class="language-hs">import Data.Argonaut (class DecodeJson, class EncodeJson)
-import Data.Argonaut.Decode.Generic.Rep (genericDecodeJson)
-import Data.Argonaut.Encode.Generic.Rep (genericEncodeJson)
+import Data.Argonaut.Decode.Generic (genericDecodeJson)
+import Data.Argonaut.Encode.Generic (genericEncodeJson)
 import Data.Generic.Rep (class Generic)
 
 derive instance genericPhoneType :: Generic PhoneType _
