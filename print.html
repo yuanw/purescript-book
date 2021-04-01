@@ -692,7 +692,7 @@ insertEntry = Cons
 <p>One common pattern is to use a function to access individual fields (or &quot;properties&quot;) of a record. An inline function to extract an <code>Address</code> from an <code>Entry</code> could be written as:</p>
 <pre><code class="language-haskell">\entry -&gt; entry.address
 </code></pre>
-<p>PureScript also allows <a href="https://github.com/purescript/documentation/blob/master/language/Syntax.md#property-accessors"><em>property accessor</em></a> shorthand, where an underscore acts as the anonymous fuction argument, so the inline function above is equivalent to:</p>
+<p>PureScript also allows <a href="https://github.com/purescript/documentation/blob/master/language/Syntax.md#property-accessors"><em>property accessor</em></a> shorthand, where an underscore acts as the anonymous function argument, so the inline function above is equivalent to:</p>
 <pre><code class="language-haskell">_.address
 </code></pre>
 <p>This works with any number of levels or properties, so a function to extract the city associated with an <code>Entry</code> could be written as:</p>
