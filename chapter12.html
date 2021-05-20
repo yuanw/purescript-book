@@ -140,13 +140,15 @@
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
                         
+                        
+
                     </div>
                 </div>
 
                 
                 <div id="search-wrapper" class="hidden">
                     <form id="searchbar-outer" class="searchbar-outer">
-                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
                     </form>
                     <div id="searchresults-outer" class="searchresults-outer hidden">
                         <div id="searchresults-header" class="searchresults-header"></div>
@@ -167,10 +169,10 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#canvas-graphics" id="canvas-graphics">Canvas Graphics</a></h1>
-<h2><a class="header" href="#chapter-goals" id="chapter-goals">Chapter Goals</a></h2>
+                        <h1 id="canvas-graphics"><a class="header" href="#canvas-graphics">Canvas Graphics</a></h1>
+<h2 id="chapter-goals"><a class="header" href="#chapter-goals">Chapter Goals</a></h2>
 <p>This chapter will be an extended example focussing on the <code>canvas</code> package, which provides a way to generate 2D graphics from PureScript using the HTML5 Canvas API.</p>
-<h2><a class="header" href="#project-setup" id="project-setup">Project Setup</a></h2>
+<h2 id="project-setup"><a class="header" href="#project-setup">Project Setup</a></h2>
 <p>This module's project introduces the following new dependencies:</p>
 <ul>
 <li><code>canvas</code>, which gives types to methods from the HTML5 Canvas API</li>
@@ -178,7 +180,7 @@
 </ul>
 <p>The source code for the chapter is broken up into a set of modules, each of which defines a <code>main</code> method. Different sections of this chapter are implemented in different files, and the <code>Main</code> module can be changed by modifying the Spago build command to run the appropriate file's <code>main</code> method at each point.</p>
 <p>The HTML file <code>html/index.html</code> contains a single <code>canvas</code> element which will be used in each example, and a <code>script</code> element to load the compiled PureScript code. To test the code for each section, open the HTML file in your browser. Because most exercises target the browser, there are no unit tests for this chapter.</p>
-<h2><a class="header" href="#simple-shapes" id="simple-shapes">Simple Shapes</a></h2>
+<h2 id="simple-shapes"><a class="header" href="#simple-shapes">Simple Shapes</a></h2>
 <p>The <code>Example/Rectangle.purs</code> file contains a simple introductory example, which draws a single blue rectangle at the center of the canvas. The module imports the <code>Effect</code> type from the <code>Effect</code> module, and also the <code>Graphics.Canvas</code> module, which contains actions in the <code>Effect</code> monad for working with the Canvas API.</p>
 <p>The <code>main</code> action starts, like in the other modules, by using the <code>getCanvasElementById</code> action to get a reference to the canvas object, and the <code>getContext2D</code> action to access the 2D rendering context for the canvas:</p>
 <p>The <code>void</code> function takes a functor and replaces its value with <code>Unit</code>. In the example it is used to make <code>main</code> conform with its signature.</p>
@@ -214,7 +216,7 @@ getContext2D :: CanvasElement -&gt; Effect Context2D
 <pre><code class="language-text">$ spago bundle-app --main Example.Rectangle --to dist/Main.js
 </code></pre>
 <p>Now, open the <code>html/index.html</code> file and verify that this code renders a blue rectangle in the center of the canvas.</p>
-<h2><a class="header" href="#putting-row-polymorphism-to-work" id="putting-row-polymorphism-to-work">Putting Row Polymorphism to Work</a></h2>
+<h2 id="putting-row-polymorphism-to-work"><a class="header" href="#putting-row-polymorphism-to-work">Putting Row Polymorphism to Work</a></h2>
 <p>There are other ways to render paths. The <code>arc</code> function renders an arc segment, and the <code>moveTo</code>, <code>lineTo</code> and <code>closePath</code> functions can be used to render piecewise-linear paths.</p>
 <p>The <code>Shapes.purs</code> file renders three shapes: a rectangle, an arc segment and a triangle.</p>
 <p>We have seen that the <code>rect</code> function takes a record as its argument. In fact, the properties of the rectangle are defined in a type synonym:</p>
@@ -281,7 +283,7 @@ translate dx dy shape = shape
 <pre><code class="language-text">$ spago bundle-app --main Example.Shapes --to dist/Main.js
 </code></pre>
 <p>and open <code>html/index.html</code> again to see the result. You should see the three different types of shapes rendered to the canvas.</p>
-<h2><a class="header" href="#exercises" id="exercises">Exercises</a></h2>
+<h2 id="exercises"><a class="header" href="#exercises">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Experiment with the <code>strokePath</code> and <code>setStrokeStyle</code> functions in each of the examples so far.</p>
@@ -306,7 +308,7 @@ translate dx dy shape = shape
 <p>Experiment by rendering different paths by varying the function <code>f</code>.</p>
 </li>
 </ol>
-<h2><a class="header" href="#drawing-random-circles" id="drawing-random-circles">Drawing Random Circles</a></h2>
+<h2 id="drawing-random-circles"><a class="header" href="#drawing-random-circles">Drawing Random Circles</a></h2>
 <p>The <code>Example/Random.purs</code> file contains an example which uses the <code>Effect</code> monad to interleave two different types of side-effect: random number generation, and canvas manipulation. The example renders one hundred randomly generated circles onto the canvas.</p>
 <p>The <code>main</code> action obtains a reference to the graphics context as before, and then sets the stroke and fill styles:</p>
 <pre><code class="language-haskell">  setFillStyle ctx &quot;#F00&quot;
@@ -336,7 +338,7 @@ translate dx dy shape = shape
 <pre><code class="language-text">$ spago bundle-app --main Example.Random --to dist/Main.js
 </code></pre>
 <p>and view the result by opening <code>html/index.html</code>.</p>
-<h2><a class="header" href="#transformations" id="transformations">Transformations</a></h2>
+<h2 id="transformations"><a class="header" href="#transformations">Transformations</a></h2>
 <p>There is more to the canvas than just rendering simple shapes. Every canvas maintains a transformation which is used to transform shapes before rendering. Shapes can be translated, rotated, scaled, and skewed.</p>
 <p>The <code>canvas</code> library supports these transformations using the following functions:</p>
 <pre><code class="language-haskell">translate :: Context2D
@@ -369,7 +371,7 @@ transform :: Context2D
   renderScene
 </code></pre>
 <p>The effect of this sequence of actions is that the scene is rotated, then scaled, and finally translated.</p>
-<h2><a class="header" href="#preserving-the-context" id="preserving-the-context">Preserving the Context</a></h2>
+<h2 id="preserving-the-context"><a class="header" href="#preserving-the-context">Preserving the Context</a></h2>
 <p>A common use case is to render some subset of the scene using a transformation, and then to reset the transformation afterwards.</p>
 <p>The Canvas API provides the <code>save</code> and <code>restore</code> methods, which manipulate a <em>stack</em> of states associated with the canvas. <code>canvas</code> wraps this functionality into the following functions:</p>
 <pre><code class="language-haskell">save
@@ -400,7 +402,7 @@ restore
     rotate (Math.tau / 3.0) ctx
     render
 </code></pre>
-<h2><a class="header" href="#global-mutable-state" id="global-mutable-state">Global Mutable State</a></h2>
+<h2 id="global-mutable-state"><a class="header" href="#global-mutable-state">Global Mutable State</a></h2>
 <p>In this section, we'll use the <code>refs</code> package to demonstrate another effect in the <code>Effect</code> monad.</p>
 <p>The <code>Effect.Ref</code> module provides a type constructor for global mutable references, and an associated effect:</p>
 <pre><code class="language-text">&gt; import Effect.Ref
@@ -444,13 +446,13 @@ Type -&gt; Type
 <pre><code class="language-text">$ spago bundle-app --main Example.Refs --to dist/Main.js
 </code></pre>
 <p>and open the <code>html/index.html</code> file. If you click the canvas repeatedly, you should see a green rectangle rotating around the center of the canvas.</p>
-<h2><a class="header" href="#exercises-1" id="exercises-1">Exercises</a></h2>
+<h2 id="exercises-1"><a class="header" href="#exercises-1">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a higher-order function which strokes and fills a path simultaneously. Rewrite the <code>Random.purs</code> example using your function.</li>
 <li>(Medium) Use <code>Random</code> and <code>Dom</code> to create an application which renders a circle with random position, color and radius to the canvas when the mouse is clicked.</li>
 <li>(Medium) Write a function which transforms the scene by rotating it around a point with specified coordinates. <em>Hint</em>: use a translation to first translate the scene to the origin.</li>
 </ol>
-<h2><a class="header" href="#l-systems" id="l-systems">L-Systems</a></h2>
+<h2 id="l-systems"><a class="header" href="#l-systems">L-Systems</a></h2>
 <p>In this final example, we will use the <code>canvas</code> package to write a function for rendering <em>L-systems</em> (or <em>Lindenmayer systems</em>).</p>
 <p>An L-system is defined by an <em>alphabet</em>, an initial sequence of letters from the alphabet, and a set of <em>production rules</em>. Each production rule takes a letter of the alphabet and returns a sequence of replacement letters. This process is iterated some number of times starting with the initial sequence of letters.</p>
 <p>If each letter of the alphabet is associated with some instruction to perform on the canvas, the L-system can be rendered by following the instructions in order.</p>
@@ -580,7 +582,7 @@ lsystem init prod interpret n state = go init n
 <pre><code class="language-text">$ spago bundle-app --main Example.LSystem --to dist/Main.js
 </code></pre>
 <p>and open <code>html/index.html</code>. You should see the Koch curve rendered to the canvas.</p>
-<h2><a class="header" href="#exercises-2" id="exercises-2">Exercises</a></h2>
+<h2 id="exercises-2"><a class="header" href="#exercises-2">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Modify the L-system example above to use <code>fillPath</code> instead of <code>strokePath</code>. <em>Hint</em>: you will need to include a call to <code>closePath</code>, and move the call to <code>moveTo</code> outside of the <code>interpret</code> function.</p>
@@ -621,7 +623,7 @@ M -&gt; MRFRMLFLMLFLMRFRM
 <p>(Difficult) Use a different monad <code>m</code> in the interpretation function. You might try using <code>Effect.Console</code> to write the L-system onto the console, or using <code>Effect.Random</code> to apply random &quot;mutations&quot; to the state type.</p>
 </li>
 </ol>
-<h2><a class="header" href="#conclusion" id="conclusion">Conclusion</a></h2>
+<h2 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h2>
 <p>In this chapter, we learned how to use the HTML5 Canvas API from PureScript by using the <code>canvas</code> library. We also saw a practical demonstration of many of the techniques we have learned already: maps and folds, records and row polymorphism, and the <code>Effect</code> monad for handling side-effects.</p>
 <p>The examples also demonstrated the power of higher-order functions and <em>separating data from implementation</em>. It would be possible to extend these ideas to completely separate the representation of a scene from its rendering function, using an algebraic data type, for example:</p>
 <pre><code class="language-haskell">data Scene

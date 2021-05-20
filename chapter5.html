@@ -140,13 +140,15 @@
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
                         
+                        
+
                     </div>
                 </div>
 
                 
                 <div id="search-wrapper" class="hidden">
                     <form id="searchbar-outer" class="searchbar-outer">
-                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
                     </form>
                     <div id="searchresults-outer" class="searchresults-outer hidden">
                         <div id="searchresults-header" class="searchresults-header"></div>
@@ -167,13 +169,13 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#pattern-matching" id="pattern-matching">Pattern Matching</a></h1>
-<h2><a class="header" href="#chapter-goals" id="chapter-goals">Chapter Goals</a></h2>
+                        <h1 id="pattern-matching"><a class="header" href="#pattern-matching">Pattern Matching</a></h1>
+<h2 id="chapter-goals"><a class="header" href="#chapter-goals">Chapter Goals</a></h2>
 <p>This chapter will introduce two new concepts: algebraic data types, and pattern matching. We will also briefly cover an interesting feature of the PureScript type system: row polymorphism.</p>
 <p>Pattern matching is a common technique in functional programming and allows the developer to write compact functions which express potentially complex ideas, by breaking their implementation down into multiple cases.</p>
 <p>Algebraic data types are a feature of the PureScript type system which enable a similar level of expressiveness in the language of types - they are closely related to pattern matching.</p>
 <p>The goal of the chapter will be to write a library to describe and manipulate simple vector graphics using algebraic types and pattern matching.</p>
-<h2><a class="header" href="#project-setup" id="project-setup">Project Setup</a></h2>
+<h2 id="project-setup"><a class="header" href="#project-setup">Project Setup</a></h2>
 <p>The source code for this chapter is defined in the file <code>src/Data/Picture.purs</code>. </p>
 <p>The project uses some packages which we have already seen, and adds the following new dependency:</p>
 <ul>
@@ -192,7 +194,7 @@ import Data.Number (infinity)
 </code></pre>
 <p>This makes the types and functions in that module available for use, but only by using the <em>qualified name</em>, like <code>Math.max</code>. This can be useful to avoid overlapping imports, or just to make it clearer which modules certain things are imported from.</p>
 <p><em>Note</em>: it is not necessary to use the same module name as the original module for a qualified import. Shorter qualified names like <code>import Math as M</code> are possible, and quite common.</p>
-<h2><a class="header" href="#simple-pattern-matching" id="simple-pattern-matching">Simple Pattern Matching</a></h2>
+<h2 id="simple-pattern-matching"><a class="header" href="#simple-pattern-matching">Simple Pattern Matching</a></h2>
 <p>Let's begin by looking at an example. Here is a function which computes the greatest common divisor of two integers using pattern matching:</p>
 <pre><code class="language-haskell">gcd :: Int -&gt; Int -&gt; Int
 gcd n 0 = n
@@ -210,7 +212,7 @@ gcd n m = if n &gt; m
 <li>Otherwise, the function evaluates and returns the expression in the last line.</li>
 </ul>
 <p>Note that patterns can bind values to names - each line in the example binds one or both of the names <code>n</code> and <code>m</code> to the input values. As we learn about different kinds of patterns, we will see that different types of patterns correspond to different ways to choose names from the input arguments.</p>
-<h2><a class="header" href="#simple-patterns" id="simple-patterns">Simple Patterns</a></h2>
+<h2 id="simple-patterns"><a class="header" href="#simple-patterns">Simple Patterns</a></h2>
 <p>The example code above demonstrates two types of patterns:</p>
 <ul>
 <li>Integer literals patterns, which match something of type <code>Int</code>, only if the value matches exactly.</li>
@@ -231,7 +233,7 @@ toString true  = &quot;true&quot;
 toString false = &quot;false&quot;
 </code></pre>
 <p>Try these functions in PSCi.</p>
-<h2><a class="header" href="#guards" id="guards">Guards</a></h2>
+<h2 id="guards"><a class="header" href="#guards">Guards</a></h2>
 <p>In the Euclidean algorithm example, we used an <code>if .. then .. else</code> expression to switch between the two alternatives when <code>m &gt; n</code> and <code>m &lt;= n</code>. Another option in this case would be to use a <em>guard</em>.</p>
 <p>A guard is a boolean-valued expression which must be satisfied in addition to the constraints imposed by the patterns. Here is the Euclidean algorithm rewritten to use a guard:</p>
 <pre><code class="language-haskell">gcdV2 :: Int -&gt; Int -&gt; Int
@@ -242,13 +244,13 @@ gcdV2 n m | n &gt; m     = gcdV2 (n - m) m
 </code></pre>
 <p>In this case, the third line uses a guard to impose the extra condition that the first argument is strictly larger than the second.</p>
 <p>As this example demonstrates, guards appear on the left of the equals symbol, separated from the list of patterns by a pipe character (<code>|</code>).</p>
-<h2><a class="header" href="#exercises" id="exercises">Exercises</a></h2>
+<h2 id="exercises"><a class="header" href="#exercises">Exercises</a></h2>
 <ol>
 <li>(Easy) Write the <code>factorial</code> function using pattern matching. <em>Hint</em>: Consider the two corner cases of zero and non-zero inputs. <em>Note</em>: This is a repeat of an example from the previous chapter, but see if you can rewrite it here on your own.</li>
 <li>(Medium) Write a function <code>binomial</code> which finds the coefficient of the x^<code>k</code>th term in the polynomial expansion of (1 + x)^<code>n</code>. This is the same as the number of ways to choose a subset of <code>k</code> elements from a set of <code>n</code> elements. Use the formula <code>n! / k! (n - k)!</code>, where <code>!</code> is the factorial function written earlier. <em>Hint</em>: Use pattern matching to handle corner cases.</li>
 <li>(Medium) Write a function <code>pascal</code> which uses <a href="https://en.wikipedia.org/wiki/Pascal%27s_rule"><em>Pascal`s Rule</em></a> for computing the same binomial coefficients as the previous exercise.</li>
 </ol>
-<h2><a class="header" href="#array-patterns" id="array-patterns">Array Patterns</a></h2>
+<h2 id="array-patterns"><a class="header" href="#array-patterns">Array Patterns</a></h2>
 <p><em>Array literal patterns</em> provide a way to match arrays of a fixed length. For example, suppose we want to write a function <code>isEmpty</code> which identifies empty arrays. We could do this by using an empty array pattern (<code>[]</code>) in the first alternative:</p>
 <pre><code class="language-haskell">isEmpty :: forall a. Array a -&gt; Boolean
 isEmpty [] = true
@@ -275,7 +277,7 @@ takeFive _ = 0
 0
 </code></pre>
 <p>Array literal patterns allow us to match arrays of a fixed length, but PureScript does <em>not</em> provide any means of matching arrays of an unspecified length, since destructuring immutable arrays in these sorts of ways can lead to poor performance. If you need a data structure which supports this sort of matching, the recommended approach is to use <code>Data.List</code>. Other data structures exist which provide improved asymptotic performance for different operations.</p>
-<h2><a class="header" href="#record-patterns-and-row-polymorphism" id="record-patterns-and-row-polymorphism">Record Patterns and Row Polymorphism</a></h2>
+<h2 id="record-patterns-and-row-polymorphism"><a class="header" href="#record-patterns-and-row-polymorphism">Record Patterns and Row Polymorphism</a></h2>
 <p><em>Record patterns</em> are used to match - you guessed it - records.</p>
 <p>Record patterns look just like record literals, but instead of values on the right of the colon, we specify a binder for each field.</p>
 <p>For example: this pattern matches any record which contains fields called <code>first</code> and <code>last</code>, and binds their values to the names <code>x</code> and <code>y</code> respectively:</p>
@@ -306,7 +308,7 @@ Type of expression lacks required label &quot;last&quot;
 <pre><code class="language-haskell">&gt; showPerson p = p.last &lt;&gt; &quot;, &quot; &lt;&gt; p.first
 </code></pre>
 <p>and PSCi would have inferred the same type.</p>
-<h2><a class="header" href="#record-puns" id="record-puns">Record Puns</a></h2>
+<h2 id="record-puns"><a class="header" href="#record-puns">Record Puns</a></h2>
 <p>Recall that the <code>showPerson</code> function matches a record inside its argument, binding the <code>first</code> and <code>last</code> fields to values named <code>x</code> and <code>y</code>. We could alternatively just reuse the field names themselves, and simplify this sort of pattern match as follows:</p>
 <pre><code class="language-haskell">showPersonV2 :: { first :: String, last :: String } -&gt; String
 showPersonV2 { first, last } = last &lt;&gt; &quot;, &quot; &lt;&gt; first
@@ -320,7 +322,7 @@ unknownPerson = { first, last }
     last  = &quot;Doe&quot;
 </code></pre>
 <p>This may improve readability of code in some circumstances.</p>
-<h2><a class="header" href="#nested-patterns" id="nested-patterns">Nested Patterns</a></h2>
+<h2 id="nested-patterns"><a class="header" href="#nested-patterns">Nested Patterns</a></h2>
 <p>Array patterns and record patterns both combine smaller patterns to build larger patterns. For the most part, the examples above have only used simple patterns inside array patterns and record patterns, but it is important to note that patterns can be arbitrarily <em>nested</em>, which allows functions to be defined using conditions on potentially complex data types.</p>
 <p>For example, this code combines two record patterns:</p>
 <pre><code class="language-haskell">type Address = { street :: String, city :: String }
@@ -331,7 +333,7 @@ livesInLA :: Person -&gt; Boolean
 livesInLA { address: { city: &quot;Los Angeles&quot; } } = true
 livesInLA _ = false
 </code></pre>
-<h2><a class="header" href="#named-patterns" id="named-patterns">Named Patterns</a></h2>
+<h2 id="named-patterns"><a class="header" href="#named-patterns">Named Patterns</a></h2>
 <p>Patterns can be <em>named</em> to bring additional names into scope when using nested patterns. Any pattern can be named by using the <code>@</code> symbol.</p>
 <p>For example, this function sorts two-element arrays, naming the two elements, but also naming the array itself:</p>
 <pre><code class="language-haskell">sortPair :: Array Int -&gt; Array Int
@@ -341,13 +343,13 @@ sortPair arr@[x, y]
 sortPair arr = arr
 </code></pre>
 <p>This way, we save ourselves from allocating a new array if the pair is already sorted. Note that if the input array does not contain <em>exactly</em> two elements, then this function simply returns it unchanged, even if it's unsorted.</p>
-<h2><a class="header" href="#exercises-1" id="exercises-1">Exercises</a></h2>
+<h2 id="exercises-1"><a class="header" href="#exercises-1">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a function <code>sameCity</code> which uses record patterns to test whether two <code>Person</code> records belong to the same city.</li>
 <li>(Medium) What is the most general type of the <code>sameCity</code> function, taking into account row polymorphism? What about the <code>livesInLA</code> function defined above? <em>Note</em>: There is no test for this exercise.</li>
 <li>(Medium) Write a function <code>fromSingleton</code> which uses an array literal pattern to extract the sole member of a singleton array. If the array is not a singleton, your function should return a provided default value. Your function should have type <code>forall a. a -&gt; Array a -&gt; a</code></li>
 </ol>
-<h2><a class="header" href="#case-expressions" id="case-expressions">Case Expressions</a></h2>
+<h2 id="case-expressions"><a class="header" href="#case-expressions">Case Expressions</a></h2>
 <p>Patterns do not only appear in top-level function declarations. It is possible to use patterns to match on an intermediate value in a computation, using a <code>case</code> expression. Case expressions provide a similar type of utility to anonymous functions: it is not always desirable to give a name to a function, and a <code>case</code> expression allows us to avoid naming a function just because we want to use a pattern.</p>
 <p>Here is an example. This function computes &quot;longest zero suffix&quot; of an array (the longest suffix which sums to zero):</p>
 <pre><code class="language-haskell">import Data.Array (tail)
@@ -368,7 +370,7 @@ lzs xs = case sum xs of
 [-1, -2, 3]
 </code></pre>
 <p>This function works by case analysis. If the array is empty, our only option is to return an empty array. If the array is non-empty, we first use a <code>case</code> expression to split into two cases. If the sum of the array is zero, we return the whole array. If not, we recurse on the tail of the array.</p>
-<h2><a class="header" href="#pattern-match-failures-and-partial-functions" id="pattern-match-failures-and-partial-functions">Pattern Match Failures and Partial Functions</a></h2>
+<h2 id="pattern-match-failures-and-partial-functions"><a class="header" href="#pattern-match-failures-and-partial-functions">Pattern Match Failures and Partial Functions</a></h2>
 <p>If patterns in a case expression are tried in order, then what happens in the case when none of the patterns in a case alternatives match their inputs? In this case, the case expression will fail at runtime with a <em>pattern match failure</em>.</p>
 <p>We can see this behavior with a simple example:</p>
 <pre><code class="language-haskell">import Partial.Unsafe (unsafePartial)
@@ -411,7 +413,7 @@ redundantCase false = false
   false
 </code></pre>
 <p><em>Note</em>: PSCi does not show warnings, so to reproduce this example, you will need to save this function as a file and compile it using <code>spago build</code>.</p>
-<h2><a class="header" href="#algebraic-data-types" id="algebraic-data-types">Algebraic Data Types</a></h2>
+<h2 id="algebraic-data-types"><a class="header" href="#algebraic-data-types">Algebraic Data Types</a></h2>
 <p>This section will introduce a feature of the PureScript type system called <em>Algebraic Data Types</em> (or <em>ADTs</em>), which are fundamentally related to pattern matching.</p>
 <p>However, we'll first consider a motivating example, which will provide the basis of a solution to this chapter's problem of implementing a simple vector graphics library.</p>
 <p>Suppose we wanted to define a type to represent some simple shapes: lines, rectangles, circles, text, etc. In an object oriented language, we would probably define an interface or abstract class <code>Shape</code>, and one concrete subclass for each type of shape that we wanted to be able to work with.</p>
@@ -439,7 +441,7 @@ type Point =
 <pre><code class="language-haskell">data List a = Nil | Cons a (List a)
 </code></pre>
 <p>This example is taken from the <code>lists</code> package. Here, the <code>Nil</code> constructor represents an empty list, and <code>Cons</code> is used to create non-empty lists from a head element and a tail. Notice how the tail is defined using the data type <code>List a</code>, making this a recursive data type.</p>
-<h2><a class="header" href="#using-adts" id="using-adts">Using ADTs</a></h2>
+<h2 id="using-adts"><a class="header" href="#using-adts">Using ADTs</a></h2>
 <p>It is simple enough to use the constructors of an algebraic data type to construct a value: simply apply them like functions, providing arguments corresponding to the data included with the appropriate constructor.</p>
 <p>For example, the <code>Line</code> constructor defined above required two <code>Point</code>s, so to construct a <code>Shape</code> using the <code>Line</code> constructor, we have to provide two arguments of type <code>Point</code>:</p>
 <pre><code class="language-haskell">exampleLine :: Shape
@@ -469,13 +471,13 @@ showPoint { x, y } =
   &quot;(&quot; &lt;&gt; show x &lt;&gt; &quot;, &quot; &lt;&gt; show y &lt;&gt; &quot;)&quot;
 </code></pre>
 <p>Each constructor can be used as a pattern, and the arguments to the constructor can themselves be bound using patterns of their own. Consider the first case of <code>showShape</code>: if the <code>Shape</code> matches the <code>Circle</code> constructor, then we bring the arguments of <code>Circle</code> (center and radius) into scope using two variable patterns, <code>c</code> and <code>r</code>. The other cases are similar.</p>
-<h2><a class="header" href="#exercises-2" id="exercises-2">Exercises</a></h2>
+<h2 id="exercises-2"><a class="header" href="#exercises-2">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a function <code>circleAtOrigin</code> which constructs a <code>Circle</code> (of type <code>Shape</code>) centered at the origin with radius <code>10.0</code>.</li>
 <li>(Medium) Write a function <code>doubleScaleAndCenter</code> which scales the size of a <code>Shape</code> by a factor of <code>2.0</code> and centers it at the origin.</li>
 <li>(Medium) Write a function <code>shapeText</code> which extracts the text from a <code>Shape</code>. It should return <code>Maybe String</code>, and use the <code>Nothing</code> constructor if the input is not constructed using <code>Text</code>.</li>
 </ol>
-<h2><a class="header" href="#newtypes" id="newtypes">Newtypes</a></h2>
+<h2 id="newtypes"><a class="header" href="#newtypes">Newtypes</a></h2>
 <p>There is a special case of algebraic data types, called <em>newtypes</em>. Newtypes are introduced using the <code>newtype</code> keyword instead of the <code>data</code> keyword.</p>
 <p>Newtypes must define <em>exactly one</em> constructor, and that constructor must take <em>exactly one</em> argument. That is, a newtype gives a new name to an existing type. In fact, the values of a newtype have the same runtime representation as the underlying type, so there is no runtime performance overhead. They are, however, distinct from the point of view of the type system. This gives an extra layer of type safety.</p>
 <p>As an example, we might want to define newtypes as type-level aliases for <code>Number</code>, to ascribe units like volts, amps, and ohms:</p>
@@ -528,14 +530,14 @@ current = calculateCurrent lightbulb lightbulb -- uncaught mistake
 </code></pre>
 <p>In this case, <code>Coulomb</code> is the <em>type constructor</em> and <code>MakeCoulomb</code> is the <em>data constructor</em>. These constructors live in different namespaces, even when the names are identical, such as with the <code>Volt</code> example. This is true for all ADTs. Note that although the type constructor and data constructor can have different names, in practice it is idiomatic for them to share the same name. This is the case with <code>Amp</code> and <code>Volt</code> types above.</p>
 <p>Another application of newtypes is to attach different <em>behavior</em> to an existing type without changing its representation at runtime. We cover that use case in the next chapter when we discuss <em>type classes</em>.</p>
-<h2><a class="header" href="#exercises-3" id="exercises-3">Exercises</a></h2>
+<h2 id="exercises-3"><a class="header" href="#exercises-3">Exercises</a></h2>
 <ol>
 <li>(Easy) Define <code>Watt</code> as a <code>newtype</code> of <code>Number</code>. Then define a <code>calculateWattage</code> function using this new <code>Watt</code> type and the above definitions <code>Amp</code> and <code>Volt</code>:</li>
 </ol>
 <pre><code class="language-haskell">calculateWattage :: Amp -&gt; Volt -&gt; Watt
 </code></pre>
 <p>A wattage in <code>Watt</code>s can be calculated as the product of a given current in <code>Amp</code>s and a given voltage in <code>Volt</code>s.</p>
-<h2><a class="header" href="#a-library-for-vector-graphics" id="a-library-for-vector-graphics">A Library for Vector Graphics</a></h2>
+<h2 id="a-library-for-vector-graphics"><a class="header" href="#a-library-for-vector-graphics">A Library for Vector Graphics</a></h2>
 <p>Let's use the data types we have defined above to create a simple library for using vector graphics.</p>
 <p>Define a type synonym for a <code>Picture</code> - just an array of <code>Shape</code>s:</p>
 <pre><code class="language-haskell">type Picture = Array Shape
@@ -554,7 +556,7 @@ $ spago repl
 
 [&quot;Line [start: (0.0, 0.0), end: (1.0, 1.0)]&quot;]
 </code></pre>
-<h2><a class="header" href="#computing-bounding-rectangles" id="computing-bounding-rectangles">Computing Bounding Rectangles</a></h2>
+<h2 id="computing-bounding-rectangles"><a class="header" href="#computing-bounding-rectangles">Computing Bounding Rectangles</a></h2>
 <p>The example code for this module contains a function <code>bounds</code> which computes the smallest bounding rectangle for a <code>Picture</code>.</p>
 <p>The <code>Bounds</code> type defines a bounding rectangle.</p>
 <pre><code class="language-haskell">type Bounds =
@@ -573,12 +575,12 @@ bounds = foldl combine emptyBounds
 </code></pre>
 <p>In the base case, we need to find the smallest bounding rectangle of an empty <code>Picture</code>, and the empty bounding rectangle defined by <code>emptyBounds</code> suffices.</p>
 <p>The accumulating function <code>combine</code> is defined in a <code>where</code> block. <code>combine</code> takes a bounding rectangle computed from <code>foldl</code>'s recursive call, and the next <code>Shape</code> in the array, and uses the <code>union</code> function to compute the union of the two bounding rectangles. The <code>shapeBounds</code> function computes the bounds of a single shape using pattern matching.</p>
-<h2><a class="header" href="#exercises-4" id="exercises-4">Exercises</a></h2>
+<h2 id="exercises-4"><a class="header" href="#exercises-4">Exercises</a></h2>
 <ol>
 <li>(Medium) Extend the vector graphics library with a new operation <code>area</code> which computes the area of a <code>Shape</code>. For the purpose of this exercise, the area of a line or a piece of text is assumed to be zero.</li>
 <li>(Difficult) Extend the <code>Shape</code> type with a new data constructor <code>Clipped</code>, which clips another <code>Picture</code> to a rectangle. Extend the <code>shapeBounds</code> function to compute the bounds of a clipped picture. Note that this makes <code>Shape</code> into a recursive data type.</li>
 </ol>
-<h2><a class="header" href="#conclusion" id="conclusion">Conclusion</a></h2>
+<h2 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h2>
 <p>In this chapter, we covered pattern matching, a basic but powerful technique from functional programming. We saw how to use simple patterns as well as array and record patterns to match parts of deep data structures.</p>
 <p>This chapter also introduced algebraic data types, which are closely related to pattern matching. We saw how algebraic data types allow concise descriptions of data structures, and provide a modular way to extend data types with new operations.</p>
 <p>Finally, we covered <em>row polymorphism</em>, a powerful type of abstraction which allows many idiomatic JavaScript functions to be given a type.</p>

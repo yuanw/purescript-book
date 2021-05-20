@@ -140,13 +140,15 @@
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
                         
+                        
+
                     </div>
                 </div>
 
                 
                 <div id="search-wrapper" class="hidden">
                     <form id="searchbar-outer" class="searchbar-outer">
-                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
                     </form>
                     <div id="searchresults-outer" class="searchresults-outer hidden">
                         <div id="searchresults-header" class="searchresults-header"></div>
@@ -167,12 +169,12 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#getting-started" id="getting-started">Getting Started</a></h1>
-<h2><a class="header" href="#chapter-goals" id="chapter-goals">Chapter Goals</a></h2>
+                        <h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
+<h2 id="chapter-goals"><a class="header" href="#chapter-goals">Chapter Goals</a></h2>
 <p>In this chapter, we'll set up a working PureScript development environment, solve some exercises, and use the tests provided with this book to check our answers. You may also find a <a href="https://www.youtube.com/watch?v=GPjPwb6d-70">video walkthrough of this chapter</a> helpful if that better suits your learning style.</p>
-<h2><a class="header" href="#environment-setup" id="environment-setup">Environment Setup</a></h2>
+<h2 id="environment-setup"><a class="header" href="#environment-setup">Environment Setup</a></h2>
 <p>First, work through this <a href="https://github.com/purescript/documentation/blob/master/guides/Getting-Started.md">Getting Started Guide</a> in the Documentation Repo to setup your environment and learn a few basics about the language. Don't worry if the code in the example solution to the <a href="http://projecteuler.net/problem=1">Project Euler</a> problem is confusing or contains unfamiliar syntax. We'll cover all of this in great detail in the upcoming chapters.</p>
-<h2><a class="header" href="#solving-exercises" id="solving-exercises">Solving Exercises</a></h2>
+<h2 id="solving-exercises"><a class="header" href="#solving-exercises">Solving Exercises</a></h2>
 <p>Now that you've installed the necessary development tools, clone this book's repo.</p>
 <pre><code>git clone https://github.com/purescript-contrib/purescript-book.git
 </code></pre>
@@ -197,11 +199,11 @@ All 2 tests passed! 🎉
 <p>Note that the <code>answer</code> function (found in <code>src/Euler.purs</code>) has been modified to find the multiples of 3 and 5 below any integer. The test suite (found in <code>test/Main.purs</code>) for this <code>answer</code> function is more comprehensive than the test in the earlier getting-started guide. Don't worry about understanding how this test framework code works while reading these early chapters.</p>
 <p>The remainder of the book contains lots of exercises. If you write your solutions in the <code>Test.MySolutions</code> module (<code>test/MySolutions.purs</code>), you can check your work against the provided test suite.</p>
 <p>Let's work through this next exercise together in test-driven-development style.</p>
-<h2><a class="header" href="#exercise" id="exercise">Exercise:</a></h2>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise:</a></h2>
 <ol>
 <li>(Medium) Write a <code>diagonal</code> function to compute the length of the diagonal (or hypotenuse) of a right-angled triangle when given the lengths of the two other sides.</li>
 </ol>
-<h2><a class="header" href="#solution" id="solution">Solution</a></h2>
+<h2 id="solution"><a class="header" href="#solution">Solution</a></h2>
 <p>We'll start by enabling the tests for this exercise. Move the start of the block-comment down a few lines as shown below. Block comments start with <code>{-</code> and end with <code>-}</code>:</p>
 <pre><code class="language-hs">    suite &quot;diagonal&quot; do
       test &quot;3 4 5&quot; do
@@ -245,12 +247,12 @@ diagonal w h = sqrt (w * w + h)
 All 4 tests passed! 🎉
 </code></pre>
 <p>Success! Now you're ready to try these next exercises on your own.</p>
-<h2><a class="header" href="#exercises" id="exercises">Exercises</a></h2>
+<h2 id="exercises"><a class="header" href="#exercises">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a function <code>circleArea</code> which computes the area of a circle with a given radius. Use the <code>pi</code> constant, which is defined in the <code>Math</code> module. <em>Hint</em>: don't forget to import <code>pi</code> by modifying the <code>import Math</code> statement.</li>
 <li>(Medium) Write a function <code>leftoverCents</code> which takes an <code>Integer</code> and returns what's leftover after dividing by <code>100</code>. Use the <code>rem</code> function. Search <a href="https://pursuit.purescript.org/">Pursuit</a> for this function to learn about usage and which module to import it from. <em>Note:</em> Your IDE may support auto-importing of this function if you accept the auto-completion suggestion.</li>
 </ol>
-<h2><a class="header" href="#conclusion" id="conclusion">Conclusion</a></h2>
+<h2 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h2>
 <p>In this chapter, we installed the PureScript compiler and the Spago tool. We also learned how to write solutions to exercises and check these for correctness.</p>
 <p>There will be many more exercises in the chapters ahead, and working through those really helps with learning the material. If you're stumped by any of the exercises, please reach out to any of the community resources listed in the <a href="https://book.purescript.org/chapter1.html#getting-help">Getting Help</a> section of this book, or even file an issue in this <a href="https://github.com/purescript-contrib/purescript-book/issues">book's repo</a>. This reader feedback on which exercises could be made more approachable helps us improve the book.</p>
 <p>Once you solve all the exercises in a chapter, you may compare your answers against those in the <code>no-peeking/Solutions.purs</code>. No peeking please without putting in an honest effort to solve these yourself though. And even if you are stuck, try asking a community member for help first, as we would prefer to give you a small hint rather than spoil the exercise. If you found a more elegant solution (that still only requires knowledge of covered content), please send us a PR.</p>

@@ -140,13 +140,15 @@
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
                         
+                        
+
                     </div>
                 </div>
 
                 
                 <div id="search-wrapper" class="hidden">
                     <form id="searchbar-outer" class="searchbar-outer">
-                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
                     </form>
                     <div id="searchresults-outer" class="searchresults-outer hidden">
                         <div id="searchresults-header" class="searchresults-header"></div>
@@ -167,12 +169,12 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#type-classes" id="type-classes">Type Classes</a></h1>
-<h2><a class="header" href="#chapter-goals" id="chapter-goals">Chapter Goals</a></h2>
+                        <h1 id="type-classes"><a class="header" href="#type-classes">Type Classes</a></h1>
+<h2 id="chapter-goals"><a class="header" href="#chapter-goals">Chapter Goals</a></h2>
 <p>This chapter will introduce a powerful form of abstraction which is enabled by PureScript's type system - type classes.</p>
 <p>This motivating example for this chapter will be a library for hashing data structures. We will see how the machinery of type classes allow us to hash complex data structures without having to think directly about the structure of the data itself.</p>
 <p>We will also see a collection of standard type classes from PureScript's Prelude and standard libraries. PureScript code leans heavily on the power of type classes to express ideas concisely, so it will be beneficial to familiarize yourself with these classes.</p>
-<h2><a class="header" href="#project-setup" id="project-setup">Project Setup</a></h2>
+<h2 id="project-setup"><a class="header" href="#project-setup">Project Setup</a></h2>
 <p>The source code for this chapter is defined in the file <code>src/Data/Hashable.purs</code>.</p>
 <p>The project has the following dependencies:</p>
 <ul>
@@ -183,7 +185,7 @@
 <li><code>functions</code>, which defines some helper functions for defining PureScript functions.</li>
 </ul>
 <p>The module <code>Data.Hashable</code> imports several modules provided by these packages.</p>
-<h2><a class="header" href="#show-me" id="show-me">Show Me!</a></h2>
+<h2 id="show-me"><a class="header" href="#show-me">Show Me!</a></h2>
 <p>Our first simple example of a type class is provided by a function we've seen several times already: the <code>show</code> function, which takes a value and displays it as a string.</p>
 <p><code>show</code> is defined by a type class in the <code>Prelude</code> module called <code>Show</code>, which is defined as follows:</p>
 <pre><code class="language-haskell">class Show a where
@@ -254,7 +256,7 @@ No type class instance was found for
 
   Data.Show.Show (Int -&gt; Int)
 </code></pre>
-<h2><a class="header" href="#exercises" id="exercises">Exercises</a></h2>
+<h2 id="exercises"><a class="header" href="#exercises">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Define a <code>Show</code> instance for <code>Point</code>. Match the same output as the <code>showPoint</code> function from the previous chapter. <em>Note:</em> Point is now a <code>newtype</code> (instead of a <code>type</code> synonym), which allows us to customize how to <code>show</code> it. Otherwise, we'd be stuck with the default <code>Show</code> instance for records.</p>
@@ -266,9 +268,9 @@ No type class instance was found for
 </code></pre>
 </li>
 </ol>
-<h2><a class="header" href="#common-type-classes" id="common-type-classes">Common Type Classes</a></h2>
+<h2 id="common-type-classes"><a class="header" href="#common-type-classes">Common Type Classes</a></h2>
 <p>In this section, we'll look at some standard type classes defined in the Prelude and standard libraries. These type classes form the basis of many common patterns of abstraction in idiomatic PureScript code, so a basic understanding of their functions is highly recommended.</p>
-<h3><a class="header" href="#eq" id="eq">Eq</a></h3>
+<h3 id="eq"><a class="header" href="#eq">Eq</a></h3>
 <p>The <code>Eq</code> type class defines the <code>eq</code> function, which tests two values for equality. The <code>==</code> operator is actually just an alias for <code>eq</code>.</p>
 <pre><code class="language-haskell">class Eq a where
   eq :: a -&gt; a -&gt; Boolean
@@ -281,7 +283,7 @@ false
 &gt; &quot;Test&quot; == &quot;Test&quot;
 true
 </code></pre>
-<h3><a class="header" href="#ord" id="ord">Ord</a></h3>
+<h3 id="ord"><a class="header" href="#ord">Ord</a></h3>
 <p>The <code>Ord</code> type class defines the <code>compare</code> function, which can be used to compare two values, for types which support ordering. The comparison operators <code>&lt;</code> and <code>&gt;</code> along with their non-strict companions <code>&lt;=</code> and <code>&gt;=</code>, can be defined in terms of <code>compare</code>.</p>
 <pre><code class="language-haskell">data Ordering = LT | EQ | GT
 
@@ -301,14 +303,14 @@ LT
 &gt; compare &quot;A&quot; &quot;Z&quot;
 LT
 </code></pre>
-<h3><a class="header" href="#field" id="field">Field</a></h3>
+<h3 id="field"><a class="header" href="#field">Field</a></h3>
 <p>The <code>Field</code> type class identifies those types which support numeric operators such as addition, subtraction, multiplication and division. It is provided to abstract over those operators, so that they can be reused where appropriate.</p>
 <p><em>Note</em>: Just like the <code>Eq</code> and <code>Ord</code> type classes, the <code>Field</code> type class has special support in the PureScript compiler, so that simple expressions such as <code>1 + 2 * 3</code> get translated into simple JavaScript, as opposed to function calls which dispatch based on a type class implementation.</p>
 <pre><code class="language-haskell">class EuclideanRing a &lt;= Field a
 </code></pre>
 <p>The <code>Field</code> type class is composed from several more general <em>superclasses</em>. This allows us to talk abstractly about types which support some but not all of the <code>Field</code> operations. For example, a type of natural numbers would be closed under addition and multiplication, but not necessarily under subtraction, so that type might have an instance of the <code>Semiring</code> class (which is a superclass of <code>Num</code>), but not an instance of <code>Ring</code> or <code>Field</code>.</p>
 <p>Superclasses will be explained later in this chapter, but the full <a href="https://a-guide-to-the-purescript-numeric-hierarchy.readthedocs.io/en/latest/introduction.html">numeric type class hierarchy</a> (<a href="https://harry.garrood.me/numeric-hierarchy-overview/">cheatsheet</a>) is beyond the scope of this chapter. The interested reader is encouraged to read the documentation for the superclasses of <code>Field</code> in <code>prelude</code>.</p>
-<h3><a class="header" href="#semigroups-and-monoids" id="semigroups-and-monoids">Semigroups and Monoids</a></h3>
+<h3 id="semigroups-and-monoids"><a class="header" href="#semigroups-and-monoids">Semigroups and Monoids</a></h3>
 <p>The <code>Semigroup</code> type class identifies those types which support an <code>append</code> operation to combine two values:</p>
 <pre><code class="language-haskell">class Semigroup a where
   append :: a -&gt; a -&gt; a
@@ -332,7 +334,7 @@ LT
 [1,2,3,4,5,6]
 </code></pre>
 <p>The <code>prelude</code> package provides many examples of monoids and semigroups, which we will use in the rest of the book.</p>
-<h3><a class="header" href="#foldable" id="foldable">Foldable</a></h3>
+<h3 id="foldable"><a class="header" href="#foldable">Foldable</a></h3>
 <p>If the <code>Monoid</code> type class identifies those types which act as the result of a fold, then the <code>Foldable</code> type class identifies those type constructors which can be used as the source of a fold.</p>
 <p>The <code>Foldable</code> type class is provided in the <code>foldable-traversable</code> package, which also contains instances for some standard containers such as arrays and <code>Maybe</code>.</p>
 <p>The type signatures for the functions belonging to the <code>Foldable</code> class are a little more complicated than the ones we've seen so far:</p>
@@ -351,7 +353,7 @@ LT
 </code></pre>
 <p>Here, we choose the monoid for strings, which concatenates strings together, and the <code>show</code> function which renders an <code>Int</code> as a <code>String</code>. Then, passing in an array of integers, we see that the results of <code>show</code>ing each integer have been concatenated into a single <code>String</code>.</p>
 <p>But arrays are not the only types which are foldable. <code>foldable-traversable</code> also defines <code>Foldable</code> instances for types like <code>Maybe</code> and <code>Tuple</code>, and other libraries like <code>lists</code> define <code>Foldable</code> instances for their own data types. <code>Foldable</code> captures the notion of an <em>ordered container</em>.</p>
-<h3><a class="header" href="#functor-and-type-class-laws" id="functor-and-type-class-laws">Functor, and Type Class Laws</a></h3>
+<h3 id="functor-and-type-class-laws"><a class="header" href="#functor-and-type-class-laws">Functor, and Type Class Laws</a></h3>
 <p>The Prelude also defines a collection of type classes which enable a functional style of programming with side-effects in PureScript: <code>Functor</code>, <code>Applicative</code> and <code>Monad</code>. We will cover these abstractions later in the book, but for now, let's look at the definition of the <code>Functor</code> type class, which we have seen already in the form of the <code>map</code> function:</p>
 <pre><code class="language-haskell">class Functor f where
   map :: forall a b. (a -&gt; b) -&gt; f a -&gt; f b
@@ -379,9 +381,9 @@ LT
 <p>The second law is the <em>composition law</em>. It states that mapping one function over a structure, and then mapping a second, is the same thing as mapping the composition of the two functions over the structure.</p>
 <p>Whatever &quot;lifting&quot; means in the general sense, it should be true that any reasonable definition of lifting a function over a data structure should obey these rules.</p>
 <p>Many standard type classes come with their own set of similar laws. The laws given to a type class give structure to the functions of that type class and allow us to study its instances in generality. The interested reader can research the laws ascribed to the standard type classes that we have seen already.</p>
-<h3><a class="header" href="#deriving-instances" id="deriving-instances">Deriving Instances</a></h3>
+<h3 id="deriving-instances"><a class="header" href="#deriving-instances">Deriving Instances</a></h3>
 <p>Rather than writing instances manually, you can let the compiler do most of the work for you. Take a look at this <a href="https://github.com/purescript/documentation/blob/master/guides/Type-Class-Deriving.md">Type Class Deriving guide</a>. That information will help you solve the following exercises.</p>
-<h2><a class="header" href="#exercises-1" id="exercises-1">Exercises</a></h2>
+<h2 id="exercises-1"><a class="header" href="#exercises-1">Exercises</a></h2>
 <p>The following newtype represents a complex number:</p>
 <pre><code class="language-haskell">newtype Complex
   = Complex
@@ -413,7 +415,7 @@ LT
 <ol start="5">
 <li>(Medium) Derive (via <code>Generic</code>) a <code>Show</code> instance for <code>Shape</code>. How does the amount of code written and <code>String</code> output compare to <code>showShape</code> from the previous chapter? <em>Note</em>: You may instead write this instance manually, but you'll need to pay close attention to the output format expected by the tests.</li>
 </ol>
-<h2><a class="header" href="#type-class-constraints" id="type-class-constraints">Type Class Constraints</a></h2>
+<h2 id="type-class-constraints"><a class="header" href="#type-class-constraints">Type Class Constraints</a></h2>
 <p>Types of functions can be constrained by using type classes. Here is an example: suppose we want to write a function which tests if three values are equal, by using equality defined using an <code>Eq</code> type class instance.</p>
 <pre><code class="language-haskell">threeAreEqual :: forall a. Eq a =&gt; a -&gt; a -&gt; a -&gt; Boolean
 threeAreEqual a1 a2 a3 = a1 == a2 &amp;&amp; a2 == a3
@@ -443,7 +445,7 @@ of multiple arguments. But remember not to confuse the two symbols:</p>
 forall a. Semiring a =&gt; a -&gt; a
 </code></pre>
 <p>Here, we might have annotated this function as <code>Int -&gt; Int</code>, or <code>Number -&gt; Number</code>, but PSCi shows us that the most general type works for any <code>Semiring</code>, allowing us to use our function with both <code>Int</code>s and <code>Number</code>s.</p>
-<h2><a class="header" href="#instance-dependencies" id="instance-dependencies">Instance Dependencies</a></h2>
+<h2 id="instance-dependencies"><a class="header" href="#instance-dependencies">Instance Dependencies</a></h2>
 <p>Just as the implementation of functions can depend on type class instances using constrained types, so can the implementation of type class instances depend on other type class instances. This provides a powerful form of program inference, in which the implementation of a program can be inferred using its types.</p>
 <p>For example, consider the <code>Show</code> type class. We can write a type class instance to <code>show</code> arrays of elements, as long as we have a way to <code>show</code> the elements themselves:</p>
 <pre><code class="language-haskell">instance showArray :: Show a =&gt; Show (Array a) where
@@ -456,7 +458,7 @@ commas on the left hand side of the <code>=&gt;</code> symbol:</p>
 </code></pre>
 <p>These two type class instances are provided in the <code>prelude</code> library.</p>
 <p>When the program is compiled, the correct type class instance for <code>Show</code> is chosen based on the inferred type of the argument to <code>show</code>. The selected instance might depend on many such instance relationships, but this complexity is not exposed to the developer.</p>
-<h2><a class="header" href="#exercises-2" id="exercises-2">Exercises</a></h2>
+<h2 id="exercises-2"><a class="header" href="#exercises-2">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) The following declaration defines a type of non-empty arrays of elements of type <code>a</code>:</p>
@@ -495,7 +497,7 @@ commas on the left hand side of the <code>=&gt;</code> symbol:</p>
 <p>(Medium) Write a <code>dedupShapesFast</code> function which is the same as <code>dedupShapes</code>, but uses the more efficient <code>nub</code> function.</p>
 </li>
 </ol>
-<h2><a class="header" href="#multi-parameter-type-classes" id="multi-parameter-type-classes">Multi Parameter Type Classes</a></h2>
+<h2 id="multi-parameter-type-classes"><a class="header" href="#multi-parameter-type-classes">Multi Parameter Type Classes</a></h2>
 <p>It's not the case that a type class can only take a single type as an argument. This is the most common case, but in fact, a type class can be parameterized by <em>zero or more</em> type arguments.</p>
 <p>Let's see an example of a type class with two type arguments.</p>
 <pre><code class="language-haskell">module Stream where
@@ -527,7 +529,7 @@ foldStream f list =
     Just cons -&gt; f cons.head &lt;&gt; foldStream f cons.tail
 </code></pre>
 <p>Try using <code>foldStream</code> in PSCi for different types of <code>Stream</code> and different types of <code>Monoid</code>.</p>
-<h2><a class="header" href="#functional-dependencies" id="functional-dependencies">Functional Dependencies</a></h2>
+<h2 id="functional-dependencies"><a class="header" href="#functional-dependencies">Functional Dependencies</a></h2>
 <p>Multi-parameter type classes can be very useful, but can easily lead to confusing types and even issues with type inference. As a simple example, consider writing a generic <code>tail</code> function on streams using the <code>Stream</code> class given above:</p>
 <pre><code class="language-haskell">genericTail xs = map _.tail (uncons xs)
 </code></pre>
@@ -562,7 +564,7 @@ forall stream element. Stream stream element =&gt; stream -&gt; Maybe stream
 (Just &quot;esting&quot;)
 </code></pre>
 <p>Functional dependencies can be quite useful when using multi-parameter type classes to design certain APIs.</p>
-<h2><a class="header" href="#nullary-type-classes" id="nullary-type-classes">Nullary Type Classes</a></h2>
+<h2 id="nullary-type-classes"><a class="header" href="#nullary-type-classes">Nullary Type Classes</a></h2>
 <p>We can even define type classes with zero type arguments! These correspond to compile-time assertions about our functions, allowing us to track global properties of our code in the type system.</p>
 <p>An important example is the <code>Partial</code> class which we saw earlier when discussing partial functions. Take for example the functions <code>head</code> and <code>tail</code> defined in <code>Data.Array.Partial</code> that allow us to get the head or tail of an array without wrapping them in a <code>Maybe</code>, so they can fail if the array is empty:</p>
 <pre><code class="language-haskell">head :: forall a. Partial =&gt; Array a -&gt; a
@@ -590,13 +592,13 @@ secondElement xs = head (tail xs)
 &gt; unsafePartial secondElement [1, 2, 3]
 2
 </code></pre>
-<h2><a class="header" href="#superclasses" id="superclasses">Superclasses</a></h2>
+<h2 id="superclasses"><a class="header" href="#superclasses">Superclasses</a></h2>
 <p>Just as we can express relationships between type class instances by making an instance dependent on another instance, we can express relationships between type classes themselves using so-called <em>superclasses</em>.</p>
 <p>We say that one type class is a superclass of another if every instance of the second class is required to be an instance of the first, and we indicate a superclass relationship in the class definition by using a backwards facing double arrow.</p>
 <p>We've already seen some examples of superclass relationships: the <code>Eq</code> class is a superclass of <code>Ord</code>, and the <code>Semigroup</code> class is a superclass of <code>Monoid</code>. For every type class instance of the <code>Ord</code> class, there must be a corresponding <code>Eq</code> instance for the same type. This makes sense, since in many cases, when the <code>compare</code> function reports that two values are incomparable, we often want to use the <code>Eq</code> class to determine if they are in fact equal.</p>
 <p>In general, it makes sense to define a superclass relationship when the laws for the subclass mention the members of the superclass. For example, it is reasonable to assume, for any pair of <code>Ord</code> and <code>Eq</code> instances, that if two values are equal under the <code>Eq</code> instance, then the <code>compare</code> function should return <code>EQ</code>. In other words, <code>a == b</code> should be true exactly when <code>compare a b</code> evaluates to <code>EQ</code>. This relationship on the level of laws justifies the superclass relationship between <code>Eq</code> and <code>Ord</code>.</p>
 <p>Another reason to define a superclass relationship is in the case where there is a clear &quot;is-a&quot; relationship between the two classes. That is, every member of the subclass <em>is a</em> member of the superclass as well.</p>
-<h2><a class="header" href="#exercises-3" id="exercises-3">Exercises</a></h2>
+<h2 id="exercises-3"><a class="header" href="#exercises-3">Exercises</a></h2>
 <ol>
 <li>
 <p>(Medium) Define a partial function <code>unsafeMaximum :: Partial =&gt; Array Int -&gt; Int</code> which finds the maximum of a non-empty array of integers. Test out your function in PSCi using <code>unsafePartial</code>. <em>Hint</em>: Use the <code>maximum</code> function from <code>Data.Foldable</code>.</p>
@@ -606,12 +608,12 @@ secondElement xs = head (tail xs)
 <pre><code class="language-haskell">class Monoid m &lt;= Action m a where
   act :: m -&gt; a -&gt; a
 </code></pre>
-<p>An <em>action</em> is a function which describes how monoidal values can be used to modify a value of another type. There are two laws for the <code>Action</code> type class:</p>
+<p>An <em>action</em> is a function which describes how monoidal values are used to determine how to modify a value of another type. There are two laws for the <code>Action</code> type class:</p>
 <ul>
 <li><code>act mempty a = a</code></li>
 <li><code>act (m1 &lt;&gt; m2) a = act m1 (act m2 a)</code></li>
 </ul>
-<p>That is, the action respects the operations defined by the <code>Monoid</code> class.</p>
+<p>Applying an empty action is a no-op. And applying two actions in sequence is the same as applying the actions combined. That is, actions respect the operations defined by the <code>Monoid</code> class.</p>
 <p>For example, the natural numbers form a monoid under multiplication:</p>
 <pre><code class="language-haskell">newtype Multiply = Multiply Int
 
@@ -624,7 +626,10 @@ instance monoidMultiply :: Monoid Multiply where
 <p>Write an instance which implements this action:</p>
 <pre><code class="language-haskell">instance actionMultiplyInt :: Action Multiply Int
 </code></pre>
-<p>Does this instance satisfy the laws listed above?</p>
+<p>Verify that this instance satisfies the laws listed above.</p>
+</li>
+<li>
+<p>(Difficult) There are actually multiple ways to implement an instance of <code>Action Multiply Int</code>. How many can you think of? Purescript does not allow multiple implementations of a same instance, so you will have to replace your original implementation. <em>Note</em>: the tests cover 3 implementations.</p>
 </li>
 <li>
 <p>(Medium) Write an <code>Action</code> instance which repeats an input string some number of times:</p>
@@ -646,7 +651,7 @@ instance monoidMultiply :: Monoid Multiply where
 <p>(Difficult) Should the arguments of the multi-parameter type class <code>Action</code> be related by some functional dependency? Why or why not? <em>Note</em>: There is no test for this exercise.</p>
 </li>
 </ol>
-<h2><a class="header" href="#a-type-class-for-hashes" id="a-type-class-for-hashes">A Type Class for Hashes</a></h2>
+<h2 id="a-type-class-for-hashes"><a class="header" href="#a-type-class-for-hashes">A Type Class for Hashes</a></h2>
 <p>In the last section of this chapter, we will use the lessons from the rest of the chapter to create a library for hashing data structures.</p>
 <p>Note that this library is for demonstration purposes only, and is not intended to provide a robust hashing mechanism.</p>
 <p>What properties might we expect of a hash function?</p>
@@ -702,7 +707,7 @@ hashEqual = eq `on` hash
 <p>How can we prove that these <code>Hashable</code> instances satisfy the type class law that we stated above? We need to make sure that equal values have equal hash codes. In cases like <code>Int</code>, <code>Char</code>, <code>String</code> and <code>Boolean</code>, this is simple because there are no values of those types which are equal in the sense of <code>Eq</code> but not equal identically.</p>
 <p>What about some more interesting types? To prove the type class law for the <code>Array</code> instance, we can use induction on the length of the array. The only array with length zero is <code>[]</code>. Any two non-empty arrays are equal only if they have equal head elements and equal tails, by the definition of <code>Eq</code> on arrays. By the inductive hypothesis, the tails have equal hashes, and we know that the head elements have equal hashes if the <code>Hashable a</code> instance must satisfy the law. Therefore, the two arrays have equal hashes, and so the <code>Hashable (Array a)</code> obeys the type class law as well.</p>
 <p>The source code for this chapter includes several other examples of <code>Hashable</code> instances, such as instances for the <code>Maybe</code> and <code>Tuple</code> type.</p>
-<h2><a class="header" href="#exercises-4" id="exercises-4">Exercises</a></h2>
+<h2 id="exercises-4"><a class="header" href="#exercises-4">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Use PSCi to test the hash functions for each of the defined instances. <em>Note</em>: There is no provided unit test for this exercise.</p>
@@ -723,7 +728,7 @@ instance eqHour :: Eq Hour where
 <p>(Difficult) Prove the type class laws for the <code>Hashable</code> instances for <code>Maybe</code>, <code>Either</code> and <code>Tuple</code>. <em>Note</em>: There is no test for this exercise.</p>
 </li>
 </ol>
-<h2><a class="header" href="#conclusion" id="conclusion">Conclusion</a></h2>
+<h2 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h2>
 <p>In this chapter, we've been introduced to <em>type classes</em>, a type-oriented form of abstraction which enables powerful forms of code reuse. We've seen a collection of standard type classes from the PureScript standard libraries, and defined our own library based on a type class for computing hash codes.</p>
 <p>This chapter also gave an introduction to the notion of type class laws, a technique for proving properties about code which uses type classes for abstraction. Type class laws are part of a larger subject called <em>equational reasoning</em>, in which the properties of a programming language and its type system are used to enable logical reasoning about its programs. This is an important idea, and will be a theme which we will return to throughout the rest of the book.</p>
 

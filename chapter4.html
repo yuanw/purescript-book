@@ -140,13 +140,15 @@
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
                         
+                        
+
                     </div>
                 </div>
 
                 
                 <div id="search-wrapper" class="hidden">
                     <form id="searchbar-outer" class="searchbar-outer">
-                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
                     </form>
                     <div id="searchresults-outer" class="searchresults-outer hidden">
                         <div id="searchresults-header" class="searchresults-header"></div>
@@ -167,12 +169,12 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#recursion-maps-and-folds" id="recursion-maps-and-folds">Recursion, Maps And Folds</a></h1>
-<h2><a class="header" href="#chapter-goals" id="chapter-goals">Chapter Goals</a></h2>
+                        <h1 id="recursion-maps-and-folds"><a class="header" href="#recursion-maps-and-folds">Recursion, Maps And Folds</a></h1>
+<h2 id="chapter-goals"><a class="header" href="#chapter-goals">Chapter Goals</a></h2>
 <p>In this chapter, we will look at how recursive functions can be used to structure algorithms. Recursion is a basic technique used in functional programming, which we will use throughout this book.</p>
 <p>We will also cover some standard functions from PureScript's standard libraries. We will see the <code>map</code> and <code>fold</code> functions, as well as some useful special cases, like <code>filter</code> and <code>concatMap</code>.</p>
 <p>The motivating example for this chapter is a library of functions for working with a virtual filesystem. We will apply the techniques learned in this chapter to write functions which compute properties of the files represented by a model of a filesystem.</p>
-<h2><a class="header" href="#project-setup" id="project-setup">Project Setup</a></h2>
+<h2 id="project-setup"><a class="header" href="#project-setup">Project Setup</a></h2>
 <p>The source code for this chapter is contained in <code>src/Data/Path.purs</code> and <code>test/Examples.purs</code>. The <code>Data.Path</code> module contains a model of a virtual filesystem. You do not need to modify the contents of this module. Implement your solutions to the exercises in the <code>Test.MySolutions</code> module. Enable accompanying tests in the <code>Test.Main</code> module as you complete each exercise and check your work by running <code>spago test</code>.</p>
 <p>The project has the following dependencies:</p>
 <ul>
@@ -182,7 +184,7 @@
 <li><code>foldable-traversable</code>, which defines functions for folding arrays and other data structures</li>
 <li><code>console</code>, which defines functions for printing to the console</li>
 </ul>
-<h2><a class="header" href="#introduction" id="introduction">Introduction</a></h2>
+<h2 id="introduction"><a class="header" href="#introduction">Introduction</a></h2>
 <p>Recursion is an important technique in programming in general, but particularly common in pure functional programming, because, as we will see in this chapter, recursion helps to reduce the mutable state in our programs.</p>
 <p>Recursion is closely linked to the <em>divide and conquer</em> strategy: to solve a problem on certain inputs, we can break down the inputs into smaller parts, solve the problem on those parts, and then assemble a solution from the partial solutions.</p>
 <p>Let's see some simple examples of recursion in PureScript.</p>
@@ -205,7 +207,7 @@ fib n =
 </code></pre>
 <p>Again, this problem is solved by considering the solutions to subproblems. In this case, there are two subproblems, corresponding to the expressions <code>fib (n - 1)</code> and <code>fib (n - 2)</code>. When these two subproblems are solved, we assemble the result by adding the partial results.</p>
 <p>Note that, while the above examples of <code>fact</code> and <code>fib</code> work as intended, a more idiomatic implementation would use pattern matching instead of <code>if</code>/<code>then</code>/<code>else</code>. Pattern matching techniques are discussed in a later chapter.</p>
-<h2><a class="header" href="#recursion-on-arrays" id="recursion-on-arrays">Recursion on Arrays</a></h2>
+<h2 id="recursion-on-arrays"><a class="header" href="#recursion-on-arrays">Recursion on Arrays</a></h2>
 <p>We are not limited to defining recursive functions over the <code>Int</code> type! We will see recursive functions defined over a wide array of data types when we cover <em>pattern matching</em> later in the book, but for now, we will restrict ourselves to numbers and arrays.</p>
 <p>Just as we branch based on whether the input is non-zero, in the array case, we will branch based on whether the input is non-empty. Consider this function, which computes the length of an array using recursion:</p>
 <pre><code class="language-haskell">import Prelude
@@ -222,12 +224,12 @@ length arr =
 <p>In this function, we use an <code>if .. then .. else</code> expression to branch based on the emptiness of the array. The <code>null</code> function returns <code>true</code> on an empty array. Empty arrays have length zero, and a non-empty array has a length that is one more than the length of its tail.</p>
 <p>The <code>tail</code> function returns a <code>Maybe</code> wrapping the given array without its first element. If the array is empty (i.e. it doesn't have a tail) <code>Nothing</code> is returned. The <code>fromMaybe</code> function takes a default value and a <code>Maybe</code> value. If the latter is <code>Nothing</code> it returns the default, in the other case it returns the value wrapped by <code>Just</code>.</p>
 <p>This example is obviously a very impractical way to find the length of an array in JavaScript, but should provide enough help to allow you to complete the following exercises:</p>
-<h2><a class="header" href="#exercises" id="exercises">Exercises</a></h2>
+<h2 id="exercises"><a class="header" href="#exercises">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a recursive function <code>isEven</code> which returns <code>true</code> if and only if its input is an even integer.</li>
 <li>(Medium) Write a recursive function <code>countEven</code> which counts the number of even integers in an array. <em>Hint</em>: the function <code>head</code> (also available in <code>Data.Array</code>) can be used to find the first element in a non-empty array.</li>
 </ol>
-<h2><a class="header" href="#maps" id="maps">Maps</a></h2>
+<h2 id="maps"><a class="header" href="#maps">Maps</a></h2>
 <p>The <code>map</code> function is an example of a recursive function on arrays. It is used to transform the elements of an array by applying a function to each element in turn. Therefore, it changes the <em>contents</em> of the array, but preserves its <em>shape</em> (i.e. its length).</p>
 <p>When we cover <em>type classes</em> later in the book we will see that the <code>map</code> function is an example of a more general pattern of shape-preserving functions which transform a class of type constructors called <em>functors</em>.</p>
 <p>Let's try out the <code>map</code> function in PSCi:</p>
@@ -238,7 +240,7 @@ length arr =
 [2, 3, 4, 5, 6]
 </code></pre>
 <p>Notice how <code>map</code> is used - we provide a function which should be &quot;mapped over&quot; the array in the first argument, and the array itself in its second.</p>
-<h2><a class="header" href="#infix-operators" id="infix-operators">Infix Operators</a></h2>
+<h2 id="infix-operators"><a class="header" href="#infix-operators">Infix Operators</a></h2>
 <p>The <code>map</code> function can also be written between the mapping function and the array, by wrapping the function name in backticks:</p>
 <pre><code class="language-text">&gt; (\n -&gt; n + 1) `map` [1, 2, 3, 4, 5]
 [2, 3, 4, 5, 6]
@@ -282,7 +284,7 @@ forall a b f. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 [&quot;1&quot;,&quot;2&quot;,&quot;3&quot;,&quot;4&quot;,&quot;5&quot;]
 </code></pre>
 <p>If we wanted to assign an <em>associativity</em> (left or right) to an infix operator, we could do so with the <code>infixl</code> and <code>infixr</code> keywords instead.</p>
-<h2><a class="header" href="#filtering-arrays" id="filtering-arrays">Filtering Arrays</a></h2>
+<h2 id="filtering-arrays"><a class="header" href="#filtering-arrays">Filtering Arrays</a></h2>
 <p>The <code>Data.Array</code> module provides another function <code>filter</code>, which is commonly used together with <code>map</code>. It provides the ability to create a new array from an existing array, keeping only those elements which match a predicate function.</p>
 <p>For example, suppose we wanted to compute an array of all numbers between 1 and 10 which were even. We could do so as follows:</p>
 <pre><code class="language-text">&gt; import Data.Array
@@ -290,7 +292,7 @@ forall a b f. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 &gt; filter (\n -&gt; n `mod` 2 == 0) (1 .. 10)
 [2,4,6,8,10]
 </code></pre>
-<h2><a class="header" href="#exercises-1" id="exercises-1">Exercises</a></h2>
+<h2 id="exercises-1"><a class="header" href="#exercises-1">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a function <code>squared</code> which calculates the squares of an array of numbers. <em>Hint</em>: Use the <code>map</code> or <code>&lt;$&gt;</code> function.</li>
 <li>(Easy) Write a function <code>keepNonNegative</code> which removes the negative numbers from an array of numbers. <em>Hint</em>: Use the <code>filter</code> function.</li>
@@ -302,7 +304,7 @@ forall a b f. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </ul>
 </li>
 </ol>
-<h2><a class="header" href="#flattening-arrays" id="flattening-arrays">Flattening Arrays</a></h2>
+<h2 id="flattening-arrays"><a class="header" href="#flattening-arrays">Flattening Arrays</a></h2>
 <p>Another standard function on arrays is the <code>concat</code> function, defined in <code>Data.Array</code>. <code>concat</code> flattens an array of arrays into a single array:</p>
 <pre><code class="language-text">&gt; import Data.Array
 
@@ -325,7 +327,7 @@ forall a b. (a -&gt; Array b) -&gt; Array a -&gt; Array b
 <p>Here, we call <code>concatMap</code> with the function <code>\n -&gt; [n, n * n]</code> which sends an integer to the array of two elements consisting of that integer and its square. The result is an array of ten integers: the integers from 1 to 5 along with their squares.</p>
 <p>Note how <code>concatMap</code> concatenates its results. It calls the provided function once for each element of the original array, generating an array for each. Finally, it collapses all of those arrays into a single array, which is its result.</p>
 <p><code>map</code>, <code>filter</code> and <code>concatMap</code> form the basis for a whole range of functions over arrays called &quot;array comprehensions&quot;.</p>
-<h2><a class="header" href="#array-comprehensions" id="array-comprehensions">Array Comprehensions</a></h2>
+<h2 id="array-comprehensions"><a class="header" href="#array-comprehensions">Array Comprehensions</a></h2>
 <p>Suppose we wanted to find the factors of a number <code>n</code>. One simple way to do this would be by brute force: we could generate all pairs of numbers between 1 and <code>n</code>, and try multiplying them together. If the product was <code>n</code>, we would have found a pair of factors of <code>n</code>.</p>
 <p>We can perform this computation using an array comprehension. We will do so in steps, using PSCi as our interactive development environment.</p>
 <p>The first step is to generate an array of pairs of numbers below <code>n</code>, which we can do using <code>concatMap</code>.</p>
@@ -367,7 +369,7 @@ forall a b. (a -&gt; Array b) -&gt; Array a -&gt; Array b
 </code></pre>
 <p>This code uses the <code>product</code> function from the <code>Data.Foldable</code> module in the <code>foldable-traversable</code> library.</p>
 <p>Excellent! We've managed to find the correct set of factor pairs without duplicates.</p>
-<h2><a class="header" href="#do-notation" id="do-notation">Do Notation</a></h2>
+<h2 id="do-notation"><a class="header" href="#do-notation">Do Notation</a></h2>
 <p>However, we can improve the readability of our code considerably. <code>map</code> and <code>concatMap</code> are so fundamental, that they (or rather, their generalizations <code>map</code> and <code>bind</code>) form the basis of a special syntax called <em>do notation</em>.</p>
 <p><em>Note</em>: Just like <code>map</code> and <code>concatMap</code> allowed us to write <em>array comprehensions</em>, the more general operators <code>map</code> and <code>bind</code> allow us to write so-called <em>monad comprehensions</em>. We'll see plenty more examples of <em>monads</em> later in the book, but in this chapter, we will only consider arrays.</p>
 <p>We can rewrite our <code>factors</code> function using do notation as follows:</p>
@@ -396,7 +398,7 @@ factorsV2 n = filter (\xs -&gt; product xs == n) $ do
   [[i, j]]
 </code></pre>
 <p>and the result would be the same.</p>
-<h2><a class="header" href="#guards" id="guards">Guards</a></h2>
+<h2 id="guards"><a class="header" href="#guards">Guards</a></h2>
 <p>One further change we can make to the <code>factors</code> function is to move the filter inside the array comprehension. This is possible using the <code>guard</code> function from the <code>Control.MonadZero</code> module (from the <code>control</code> package):</p>
 <pre><code class="language-haskell">import Control.MonadZero (guard)
 
@@ -427,14 +429,14 @@ forall m. MonadZero m =&gt; Boolean -&gt; m Unit
 </code></pre>
 <p>That is, if <code>guard</code> is passed an expression which evaluates to <code>true</code>, then it returns an array with a single element. If the expression evaluates to <code>false</code>, then its result is empty.</p>
 <p>This means that if the guard fails, then the current branch of the array comprehension will terminate early with no results. This means that a call to <code>guard</code> is equivalent to using <code>filter</code> on the intermediate array. Depending on the application, you might prefer to use <code>guard</code> instead of a <code>filter</code>. Try the two definitions of <code>factors</code> to verify that they give the same results.</p>
-<h2><a class="header" href="#exercises-2" id="exercises-2">Exercises</a></h2>
+<h2 id="exercises-2"><a class="header" href="#exercises-2">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a function <code>isPrime</code> which tests if its integer argument is prime or not. <em>Hint</em>: Use the <code>factors</code> function.</li>
 <li>(Medium) Write a function <code>cartesianProduct</code> which uses do notation to find the <em>cartesian product</em> of two arrays, i.e. the set of all pairs of elements <code>a</code>, <code>b</code>, where <code>a</code> is an element of the first array, and <code>b</code> is an element of the second.</li>
 <li>(Medium) Write a function <code>triples :: Int -&gt; Array (Array Int)</code> which takes a number <code>n</code> and returns all Pythagorean triples whose components (the <code>a</code>, <code>b</code> and <code>c</code> values) are each less than or equal to <code>n</code>. A <em>Pythagorean triple</em> is an array of numbers <code>[a, b, c]</code> such that <code>a² + b² = c²</code>. <em>Hint</em>: Use the <code>guard</code> function in an array comprehension.</li>
 <li>(Difficult) Write a function <code>factorize</code> which produces the <a href="https://www.mathsisfun.com/prime-factorization.html">prime factorization</a> of <code>n</code>, i.e. the array of prime integers whose product is <code>n</code>. <em>Hint</em>: for an integer greater than 1, break the problem down into two subproblems: finding the first factor, and finding the remaining factors.</li>
 </ol>
-<h2><a class="header" href="#folds" id="folds">Folds</a></h2>
+<h2 id="folds"><a class="header" href="#folds">Folds</a></h2>
 <p>Left and right folds over arrays provide another class of interesting functions which can be implemented using recursion.</p>
 <p>Start by importing the <code>Data.Foldable</code> module, and inspecting the types of the <code>foldl</code> and <code>foldr</code> functions using PSCi:</p>
 <pre><code class="language-text">&gt; import Data.Foldable
@@ -475,7 +477,7 @@ forall a b. (a -&gt; b -&gt; b) -&gt; b -&gt; Array a -&gt; b
 <p>whereas the right fold is equivalent to this:</p>
 <pre><code class="language-text">(((((&quot;&quot; &lt;&gt; show 5) &lt;&gt; show 4) &lt;&gt; show 3) &lt;&gt; show 2) &lt;&gt; show 1)
 </code></pre>
-<h2><a class="header" href="#tail-recursion" id="tail-recursion">Tail Recursion</a></h2>
+<h2 id="tail-recursion"><a class="header" href="#tail-recursion">Tail Recursion</a></h2>
 <p>Recursion is a powerful technique for specifying algorithms, but comes with a problem: evaluating recursive functions in JavaScript can lead to stack overflow errors if our inputs are too large.</p>
 <p>It is easy to verify this problem, with the following code in PSCi:</p>
 <pre><code class="language-text">&gt; f 0 = 0
@@ -498,7 +500,7 @@ factTailRec 0 acc = acc
 factTailRec n acc = factTailRec (n - 1) (acc * n)
 </code></pre>
 <p>Notice that the recursive call to <code>factTailRec</code> is the last thing that happens in this function - it is in tail position.</p>
-<h2><a class="header" href="#accumulators" id="accumulators">Accumulators</a></h2>
+<h2 id="accumulators"><a class="header" href="#accumulators">Accumulators</a></h2>
 <p>One common way to turn a function which is not tail recursive into a tail recursive function is to use an <em>accumulator parameter</em>. An accumulator parameter is an additional parameter which is added to a function which <em>accumulates</em> a return value, as opposed to using the return value to accumulate the result.</p>
 <p>For example, consider again the <code>length</code> function presented in the beginning of the chapter:</p>
 <pre><code class="language-haskell">length :: forall a. Array a -&gt; Int
@@ -520,7 +522,7 @@ lengthTailRec arr = length' arr 0
 <p>In this case, we delegate to the helper function <code>length'</code>, which is tail recursive - its only recursive call is in the last case, and is in tail position. This means that the generated code will be a <em>while loop</em>, and will not blow the stack for large inputs.</p>
 <p>To understand the implementation of <code>lengthTailRec</code>, note that the helper function <code>length'</code> essentially uses the accumulator parameter to maintain an additional piece of state - the partial result. It starts out at 0, and grows by adding 1 for every element in the input array.</p>
 <p>Note also that while we might think of the accumulator as &quot;state&quot;, there is no direct mutation going on.</p>
-<h2><a class="header" href="#prefer-folds-to-explicit-recursion" id="prefer-folds-to-explicit-recursion">Prefer Folds to Explicit Recursion</a></h2>
+<h2 id="prefer-folds-to-explicit-recursion"><a class="header" href="#prefer-folds-to-explicit-recursion">Prefer Folds to Explicit Recursion</a></h2>
 <p>If we can write our recursive functions using tail recursion, then we can benefit from tail recursion optimization, so it becomes tempting to try to write all of our functions in this form. However, it is often easy to forget that many functions can be written directly as a fold over an array or similar data structure. Writing algorithms directly in terms of combinators such as <code>map</code> and <code>fold</code> has the added advantage of code simplicity - these combinators are well-understood, and as such, communicate the <em>intent</em> of the algorithm much better than explicit recursion.</p>
 <p>For example, we can reverse an array using <code>foldr</code>:</p>
 <pre><code class="language-text">&gt; import Data.Foldable
@@ -534,14 +536,14 @@ lengthTailRec arr = length' arr 0
 [3,2,1]
 </code></pre>
 <p>Writing <code>reverse</code> in terms of <code>foldl</code> will be left as an exercise for the reader.</p>
-<h2><a class="header" href="#exercises-3" id="exercises-3">Exercises</a></h2>
+<h2 id="exercises-3"><a class="header" href="#exercises-3">Exercises</a></h2>
 <ol>
 <li>(Easy) Write a function <code>allTrue</code> which uses <code>foldl</code> to test whether an array of boolean values are all true.</li>
 <li>(Medium - No Test) Characterize those arrays <code>xs</code> for which the function <code>foldl (==) false xs</code> returns <code>true</code>. In other words, complete the sentence: &quot;The function returns <code>true</code> when <code>xs</code> contains ...&quot;</li>
 <li>(Medium) Write a function <code>fibTailRec</code> which is the same as <code>fib</code> but in tail recursive form. <em>Hint</em>: Use an accumulator parameter.</li>
 <li>(Medium) Write <code>reverse</code> in terms of <code>foldl</code>.</li>
 </ol>
-<h2><a class="header" href="#a-virtual-filesystem" id="a-virtual-filesystem">A Virtual Filesystem</a></h2>
+<h2 id="a-virtual-filesystem"><a class="header" href="#a-virtual-filesystem">A Virtual Filesystem</a></h2>
 <p>In this section, we're going to apply what we've learned, writing functions which will work with a model of a filesystem. We will use maps, folds and filters to work with a predefined API.</p>
 <p>The <code>Data.Path</code> module defines an API for a virtual filesystem, as follows:</p>
 <ul>
@@ -578,7 +580,7 @@ true
 [/bin/,/etc/,/home/]
 </code></pre>
 <p>The <code>Test.Solutions</code> module defines functions which use the <code>Data.Path</code> API. You do not need to modify the <code>Data.Path</code> module, or understand its implementation. We will work entirely in the <code>Test.Solutions</code> module.</p>
-<h2><a class="header" href="#listing-all-files" id="listing-all-files">Listing All Files</a></h2>
+<h2 id="listing-all-files"><a class="header" href="#listing-all-files">Listing All Files</a></h2>
 <p>Let's write a function which performs a deep enumeration of all files inside a directory. This function will have the following type:</p>
 <pre><code class="language-haskell">allFiles :: Path -&gt; Array Path
 </code></pre>
@@ -604,7 +606,7 @@ allFiles' file = file : do
   allFiles' child
 </code></pre>
 <p>Try out the new version in PSCi - you should get the same result. I'll let you decide which version you find clearer.</p>
-<h2><a class="header" href="#exercises-4" id="exercises-4">Exercises</a></h2>
+<h2 id="exercises-4"><a class="header" href="#exercises-4">Exercises</a></h2>
 <ol>
 <li>
 <p>(Easy) Write a function <code>onlyFiles</code> which returns all <em>files</em> (not directories) in all subdirectories of a directory.</p>
@@ -623,7 +625,7 @@ Nothing
 <p>(Difficult) Write a function <code>largestSmallest</code> which takes a <code>Path</code> and returns an array containing the single largest and single smallest files in the <code>Path</code>. <em>Note</em>: consider the cases where there are zero or one files in the <code>Path</code> by returning an empty array or a one-element array respectively.</p>
 </li>
 </ol>
-<h2><a class="header" href="#conclusion" id="conclusion">Conclusion</a></h2>
+<h2 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h2>
 <p>In this chapter, we covered the basics of recursion in PureScript, as a means of expressing algorithms concisely. We also introduced user-defined infix operators, standard functions on arrays such as maps, filters and folds, and array comprehensions which combine these ideas. Finally, we showed the importance of using tail recursion in order to avoid stack overflow errors, and how to use accumulator parameters to convert functions to tail recursive form.</p>
 
                     </main>
