@@ -3874,8 +3874,8 @@ $ cat c/a/a.txt
 <p>PureScript's FFI is designed to be very flexible. In practice, this means that developers have a choice, between giving their foreign functions very simple types, or using the type system to protect against accidental misuses of foreign code. Code in the standard libraries tends to favor the latter approach.</p>
 <p>As a simple example, a JavaScript function makes no guarantees that its return value will not be <code>null</code>. Indeed, idiomatic JavaScript code returns <code>null</code> quite frequently! However, PureScript's types are usually not inhabited by a null value. Therefore, it is the responsibility of the developer to handle these corner cases appropriately when designing their interfaces to JavaScript code using the FFI.</p>
 <h2 id="calling-javascript-from-purescript"><a class="header" href="#calling-javascript-from-purescript">Calling JavaScript From PureScript</a></h2>
-<p>The simplest way to use JavaScript code from PureScript is to give a type to an existing JavaScript value using a <em>foreign import</em> declaration. Foreign import declarations should have a corresponding JavaScript declaration in a <em>foreign JavaScript module</em>.</p>
-<p>For example, consider the <code>encodeURIComponent</code> function, which can be used from JavaScript to encode a component of a URI by escaping special characters:</p>
+<p>The simplest way to use JavaScript code from PureScript is to give a type to an existing JavaScript value using a <em>foreign import</em> declaration. Foreign import declarations must have a corresponding JavaScript declaration <em>exported</em> from a <em>foreign JavaScript module</em>.</p>
+<p>For example, consider the <code>encodeURIComponent</code> function, which can be used in JavaScript to encode a component of a URI by escaping special characters:</p>
 <pre><code class="language-text">$ node
 
 node&gt; encodeURIComponent('Hello World')
@@ -3887,14 +3887,13 @@ node&gt; encodeURIComponent('Hello World')
 
 foreign import encodeURIComponent :: String -&gt; String
 </code></pre>
-<p>We also need to write a foreign JavaScript module. If the module above is saved as <code>test/URI.purs</code>, then the foreign JavaScript module should be saved as <code>test/URI.js</code>:</p>
+<p>We also need to write a foreign JavaScript module to import it from. A corresponding foreign JavaScript module is one of the same name but extension changed from <code>.purs</code> to <code>.js</code>. If the Purescript module above is saved as <code>URI.purs</code>, then the foreign JavaScript module is saved as <code>URI.js</code>:</p>
 <pre><code class="language-javascript">&quot;use strict&quot;;
 
 exports.encodeURIComponent = encodeURIComponent;
 </code></pre>
-<p>Spago will find <code>.js</code> files in the <code>src</code> and <code>test</code> directories, and provide them to the compiler as foreign JavaScript modules.</p>
-<p>JavaScript functions and values are exported from foreign JavaScript modules by assigning them to the <code>exports</code> object just like a regular CommonJS module. The <code>purs</code> compiler (wrapped by <code>spago</code>) treats this module like a regular CommonJS module, and simply adds it as a dependency to the compiled PureScript module. However, when bundling code for the browser with <code>psc-bundle</code> or <code>spago bundle-app --to</code>, it is very important to follow the pattern above, assigning exports to the <code>exports</code> object using a property assignment. This is because <code>psc-bundle</code> recognizes this format, allowing unused JavaScript exports to be removed from bundled code.</p>
-<p>With these two pieces in place, we can now use the <code>encodeURIComponent</code> function from PureScript like any function written in PureScript. For example, if this declaration is saved as a module and loaded into PSCi, we can reproduce the calculation above:</p>
+<p>Purescript uses the CommonJS module system when interoperating with JavaScript. In CommonJS, functions and values are exported from a module by assigning them to <em>properties</em> of the <code>exports</code> object.</p>
+<p>With these two pieces in place, we can now use the <code>encodeURIComponent</code> function from PureScript like any function written in PureScript. For example, in PSCi, we can reproduce the calculation above:</p>
 <pre><code class="language-text">$ spago repl
 
 &gt; import Test.URI
