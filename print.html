@@ -4078,10 +4078,15 @@ foreign import addComplex :: Complex -&gt; Complex -&gt; Complex
 <pre><code class="language-javascript">exports.head = arr =&gt;
   arr[0];
 </code></pre>
-<p>However, there is a problem with this function. We might try to give it the type <code>forall a. Array a -&gt; a</code>, but for empty arrays, this function returns <code>undefined</code>. Therefore, this function does not have the correct runtime representation.</p>
-<p>We can instead return a <code>Maybe</code> value to handle this corner case.</p>
-<p>It is tempting to write the following:</p>
+<p>How would we type this function? We might try to give it the type <code>forall a. Array a -&gt; a</code>, but for empty arrays, this function returns <code>undefined</code>. Therefore, the type <code>forall a. Array a -&gt; a</code> does not correctly represent this implementation.</p>
+<p>We instead want to return a <code>Maybe</code> value to handle this corner case:</p>
+<pre><code class="language-hs">foreign import maybeHead :: forall a. Array a -&gt; Maybe a
+</code></pre>
+<p>But how do we return a <code>Maybe</code>? It is tempting to write the following:</p>
 <pre><code class="language-js">// Don't do this
+
+let Data_Maybe = require(&quot;../Data.Maybe&quot;)
+
 exports.maybeHead = arr =&gt; {
   if (arr.length) {
     return Data_Maybe.Just.create(arr[0]);
@@ -4090,10 +4095,8 @@ exports.maybeHead = arr =&gt; {
   }
 }
 </code></pre>
-<pre><code class="language-hs">foreign import maybeHead :: forall a. Array a -&gt; Maybe a
-</code></pre>
-<p>But calling these <code>Maybe</code> constructors directly in the FFI code isn't recommended as it makes the code brittle to changes in the code generator. Additionally, doing this can cause problems when using <code>purs bundle</code> for dead code elimination.</p>
-<p>The recommended approach is to add extra parameters to your FFI-defined function to accept the functions you need to call as arguments:</p>
+<p>Importing and using the <code>Data.Maybe</code> module directly in the foreign module isn't recommended as it makes our code brittle to changes in the code generator — <code>create</code> and <code>value</code> are not public APIs. Additionally, doing this can cause problems when using <code>purs bundle</code> for dead code elimination.</p>
+<p>The recommended approach is to add extra parameters to our FFI-defined function to accept the functions we need.</p>
 <pre><code class="language-js">exports.maybeHeadImpl = just =&gt; nothing =&gt; arr =&gt; {
   if (arr.length) {
     return just(arr[0]);
@@ -4120,7 +4123,7 @@ For example, in the more vulnerable case we could call it as follows:</p>
 <p>which returns <code>Just 1000</code> for any array input.
 This vulnerability is allowed because <code>(\_ -&gt; Just 1000)</code> and <code>Just 1000</code> match the signatures of <code>(a -&gt; Maybe a)</code> and <code>Maybe a</code> respectively when <code>a</code> is <code>Int</code> (based on input array).</p>
 <p>In the more secure type signature, even when <code>a</code> is determined to be <code>Int</code> based on the input array, we still need to provide valid functions matching the signatures involving <code>forall x</code>.
-The <em>only</em> option for <code>(forall x. Maybe x)</code> is <code>Nothing</code>, since a <code>Just</code> would assume a type for <code>x</code> and then no longer be valid for all <code>x</code>. The only options for <code>(forall x. x -&gt; Maybe x)</code> are <code>Just</code> (our desired argument) and <code>(\_ -&gt; Nothing)</code>, which is the only remaining vulnerability.</p>
+The <em>only</em> option for <code>(forall x. Maybe x)</code> is <code>Nothing</code>, since a <code>Just</code> value would assume a type for <code>x</code> and will no longer be valid for all <code>x</code>. The only options for <code>(forall x. x -&gt; Maybe x)</code> are <code>Just</code> (our desired argument) and <code>(\_ -&gt; Nothing)</code>, which is the only remaining vulnerability.</p>
 <h2 id="defining-foreign-types"><a class="header" href="#defining-foreign-types">Defining Foreign Types</a></h2>
 <p>Suppose instead of returning a <code>Maybe a</code>, we wanted to return a new type <code>Undefined a</code> whose representation at runtime was like that for the type <code>a</code>, but also allowing the <code>undefined</code> value.</p>
 <p>We can define a <em>foreign type</em> using the FFI using a <em>foreign type declaration</em>. The syntax is similar to defining a foreign function:</p>
