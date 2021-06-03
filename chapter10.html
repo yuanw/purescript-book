@@ -448,11 +448,11 @@ This vulnerability is allowed because <code>(\_ -&gt; Just 1000)</code> and <cod
 <p>In the more secure type signature, even when <code>a</code> is determined to be <code>Int</code> based on the input array, we still need to provide valid functions matching the signatures involving <code>forall x</code>.
 The <em>only</em> option for <code>(forall x. Maybe x)</code> is <code>Nothing</code>, since a <code>Just</code> value would assume a type for <code>x</code> and will no longer be valid for all <code>x</code>. The only options for <code>(forall x. x -&gt; Maybe x)</code> are <code>Just</code> (our desired argument) and <code>(\_ -&gt; Nothing)</code>, which is the only remaining vulnerability.</p>
 <h2 id="defining-foreign-types"><a class="header" href="#defining-foreign-types">Defining Foreign Types</a></h2>
-<p>Suppose instead of returning a <code>Maybe a</code>, we wanted to return a new type <code>Undefined a</code> whose representation at runtime was like that for the type <code>a</code>, but also allowing the <code>undefined</code> value.</p>
-<p>We can define a <em>foreign type</em> using the FFI using a <em>foreign type declaration</em>. The syntax is similar to defining a foreign function:</p>
+<p>Suppose instead of returning a <code>Maybe a</code>, we want to actually return <code>arr[0]</code>. We want a type that represents a value either of type <code>a</code> or the <code>undefined</code> value (but not <code>null</code>). We'll call this type <code>Undefined a</code>.</p>
+<p>We can define a <em>foreign type</em> using a <em>foreign type declaration</em>. The syntax is similar to defining a foreign function:</p>
 <pre><code class="language-haskell">foreign import data Undefined :: Type -&gt; Type
 </code></pre>
-<p>Note that the <code>data</code> keyword here indicates that we are defining a type, not a value. Instead of a type signature, we give the <em>kind</em> of the new type. In this case, we declare the kind of <code>Undefined</code> to be <code>Type -&gt; Type</code>. In other words, <code>Undefined</code> is a type constructor.</p>
+<p>The <code>data</code> keyword here indicates that we are defining a <em>type</em>, not a value. Instead of a type signature, we give the <em>kind</em> of the new type. In this case, we declare the kind of <code>Undefined</code> to be <code>Type -&gt; Type</code>. In other words, <code>Undefined</code> is a type constructor.</p>
 <p>We can now simply reuse our original definition for <code>head</code>:</p>
 <pre><code class="language-javascript">exports.undefinedHead = arr =&gt;
   arr[0];
@@ -460,12 +460,12 @@ The <em>only</em> option for <code>(forall x. Maybe x)</code> is <code>Nothing</
 <p>And in the PureScript module:</p>
 <pre><code class="language-haskell">foreign import undefinedHead :: forall a. Array a -&gt; Undefined a
 </code></pre>
-<p>The body of the <code>undefinedHead</code> function returns <code>arr[0]</code> even if that value is undefined, and the type signature reflects the fact that our function can return an undefined value.</p>
-<p>This function has the correct runtime representation for its type, but is quite useless since we have no way to use a value of type <code>Undefined a</code>. But we can fix that by writing some new functions using the FFI!</p>
-<p>The most basic function we need will tell us whether a value is defined or not:</p>
+<p>The body of the <code>undefinedHead</code> function returns <code>arr[0]</code> which may be <code>undefined</code>, and the type signature correctly reflects that fact.</p>
+<p>This function has the correct runtime representation for its type, but is quite useless since we have no way to use a value of type <code>Undefined a</code>. Well, not exactly. We can use this type in another FFI!</p>
+<p>We can write a function that will tell us whether a value is undefined or not:</p>
 <pre><code class="language-haskell">foreign import isUndefined :: forall a. Undefined a -&gt; Boolean
 </code></pre>
-<p>This is easily defined in our foreign JavaScript module as follows:</p>
+<p>This is defined in our foreign JavaScript module as follows:</p>
 <pre><code class="language-javascript">exports.isUndefined = value =&gt;
   value === undefined;
 </code></pre>
@@ -498,6 +498,16 @@ isEmpty = isUndefined &lt;&lt;&lt; undefinedHead
 }
 </code></pre>
 <p>Write a JavaScript function <code>quadraticRootsImpl</code> and a wrapper <code>quadraticRoots :: Quadratic -&gt; Pair Complex</code> that uses the quadratic formula to find the roots of this polynomial. Return the two roots as a <code>Pair</code> of <code>Complex</code> numbers. <em>Hint:</em> Use the <code>quadraticRoots</code> wrapper to pass a constructor for <code>Pair</code> to <code>quadraticRootsImpl</code>.</p>
+</li>
+<li>
+<p>(Medium) Write the function <code>toMaybe :: forall a. Undefined a -&gt; Maybe a</code>. This function converts <code>undefined</code> to <code>Nothing</code> and <code>a</code> values to <code>Just</code>s.</p>
+</li>
+<li>
+<p>(Difficult) With <code>toMaybe</code> in place, we can rewrite <code>maybeHead</code> as</p>
+<pre><code class="language-hs">maybeHead :: forall a. Array a -&gt; Maybe a
+maybeHead = toMaybe &lt;&lt;&lt; undefinedHead
+</code></pre>
+<p>Is this a better approach than our previous implementation? <em>Note:</em> There is no unit test for this exercise.</p>
 </li>
 </ol>
 <h2 id="using-type-class-member-functions"><a class="header" href="#using-type-class-member-functions">Using Type Class Member Functions</a></h2>
