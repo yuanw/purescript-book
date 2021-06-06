@@ -449,7 +449,8 @@ AddressBook
 AddressBook
 </code></pre>
 <p>This is because function application associates to the left, and this explains why we can just specify function arguments one after the other, separated by whitespace.</p>
-<p>Note that in the rest of the book, I will talk about things like &quot;functions of two arguments&quot;. However, it is to be understood that this means a curried function, taking a first argument and returning another function.</p>
+<p>The <code>-&gt;</code> operator in function types is a <em>type constructor</em> for functions. It takes two type arguments, the function's argument type and the return type. The left and right operands respectively.</p>
+<p>Note that in the rest of the book, I will talk about things like &quot;functions of two arguments&quot;. However, it is to be understood that this means a curried function, taking a first argument and returning a function that takes the second.</p>
 <p>Now consider the definition of <code>insertEntry</code>:</p>
 <pre><code class="language-haskell">insertEntry :: Entry -&gt; AddressBook -&gt; AddressBook
 insertEntry entry book = Cons entry book
