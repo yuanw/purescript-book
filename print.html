@@ -567,14 +567,14 @@ Type
 <pre><code class="language-haskell">showEntry :: Entry -&gt; String
 </code></pre>
 <p>This type signature says that <code>showEntry</code> is a function, which takes an <code>Entry</code> as an argument and returns a <code>String</code>. Here is the code for <code>showEntry</code>:</p>
-<pre><code class="language-haskell">showEntry entry = entry.lastName &lt;&gt; &quot;, &quot; &lt;&gt;
-                  entry.firstName &lt;&gt; &quot;: &quot; &lt;&gt;
+<pre><code class="language-haskell">showEntry entry = entry.lastName &lt;&gt; &quot;, &quot; &lt;&gt; 
+                  entry.firstName &lt;&gt; &quot;: &quot; &lt;&gt; 
                   showAddress entry.address
 </code></pre>
 <p>This function concatenates the three fields of the <code>Entry</code> record into a single string, using the <code>showAddress</code> function to turn the record inside the <code>address</code> field into a <code>String</code>. <code>showAddress</code> is defined similarly:</p>
 <pre><code class="language-haskell">showAddress :: Address -&gt; String
-showAddress addr = addr.street &lt;&gt; &quot;, &quot; &lt;&gt;
-                   addr.city &lt;&gt; &quot;, &quot; &lt;&gt;
+showAddress addr = addr.street &lt;&gt; &quot;, &quot; &lt;&gt; 
+                   addr.city &lt;&gt; &quot;, &quot; &lt;&gt; 
                    addr.state
 </code></pre>
 <p>A function definition begins with the name of the function, followed by a list of argument names. The result of the function is specified after the equals sign. Fields are accessed with a dot, followed by the field name. In PureScript, string concatenation uses the diamond operator (<code>&lt;&gt;</code>), instead of the plus operator like in JavaScript.</p>
@@ -663,7 +663,7 @@ insertEntry entry = Cons entry
 </code></pre>
 <p>But now, by the same argument, we can remove <code>entry</code> from both sides:</p>
 <pre><code class="language-haskell">insertEntry :: Entry -&gt; AddressBook -&gt; AddressBook
-insertEntry = Cons
+insertEntry = Cons 
 </code></pre>
 <p>This process is called <em>eta conversion</em>, and can be used (along with some other techniques) to rewrite functions in <em>point-free form</em>, which means functions defined without reference to their arguments.</p>
 <p>In the case of <code>insertEntry</code>, <em>eta conversion</em> has resulted in a very clear definition of our function - &quot;<code>insertEntry</code> is just cons on lists&quot;. However, it is arguable whether point-free form is better in general.</p>
@@ -738,7 +738,7 @@ head :: AddressBook -&gt; Maybe Entry
 <pre><code class="language-text">&gt; mod 8 3
 2
 </code></pre>
-<p>This is fine, but doesn't line up with common usage (in conversation, one might say &quot;eight mod three&quot;). Wrapping a prefix function in backticks (`) lets you use that it in infix position as an operator, e.g.,</p>
+<p>The above usage works fine, but is awkward to read. A more familiar phasing is &quot;eight mod three&quot;, which you can achieve by wrapping a prefix function in backticks (`):</p>
 <pre><code class="language-text">&gt; 8 `mod` 3
 2
 </code></pre>
