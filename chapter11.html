@@ -662,10 +662,10 @@ lower = do
 <p>(Easy) Remove the calls to the <code>lift</code> function from your implementation of the <code>string</code> parser. Verify that the new implementation type checks, and convince yourself that it should.</p>
 </li>
 <li>
-<p>(Medium) Use your <code>string</code> parser with the <code>many</code> combinator to write a parser which recognizes strings consisting of several copies of the string <code>&quot;a&quot;</code> followed by several copies of the string <code>&quot;b&quot;</code>.</p>
+<p>(Medium) Use your <code>string</code> parser with the <code>many</code> combinator to write a parser <code>asFollowedByBs</code> which recognizes strings consisting of several copies of the string <code>&quot;a&quot;</code> followed by several copies of the string <code>&quot;b&quot;</code>.</p>
 </li>
 <li>
-<p>(Medium) Use the <code>&lt;|&gt;</code> operator to write a parser which recognizes strings of the letters <code>a</code> or <code>b</code> in any order.</p>
+<p>(Medium) Use the <code>&lt;|&gt;</code> operator to write a parser <code>asOrBs</code> which recognizes strings of the letters <code>a</code> or <code>b</code> in any order.</p>
 </li>
 <li>
 <p>(Difficult) The <code>Parser</code> monad might also be defined as follows:</p>
