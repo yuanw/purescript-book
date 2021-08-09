@@ -196,9 +196,10 @@ import Data.Maybe (fromMaybe)
 
 length :: forall a. Array a -&gt; Int
 length arr =
-  if null arr
-    then 0
-    else 1 + (length $ fromMaybe [] $ tail arr)
+  if null arr then
+    0
+  else
+    1 + (length $ fromMaybe [] $ tail arr)
 </code></pre>
 <p>In this function, we use an <code>if .. then .. else</code> expression to branch based on the emptiness of the array. The <code>null</code> function returns <code>true</code> on an empty array. Empty arrays have length zero, and a non-empty array has a length that is one more than the length of its tail.</p>
 <p>The <code>tail</code> function returns a <code>Maybe</code> wrapping the given array without its first element. If the array is empty (i.e. it doesn't have a tail) <code>Nothing</code> is returned. The <code>fromMaybe</code> function takes a default value and a <code>Maybe</code> value. If the latter is <code>Nothing</code> it returns the default, in the other case it returns the value wrapped by <code>Just</code>.</p>
@@ -262,7 +263,7 @@ forall a b f. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 <pre><code class="language-text">&gt; show &lt;$&gt; 1 .. 5
 [&quot;1&quot;,&quot;2&quot;,&quot;3&quot;,&quot;4&quot;,&quot;5&quot;]
 </code></pre>
-<p>If we wanted to assign an <em>associativity</em> (left or right) to an infix operator, we could do so with the <code>infixl</code> and <code>infixr</code> keywords instead.</p>
+<p>If we wanted to assign an <em>associativity</em> (left or right) to an infix operator, we could do so with the <code>infixl</code> and <code>infixr</code> keywords instead.  Using <code>infix</code> assigns no associativity, meaning that you must parenthesize any expression using the same operator multiple times or using multiple operators of the same precedence.</p>
 <h2 id="filtering-arrays"><a class="header" href="#filtering-arrays">Filtering Arrays</a></h2>
 <p>The <code>Data.Array</code> module provides another function <code>filter</code>, which is commonly used together with <code>map</code>. It provides the ability to create a new array from an existing array, keeping only those elements which match a predicate function.</p>
 <p>For example, suppose we wanted to compute an array of all numbers between 1 and 10 which were even. We could do so as follows:</p>
@@ -353,10 +354,10 @@ forall a b. (a -&gt; Array b) -&gt; Array a -&gt; Array b
 <p><em>Note</em>: Just like <code>map</code> and <code>concatMap</code> allowed us to write <em>array comprehensions</em>, the more general operators <code>map</code> and <code>bind</code> allow us to write so-called <em>monad comprehensions</em>. We'll see plenty more examples of <em>monads</em> later in the book, but in this chapter, we will only consider arrays.</p>
 <p>We can rewrite our <code>factors</code> function using do notation as follows:</p>
 <pre><code class="language-haskell">factors :: Int -&gt; Array (Array Int)
-factors n = filter (\xs -&gt; product xs == n) $ do
+factors n = filter (\xs -&gt; product xs == n) do
   i &lt;- 1 .. n
   j &lt;- i .. n
-  pure [i, j]
+  pure [ i, j ]
 </code></pre>
 <p>The keyword <code>do</code> introduces a block of code which uses do notation. The block consists of expressions of a few types:</p>
 <ul>
@@ -371,28 +372,28 @@ factors n = filter (\xs -&gt; product xs == n) $ do
 </code></pre>
 <p>In the case of arrays, <code>pure</code> simply constructs a singleton array. In fact, we could modify our <code>factors</code> function to use this form, instead of using <code>pure</code>:</p>
 <pre><code class="language-haskell">factorsV2 :: Int -&gt; Array (Array Int)
-factorsV2 n = filter (\xs -&gt; product xs == n) $ do
+factorsV2 n = filter (\xs -&gt; product xs == n) do
   i &lt;- 1 .. n
   j &lt;- i .. n
-  [[i, j]]
+  [ [ i, j ] ]
 </code></pre>
 <p>and the result would be the same.</p>
 <h2 id="guards"><a class="header" href="#guards">Guards</a></h2>
-<p>One further change we can make to the <code>factors</code> function is to move the filter inside the array comprehension. This is possible using the <code>guard</code> function from the <code>Control.MonadZero</code> module (from the <code>control</code> package):</p>
-<pre><code class="language-haskell">import Control.MonadZero (guard)
+<p>One further change we can make to the <code>factors</code> function is to move the filter inside the array comprehension. This is possible using the <code>guard</code> function from the <code>Control.Alternative</code> module (from the <code>control</code> package):</p>
+<pre><code class="language-haskell">import Control.Alternative (guard)
 
 factorsV3 :: Int -&gt; Array (Array Int)
 factorsV3 n = do
   i &lt;- 1 .. n
   j &lt;- i .. n
   guard $ i * j == n
-  pure [i, j]
+  pure [ i, j ]
 </code></pre>
 <p>Just like <code>pure</code>, we can apply the <code>guard</code> function in PSCi to understand how it works. The type of the <code>guard</code> function is more general than we need here:</p>
-<pre><code class="language-text">&gt; import Control.MonadZero
+<pre><code class="language-text">&gt; import Control.Alternative
 
 &gt; :type guard
-forall m. MonadZero m =&gt; Boolean -&gt; m Unit
+forall m. Alternative m =&gt; Boolean -&gt; m Unit
 </code></pre>
 <p>In our case, we can assume that PSCi reported the following type:</p>
 <pre><code class="language-haskell">Boolean -&gt; Array Unit
@@ -459,8 +460,12 @@ forall a b. (a -&gt; b -&gt; b) -&gt; b -&gt; Array a -&gt; b
 <h2 id="tail-recursion"><a class="header" href="#tail-recursion">Tail Recursion</a></h2>
 <p>Recursion is a powerful technique for specifying algorithms, but comes with a problem: evaluating recursive functions in JavaScript can lead to stack overflow errors if our inputs are too large.</p>
 <p>It is easy to verify this problem, with the following code in PSCi:</p>
-<pre><code class="language-text">&gt; f 0 = 0
-&gt; f n = 1 + f (n - 1)
+<pre><code class="language-text">&gt; :paste
+… f n = 
+…   if n == 0
+…     then 0
+…     else 1 + f (n - 1)
+… ^D
 
 &gt; f 10
 10
@@ -470,13 +475,15 @@ RangeError: Maximum call stack size exceeded
 </code></pre>
 <p>This is a problem. If we are going to adopt recursion as a standard technique from functional programming, then we need a way to deal with possibly unbounded recursion.</p>
 <p>PureScript provides a partial solution to this problem in the form of <em>tail recursion optimization</em>.</p>
-<p><em>Note</em>: more complete solutions to the problem can be implemented in libraries using so-called <em>trampolining</em>, but that is beyond the scope of this chapter. The interested reader can consult the documentation for the <code>free</code> and <code>tailrec</code> packages.</p>
+<p><em>Note</em>: more complete solutions to the problem can be implemented in libraries using so-called <em>trampolining</em>, but that is beyond the scope of this chapter. The interested reader can consult the documentation for the <a href="https://pursuit.purescript.org/packages/purescript-free"><code>free</code></a> and <a href="https://pursuit.purescript.org/packages/purescript-tailrec"><code>tailrec</code></a> packages.</p>
 <p>The key observation which enables tail recursion optimization is the following: a recursive call in <em>tail position</em> to a function can be replaced with a <em>jump</em>, which does not allocate a stack frame. A call is in <em>tail position</em> when it is the last call made before a function returns. This is the reason why we observed a stack overflow in the example - the recursive call to <code>f</code> was <em>not</em> in tail position.</p>
 <p>In practice, the PureScript compiler does not replace the recursive call with a jump, but rather replaces the entire recursive function with a <em>while loop</em>.</p>
 <p>Here is an example of a recursive function with all recursive calls in tail position:</p>
 <pre><code class="language-haskell">factTailRec :: Int -&gt; Int -&gt; Int
-factTailRec 0 acc = acc
-factTailRec n acc = factTailRec (n - 1) (acc * n)
+factTailRec n acc = 
+  if n == 0
+    then acc
+    else factTailRec (n - 1) (acc * n)
 </code></pre>
 <p>Notice that the recursive call to <code>factTailRec</code> is the last thing that happens in this function - it is in tail position.</p>
 <h2 id="accumulators"><a class="header" href="#accumulators">Accumulators</a></h2>
@@ -492,11 +499,11 @@ length arr =
 <pre><code class="language-haskell">lengthTailRec :: forall a. Array a -&gt; Int
 lengthTailRec arr = length' arr 0
   where
-    length' :: Array a -&gt; Int -&gt; Int
-    length' arr' acc =
-      if null arr'
-        then acc
-        else length' (fromMaybe [] $ tail arr') (acc + 1)
+  length' :: Array a -&gt; Int -&gt; Int
+  length' arr' acc =
+    if null arr' 
+      then acc
+      else length' (fromMaybe [] $ tail arr') (acc + 1)
 </code></pre>
 <p>In this case, we delegate to the helper function <code>length'</code>, which is tail recursive - its only recursive call is in the last case, and is in tail position. This means that the generated code will be a <em>while loop</em>, and will not blow the stack for large inputs.</p>
 <p>To understand the implementation of <code>lengthTailRec</code>, note that the helper function <code>length'</code> essentially uses the accumulator parameter to maintain an additional piece of state - the partial result. It starts out at 0, and grows by adding 1 for every element in the input array.</p>
