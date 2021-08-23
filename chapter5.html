@@ -219,12 +219,18 @@ gcdV2 0 n = n
 gcdV2 n m | n &gt; m     = gcdV2 (n - m) m
           | otherwise = gcdV2 n (m - n)
 </code></pre>
-<p>In this case, the third line uses a guard to impose the extra condition that the first argument is strictly larger than the second.</p>
+<p>In this case, the third line uses a guard to impose the extra condition that the first argument is strictly larger than the second. The guard in the final line uses the expression <code>otherwise</code>, which might seem like a keyword, but is in fact just a regular binding in <code>Prelude</code>:</p>
+<pre><code class="language-text">&gt; :type otherwise
+Boolean
+
+&gt; otherwise
+true
+</code></pre>
 <p>As this example demonstrates, guards appear on the left of the equals symbol, separated from the list of patterns by a pipe character (<code>|</code>).</p>
 <h2 id="exercises"><a class="header" href="#exercises">Exercises</a></h2>
 <ol>
 <li>(Easy) Write the <code>factorial</code> function using pattern matching. <em>Hint</em>: Consider the two corner cases of zero and non-zero inputs. <em>Note</em>: This is a repeat of an example from the previous chapter, but see if you can rewrite it here on your own.</li>
-<li>(Medium) Write a function <code>binomial</code> which finds the coefficient of the x^<code>k</code>th term in the polynomial expansion of (1 + x)^<code>n</code>. This is the same as the number of ways to choose a subset of <code>k</code> elements from a set of <code>n</code> elements. Use the formula <code>n! / k! (n - k)!</code>, where <code>!</code> is the factorial function written earlier. <em>Hint</em>: Use pattern matching to handle corner cases.</li>
+<li>(Medium) Write a function <code>binomial</code> which finds the coefficient of the x^<code>k</code>th term in the polynomial expansion of (1 + x)^<code>n</code>. This is the same as the number of ways to choose a subset of <code>k</code> elements from a set of <code>n</code> elements. Use the formula <code>n! / k! (n - k)!</code>, where <code>!</code> is the factorial function written earlier. <em>Hint</em>: Use pattern matching to handle corner cases. If it takes a long time to complete or crashes with an error about the call stack, try adding more corner cases.</li>
 <li>(Medium) Write a function <code>pascal</code> which uses <a href="https://en.wikipedia.org/wiki/Pascal%27s_rule"><em>Pascal`s Rule</em></a> for computing the same binomial coefficients as the previous exercise.</li>
 </ol>
 <h2 id="array-patterns"><a class="header" href="#array-patterns">Array Patterns</a></h2>
@@ -279,8 +285,7 @@ forall r. { first :: String, last :: String | r } -&gt; String
 
 Type of expression lacks required label &quot;last&quot;
 </code></pre>
-<p>We can read the new type signature of <code>showPerson</code> as &quot;takes any record with <code>first</code> and <code>last</code> fields which are <code>Strings</code> <em>and any other fields</em>, and returns a <code>String</code>&quot;.</p>
-<p>This function is polymorphic in the <em>row</em> <code>r</code> of record fields, hence the name <em>row polymorphism</em>.</p>
+<p>We can read the new type signature of <code>showPerson</code> as &quot;takes any record with <code>first</code> and <code>last</code> fields which are <code>Strings</code> <em>and any other fields</em>, and returns a <code>String</code>&quot;. This function is polymorphic in the <em>row</em> <code>r</code> of record fields, hence the name <em>row polymorphism</em>.  Note that this behavior is different than that of the original <code>showPerson</code>. Without the row variable <code>r</code>, <code>showPerson</code> only accepts records with <em>exactly</em> a <code>first</code> and <code>last</code> field and no others. </p>
 <p>Note that we could have also written</p>
 <pre><code class="language-haskell">&gt; showPerson p = p.last &lt;&gt; &quot;, &quot; &lt;&gt; p.first
 </code></pre>
@@ -361,7 +366,7 @@ partialFunction = unsafePartial \true -&gt; true
 Failed pattern match
 </code></pre>
 <p>Functions which return a value for any combination of inputs are called <em>total</em> functions, and functions which do not are called <em>partial</em>.</p>
-<p>It is generally considered better to define total functions where possible. If it is known that a function does not return a result for some valid set of inputs, it is usually better to return a value with type <code>Maybe a</code> for some <code>a</code>, using <code>Nothing</code> to indicate failure. This way, the presence or absence of a value can be indicated in a type-safe way.</p>
+<p>It is generally considered better to define total functions where possible. If it is known that a function does not return a result for some valid set of inputs, it is usually better to return a value capable of indicating failure, such as type <code>Maybe a</code> for some <code>a</code>, using <code>Nothing</code> when it cannot return a valid result. This way, the presence or absence of a value can be indicated in a type-safe way.</p>
 <p>The PureScript compiler will generate an error if it can detect that your function is not total due to an incomplete pattern match. The <code>unsafePartial</code> function can be used to silence these errors (if you are sure that your partial function is safe!) If we removed the call to the <code>unsafePartial</code> function above, then the compiler would generate the following error:</p>
 <pre><code class="language-text">A case expression could not be determined to cover all inputs.
 The following additional cases are required to cover all inputs:
@@ -414,6 +419,7 @@ type Point =
 <pre><code class="language-haskell">data Maybe a = Nothing | Just a
 </code></pre>
 <p>This example demonstrates the use of a type parameter <code>a</code>. Reading the pipe character as the word &quot;or&quot;, its definition almost reads like English: &quot;a value of type <code>Maybe a</code> is either <code>Nothing</code>, or <code>Just</code> a value of type <code>a</code>&quot;.</p>
+<p>Note that we don't use the syntax <code>forall a.</code> anywhere in our data definition. <code>forall</code> syntax is necessary for functions, but is not used when defining ADTs with <code>data</code> or type aliases with <code>type</code>.</p>
 <p>Data constructors can also be used to define recursive data structures. Here is one more example, defining a data type of singly-linked lists of elements of type <code>a</code>:</p>
 <pre><code class="language-haskell">data List a = Nil | Cons a (List a)
 </code></pre>
@@ -430,7 +436,6 @@ exampleLine = Line p1 p2
     p2 :: Point
     p2 = { x: 100.0, y: 50.0 }
 </code></pre>
-<p>To construct the points <code>p1</code> and <code>p2</code>, we apply the <code>Point</code> constructor to its single argument, which is a record.</p>
 <p>So, constructing values of algebraic data types is simple, but how do we use them? This is where the important connection with pattern matching appears: the only way to consume a value of an algebraic data type is to use a pattern to match its constructor.</p>
 <p>Let's see an example. Suppose we want to convert a <code>Shape</code> into a <code>String</code>. We have to use pattern matching to discover which constructor was used to construct the <code>Shape</code>. We can do this as follows:</p>
 <pre><code class="language-haskell">showShape :: Shape -&gt; String
@@ -502,10 +507,13 @@ lightbulb = 500.0
 current :: Number
 current = calculateCurrent lightbulb lightbulb -- uncaught mistake
 </code></pre>
-<p>Note that the constructor of a newtype often has the same name as the newtype itself, but this is not a requirement. For example, unique names are also valid:</p>
+<p>Note that while a newtype can only have a single constructor, and the constructor must be of a single value, a newtype <em>can</em> take any number of type variables. For example, the following newtype would be a valid definition (<code>err</code> and <code>a</code> are the type variables, and the <code>CouldError</code> constructor expects a <em>single</em> value of type <code>Either err a</code>):</p>
+<pre><code class="language-Haskell">newtype CouldError err a = CouldError (Either err a)
+</code></pre>
+<p>Also note that the constructor of a newtype often has the same name as the newtype itself, but this is not a requirement. For example, unique names are also valid:</p>
 <pre><code class="language-haskell">newtype Coulomb = MakeCoulomb Number
 </code></pre>
-<p>In this case, <code>Coulomb</code> is the <em>type constructor</em> and <code>MakeCoulomb</code> is the <em>data constructor</em>. These constructors live in different namespaces, even when the names are identical, such as with the <code>Volt</code> example. This is true for all ADTs. Note that although the type constructor and data constructor can have different names, in practice it is idiomatic for them to share the same name. This is the case with <code>Amp</code> and <code>Volt</code> types above.</p>
+<p>In this case, <code>Coulomb</code> is the <em>type constructor</em> (of zero arguments) and <code>MakeCoulomb</code> is the <em>data constructor</em>. These constructors live in different namespaces, even when the names are identical, such as with the <code>Volt</code> example. This is true for all ADTs. Note that although the type constructor and data constructor can have different names, in practice it is idiomatic for them to share the same name. This is the case with <code>Amp</code> and <code>Volt</code> types above.</p>
 <p>Another application of newtypes is to attach different <em>behavior</em> to an existing type without changing its representation at runtime. We cover that use case in the next chapter when we discuss <em>type classes</em>.</p>
 <h2 id="exercises-3"><a class="header" href="#exercises-3">Exercises</a></h2>
 <ol>
