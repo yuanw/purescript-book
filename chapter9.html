@@ -247,7 +247,7 @@ import Effect.Aff (Aff)
 getUrl :: String -&gt; Aff String
 getUrl url = do
   result &lt;- AX.get ResponseFormat.string url
-  pure $ case result of
+  pure case result of
     Left err -&gt; &quot;GET /api response failed to decode: &quot; &lt;&gt; AX.printError err
     Right response -&gt; response.body
 </code></pre>
@@ -327,12 +327,11 @@ import Test.HTTP (getUrl)
 
 fetchPar :: Effect Unit
 fetchPar =
-  launchAff_
-    $ do
-        let
-          urls = map (\n -&gt; &quot;https://reqres.in/api/users/&quot; &lt;&gt; show n) [ 1, 2 ]
-        res &lt;- parTraverse getUrl urls
-        logShow res
+  launchAff_ do
+    let
+      urls = map (\n -&gt; &quot;https://reqres.in/api/users/&quot; &lt;&gt; show n) [ 1, 2 ]
+    res &lt;- parTraverse getUrl urls
+    logShow res
 </code></pre>
 <pre><code class="language-shell">$ spago repl
 
