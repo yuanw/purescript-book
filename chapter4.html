@@ -166,12 +166,12 @@
 <p>Recursion is closely linked to the <em>divide and conquer</em> strategy: to solve a problem on certain inputs, we can break down the inputs into smaller parts, solve the problem on those parts, and then assemble a solution from the partial solutions.</p>
 <p>Let's see some simple examples of recursion in PureScript.</p>
 <p>Here is the usual <em>factorial function</em> example:</p>
-<pre><code class="language-haskell">fact :: Int -&gt; Int
-fact n =
+<pre><code class="language-haskell">factorial :: Int -&gt; Int
+factorial n =
   if n == 0 then
     1
   else
-    n * fact (n - 1)
+    n * factorial (n - 1)
 </code></pre>
 <p>Here, we can see how the factorial function is computed by reducing the problem to a subproblem - that of computing the factorial of a smaller integer. When we reach zero, the answer is immediate.</p>
 <p>Here is another common example, which computes the <em>Fibonacci function</em>:</p>
@@ -185,7 +185,7 @@ fib n =
     fib (n - 1) + fib (n - 2)
 </code></pre>
 <p>Again, this problem is solved by considering the solutions to subproblems. In this case, there are two subproblems, corresponding to the expressions <code>fib (n - 1)</code> and <code>fib (n - 2)</code>. When these two subproblems are solved, we assemble the result by adding the partial results.</p>
-<p>Note that, while the above examples of <code>fact</code> and <code>fib</code> work as intended, a more idiomatic implementation would use pattern matching instead of <code>if</code>/<code>then</code>/<code>else</code>. Pattern matching techniques are discussed in a later chapter.</p>
+<p>Note that, while the above examples of <code>factorial</code> and <code>fib</code> work as intended, a more idiomatic implementation would use pattern matching instead of <code>if</code>/<code>then</code>/<code>else</code>. Pattern matching techniques are discussed in a later chapter.</p>
 <h2 id="recursion-on-arrays"><a class="header" href="#recursion-on-arrays">Recursion on Arrays</a></h2>
 <p>We are not limited to defining recursive functions over the <code>Int</code> type! We will see recursive functions defined over a wide array of data types when we cover <em>pattern matching</em> later in the book, but for now, we will restrict ourselves to numbers and arrays.</p>
 <p>Just as we branch based on whether the input is non-zero, in the array case, we will branch based on whether the input is non-empty. Consider this function, which computes the length of an array using recursion:</p>
@@ -414,7 +414,7 @@ forall m. Alternative m =&gt; Boolean -&gt; m Unit
 <li>(Easy) Write a function <code>isPrime</code> which tests if its integer argument is prime or not. <em>Hint</em>: Use the <code>factors</code> function.</li>
 <li>(Medium) Write a function <code>cartesianProduct</code> which uses do notation to find the <em>cartesian product</em> of two arrays, i.e. the set of all pairs of elements <code>a</code>, <code>b</code>, where <code>a</code> is an element of the first array, and <code>b</code> is an element of the second.</li>
 <li>(Medium) Write a function <code>triples :: Int -&gt; Array (Array Int)</code> which takes a number <code>n</code> and returns all Pythagorean triples whose components (the <code>a</code>, <code>b</code> and <code>c</code> values) are each less than or equal to <code>n</code>. A <em>Pythagorean triple</em> is an array of numbers <code>[a, b, c]</code> such that <code>a² + b² = c²</code>. <em>Hint</em>: Use the <code>guard</code> function in an array comprehension.</li>
-<li>(Difficult) Write a function <code>factorize</code> which produces the <a href="https://www.mathsisfun.com/prime-factorization.html">prime factorization</a> of <code>n</code>, i.e. the array of prime integers whose product is <code>n</code>. <em>Hint</em>: for an integer greater than 1, break the problem down into two subproblems: finding the first factor, and finding the remaining factors.</li>
+<li>(Difficult) Write a function <code>primeFactors</code> which produces the <a href="https://www.mathsisfun.com/prime-factorization.html">prime factorization</a> of <code>n</code>, i.e. the array of prime integers whose product is <code>n</code>. <em>Hint</em>: for an integer greater than 1, break the problem down into two subproblems: finding the first factor, and finding the remaining factors.</li>
 </ol>
 <h2 id="folds"><a class="header" href="#folds">Folds</a></h2>
 <p>Left and right folds over arrays provide another class of interesting functions which can be implemented using recursion.</p>
@@ -461,7 +461,7 @@ forall a b. (a -&gt; b -&gt; b) -&gt; b -&gt; Array a -&gt; b
 <p>Recursion is a powerful technique for specifying algorithms, but comes with a problem: evaluating recursive functions in JavaScript can lead to stack overflow errors if our inputs are too large.</p>
 <p>It is easy to verify this problem, with the following code in PSCi:</p>
 <pre><code class="language-text">&gt; :paste
-… f n = 
+… f n =
 …   if n == 0
 …     then 0
 …     else 1 + f (n - 1)
@@ -479,13 +479,13 @@ RangeError: Maximum call stack size exceeded
 <p>The key observation which enables tail recursion optimization is the following: a recursive call in <em>tail position</em> to a function can be replaced with a <em>jump</em>, which does not allocate a stack frame. A call is in <em>tail position</em> when it is the last call made before a function returns. This is the reason why we observed a stack overflow in the example - the recursive call to <code>f</code> was <em>not</em> in tail position.</p>
 <p>In practice, the PureScript compiler does not replace the recursive call with a jump, but rather replaces the entire recursive function with a <em>while loop</em>.</p>
 <p>Here is an example of a recursive function with all recursive calls in tail position:</p>
-<pre><code class="language-haskell">factTailRec :: Int -&gt; Int -&gt; Int
-factTailRec n acc = 
+<pre><code class="language-haskell">factorialTailRec :: Int -&gt; Int -&gt; Int
+factorialTailRec n acc =
   if n == 0
     then acc
-    else factTailRec (n - 1) (acc * n)
+    else factorialTailRec (n - 1) (acc * n)
 </code></pre>
-<p>Notice that the recursive call to <code>factTailRec</code> is the last thing that happens in this function - it is in tail position.</p>
+<p>Notice that the recursive call to <code>factorialTailRec</code> is the last thing that happens in this function - it is in tail position.</p>
 <h2 id="accumulators"><a class="header" href="#accumulators">Accumulators</a></h2>
 <p>One common way to turn a function which is not tail recursive into a tail recursive function is to use an <em>accumulator parameter</em>. An accumulator parameter is an additional parameter which is added to a function which <em>accumulates</em> a return value, as opposed to using the return value to accumulate the result.</p>
 <p>For example, consider again the <code>length</code> function presented in the beginning of the chapter:</p>
@@ -501,7 +501,7 @@ lengthTailRec arr = length' arr 0
   where
   length' :: Array a -&gt; Int -&gt; Int
   length' arr' acc =
-    if null arr' 
+    if null arr'
       then acc
       else length' (fromMaybe [] $ tail arr') (acc + 1)
 </code></pre>
