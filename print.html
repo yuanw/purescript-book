@@ -5185,7 +5185,7 @@ split = do
 <h2 id="exercises-36"><a class="header" href="#exercises-36">Exercises</a></h2>
 <ol>
 <li>
-<p>(Easy) Use the <code>ExceptT</code> monad transformer over the <code>Identity</code> functor to write a function <code>safeDivide</code> which divides two numbers, throwing an error if the denominator is zero.</p>
+<p>(Easy) Use the <code>ExceptT</code> monad transformer over the <code>Identity</code> functor to write a function <code>safeDivide</code> which divides two numbers, throwing an error (as the String &quot;Divide by zero!&quot;) if the denominator is zero.</p>
 </li>
 <li>
 <p>(Medium) Write a parser</p>
@@ -5200,7 +5200,7 @@ split = do
 </li>
 <li>
 <p>(Difficult) Use the <code>ReaderT</code> and <code>WriterT</code> monad transformers to reimplement the document printing library which we wrote earlier using the <code>Reader</code> monad.</p>
-<p>Instead of using <code>line</code> to emit strings and <code>cat</code> to concatenate strings, use the <code>Array String</code> monoid with the <code>WriterT</code> monad transformer, and <code>tell</code> to append a line to the result.</p>
+<p>Instead of using <code>line</code> to emit strings and <code>cat</code> to concatenate strings, use the <code>Array String</code> monoid with the <code>WriterT</code> monad transformer, and <code>tell</code> to append a line to the result. Use the same names as in the original implementation but ending with an apostrophe (<code>'</code>).</p>
 </li>
 </ol>
 <h2 id="type-classes-to-the-rescue"><a class="header" href="#type-classes-to-the-rescue">Type Classes to the Rescue!</a></h2>
@@ -5317,7 +5317,7 @@ lower = do
 <p>(Easy) Remove the calls to the <code>lift</code> function from your implementation of the <code>string</code> parser. Verify that the new implementation type checks, and convince yourself that it should.</p>
 </li>
 <li>
-<p>(Medium) Use your <code>string</code> parser with the <code>many</code> combinator to write a parser <code>asFollowedByBs</code> which recognizes strings consisting of several copies of the string <code>&quot;a&quot;</code> followed by several copies of the string <code>&quot;b&quot;</code>.</p>
+<p>(Medium) Use your <code>string</code> parser with the <code>some</code> combinator to write a parser <code>asFollowedByBs</code> which recognizes strings consisting of several copies of the string <code>&quot;a&quot;</code> followed by several copies of the string <code>&quot;b&quot;</code>.</p>
 </li>
 <li>
 <p>(Medium) Use the <code>&lt;|&gt;</code> operator to write a parser <code>asOrBs</code> which recognizes strings of the letters <code>a</code> or <code>b</code> in any order.</p>
@@ -5467,11 +5467,11 @@ lineHandler currentState input = do
 <h2 id="exercises-38"><a class="header" href="#exercises-38">Exercises</a></h2>
 <ol>
 <li>
-<p>(Medium) Implement a new command <code>cheat</code>, which moves all game items from the game grid into the user's inventory.</p>
+<p>(Medium) Implement a new command <code>cheat</code>, which moves all game items from the game grid into the user's inventory. Create a function <code>cheat :: Game Unit</code> in the <code>Game</code> module, and use this function from <code>game</code>.</p>
 </li>
 <li>
 <p>(Difficult) The <code>Writer</code> component of the <code>RWS</code> monad is currently used for two types of messages: error messages and informational messages. Because of this, several parts of the code use case statements to handle error cases.</p>
-<p>Refactor the code to use the <code>ExceptT</code> monad transformer to handle the error messages, and <code>RWS</code> to handle informational messages.</p>
+<p>Refactor the code to use the <code>ExceptT</code> monad transformer to handle the error messages, and <code>RWS</code> to handle informational messages. <em>Note:</em> There are no tests for this exercise.</p>
 </li>
 </ol>
 <h2 id="handling-command-line-options"><a class="header" href="#handling-command-line-options">Handling Command Line Options</a></h2>
