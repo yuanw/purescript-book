@@ -420,7 +420,7 @@ lift2 f a b = f &lt;$&gt; a &lt;*&gt; b
 <pre><code class="language-hs">log :: forall m. MonadEffect m =&gt; String -&gt; m Unit
 </code></pre>
 </blockquote>
-<p>Now let's now consider an <code>Effect</code> that returns meaningful data. The <code>random</code> function from <code>Effect.Random</code> produces a random <code>Number</code>.</p>
+<p>Now let's consider an <code>Effect</code> that returns meaningful data. The <code>random</code> function from <code>Effect.Random</code> produces a random <code>Number</code>.</p>
 <pre><code class="language-hs">random :: Effect Number
 </code></pre>
 <p>Here's a full example program (found in <code>test/Random.purs</code> of this chapter's exercises folder).</p>
