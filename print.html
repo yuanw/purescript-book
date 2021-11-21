@@ -617,7 +617,7 @@ forall a. a -&gt; List a -&gt; List a
 <p>But <code>List Entry</code> is the same as <code>AddressBook</code>, so this is equivalent to</p>
 <pre><code class="language-haskell">Entry -&gt; AddressBook -&gt; AddressBook
 </code></pre>
-<p>In our case, we already have the appropriate inputs: an <code>Entry</code>, and a <code>AddressBook</code>, so can apply <code>Cons</code> and get a new <code>AddressBook</code>, which is exactly what we wanted!</p>
+<p>In our case, we already have the appropriate inputs: an <code>Entry</code>, and an <code>AddressBook</code>, so can apply <code>Cons</code> and get a new <code>AddressBook</code>, which is exactly what we wanted!</p>
 <p>Here is our implementation of <code>insertEntry</code>:</p>
 <pre><code class="language-haskell">insertEntry entry book = Cons entry book
 </code></pre>
