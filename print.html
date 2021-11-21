@@ -1721,6 +1721,7 @@ bounds = foldl combine emptyBounds
 <p>This chapter will introduce a powerful form of abstraction which is enabled by PureScript's type system - type classes.</p>
 <p>This motivating example for this chapter will be a library for hashing data structures. We will see how the machinery of type classes allow us to hash complex data structures without having to think directly about the structure of the data itself.</p>
 <p>We will also see a collection of standard type classes from PureScript's Prelude and standard libraries. PureScript code leans heavily on the power of type classes to express ideas concisely, so it will be beneficial to familiarize yourself with these classes.</p>
+<p>If you come from an Object Oriented background, please note that the word &quot;class&quot; means something <em>very</em> different in this context than what you're used to. A type class serves a purpose more similar to an OO interface. </p>
 <h2 id="project-setup-3"><a class="header" href="#project-setup-3">Project Setup</a></h2>
 <p>The source code for this chapter is defined in the file <code>src/Data/Hashable.purs</code>.</p>
 <p>The project has the following dependencies:</p>
@@ -1745,7 +1746,7 @@ bounds = foldl combine emptyBounds
   show true = &quot;true&quot;
   show false = &quot;false&quot;
 </code></pre>
-<p>This code declares a type class instance called <code>showBoolean</code> - in PureScript, type class instances are named to aid the readability of the generated JavaScript. We say that the <code>Boolean</code> type <em>belongs to the <code>Show</code> type class</em>.</p>
+<p>This code declares a type class instance called <code>showBoolean</code> - in PureScript, type class instances can be named to aid the readability of the generated JavaScript. We say that the <code>Boolean</code> type <em>belongs to the <code>Show</code> type class</em>.</p>
 <p>We can try out the <code>Show</code> type class in PSCi, by showing a few values with different types:</p>
 <pre><code class="language-text">&gt; import Prelude
 
@@ -1803,6 +1804,7 @@ No type class instance was found for
 
   Data.Show.Show (Int -&gt; Int)
 </code></pre>
+<p>Type class instances can be defined in one of two places: in the same module that the type class is defined, or in the same module that the type &quot;belonging to&quot; the type class is defined. An instance defined in any other spot is called an <a href="https://github.com/purescript/documentation/blob/master/language/Type-Classes.md#orphan-instances">&quot;orphan instance&quot;</a> and is not allowed by the PureScript compiler. Some of the exercises in this chapter will require you to copy the definition of a type into your MySolutions module so that you can define type class instances for that type.</p>
 <h2 id="exercises-12"><a class="header" href="#exercises-12">Exercises</a></h2>
 <ol>
 <li>
@@ -1921,7 +1923,7 @@ LT
 <p>Well, we can build an intuition that the <code>map</code> function applies the function it is given to each element of a container, and builds a new container from the results, with the same shape as the original. But how do we make this concept precise?</p>
 <p>Type class instances for <code>Functor</code> are expected to adhere to a set of <em>laws</em>, called the <em>functor laws</em>:</p>
 <ul>
-<li><code>map id xs = xs</code></li>
+<li><code>map identity xs = xs</code></li>
 <li><code>map g (map f xs) = map (g &lt;&lt;&lt; f) xs</code></li>
 </ul>
 <p>The first law is the <em>identity law</em>. It states that lifting the identity function (the function which returns its argument unchanged) over a structure just returns the original structure. This makes sense since the identity function does not modify its input.</p>
@@ -1950,8 +1952,6 @@ LT
 </li>
 <li>
 <p>(Easy) Derive (via <code>newtype</code>) a <code>Ring</code> instance for <code>Complex</code>. <em>Note</em>: You may instead write this instance manually, but that's not as convenient.</p>
-</li>
-</ol>
 <p>Here's the <code>Shape</code> ADT from the previous chapter:</p>
 <pre><code class="language-haskell">data Shape
   = Circle Point Number
@@ -1959,8 +1959,10 @@ LT
   | Line Point Point
   | Text Point String
 </code></pre>
-<ol start="5">
-<li>(Medium) Derive (via <code>Generic</code>) a <code>Show</code> instance for <code>Shape</code>. How does the amount of code written and <code>String</code> output compare to <code>showShape</code> from the previous chapter? <em>Hint</em>: See the <a href="https://github.com/purescript/documentation/blob/master/guides/Type-Class-Deriving.md#deriving-from-generic">Deriving from <code>Generic</code></a> section of the <a href="https://github.com/purescript/documentation/blob/master/guides/Type-Class-Deriving.md">Type Class Deriving</a> guide.</li>
+</li>
+<li>
+<p>(Medium) Derive (via <code>Generic</code>) a <code>Show</code> instance for <code>Shape</code>. How does the amount of code written and <code>String</code> output compare to <code>showShape</code> from the previous chapter? <em>Hint</em>: See the <a href="https://github.com/purescript/documentation/blob/master/guides/Type-Class-Deriving.md#deriving-from-generic">Deriving from <code>Generic</code></a> section of the <a href="https://github.com/purescript/documentation/blob/master/guides/Type-Class-Deriving.md">Type Class Deriving</a> guide.</p>
+</li>
 </ol>
 <h2 id="type-class-constraints"><a class="header" href="#type-class-constraints">Type Class Constraints</a></h2>
 <p>Types of functions can be constrained by using type classes. Here is an example: suppose we want to write a function which tests if three values are equal, by using equality defined using an <code>Eq</code> type class instance.</p>
@@ -2021,7 +2023,7 @@ commas on the left hand side of the <code>=&gt;</code> symbol:</p>
 </li>
 <li>
 <p>(Medium) Given any type <code>a</code> with an instance of <code>Ord</code>, we can add a new &quot;infinite&quot; value which is greater than any other value:</p>
-<pre><code class="language-haskell">data Extended a = Infinite | Finite a
+<pre><code class="language-haskell">data Extended a = Infinite | Finite a 
 </code></pre>
 <p>Write an <code>Ord</code> instance for <code>Extended a</code> which reuses the <code>Ord</code> instance for <code>a</code>.</p>
 </li>
@@ -2034,7 +2036,7 @@ commas on the left hand side of the <code>=&gt;</code> symbol:</p>
 </code></pre>
 <p>The container <code>OneMore f</code> also has an ordering, where the new element comes before any element of <code>f</code>. Write a <code>Foldable</code> instance for <code>OneMore f</code>:</p>
 <pre><code class="language-haskell">instance foldableOneMore :: Foldable f =&gt; Foldable (OneMore f) where
-...
+  ...
 </code></pre>
 </li>
 <li>
@@ -2171,7 +2173,8 @@ instance monoidMultiply :: Monoid Multiply where
   mempty = Multiply 1
 </code></pre>
 <p>Write an instance which implements this action:</p>
-<pre><code class="language-haskell">instance actionMultiplyInt :: Action Multiply Int
+<pre><code class="language-haskell">instance actionMultiplyInt :: Action Multiply Int where
+  ...
 </code></pre>
 <p>Remember, your instance must satisfy the laws listed above.</p>
 </li>
@@ -2180,7 +2183,8 @@ instance monoidMultiply :: Monoid Multiply where
 </li>
 <li>
 <p>(Medium) Write an <code>Action</code> instance which repeats an input string some number of times:</p>
-<pre><code class="language-haskell">instance actionMultiplyString :: Action Multiply String
+<pre><code class="language-haskell">instance actionMultiplyString :: Action Multiply String where
+  ...
 </code></pre>
 <p><em>Hint</em>: Search Pursuit for a helper-function with the signature <a href="https://pursuit.purescript.org/search?q=String%20-%3E%20Int%20-%3E%20String"><code>String -&gt; Int -&gt; String</code></a>. Note that <code>String</code> might appear as a more generic type (such as <code>Monoid</code>).</p>
 <p>Does this instance satisfy the laws listed above?</p>
@@ -2210,7 +2214,7 @@ instance monoidMultiply :: Monoid Multiply where
 <pre><code class="language-haskell">newtype HashCode = HashCode Int
 
 instance hashCodeEq :: Eq HashCode where
-    eq (HashCode a) (HashCode b) = a == b
+  eq (HashCode a) (HashCode b) = a == b
 
 hashCode :: Int -&gt; HashCode
 hashCode h = HashCode (h `mod` 65535)
