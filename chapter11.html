@@ -146,25 +146,29 @@
 <li><code>ordered-collections</code>, which provides data typs for immutable maps and sets</li>
 <li><code>transformers</code>, which provides implementations of standard monad transformers</li>
 <li><code>node-readline</code>, which provides FFI bindings to the <a href="https://nodejs.org/api/readline.html"><code>readline</code></a> interface provided by NodeJS</li>
-<li><code>yargs</code>, which provides an applicative interface to the <a href="https://www.npmjs.com/package/yargs"><code>yargs</code></a> command line argument processing library</li>
+<li><code>optparse</code>, which provides applicative parsers for processing command line arguments</li>
 </ul>
-<p>It is also necessary to install the <code>yargs</code> module using NPM:</p>
-<pre><code class="language-text">npm install
-</code></pre>
 <h2 id="how-to-play-the-game"><a class="header" href="#how-to-play-the-game">How To Play The Game</a></h2>
 <p>To run the project, use <code>spago run</code></p>
 <p>By default you will see a usage message:</p>
-<pre><code class="language-text">node ./dist/Main.js -p &lt;player name&gt;
+<pre><code class="language-text">Monadic Adventures! A game to learn monad transformers
 
-Options:
-  -p, --player  Player name  [required]
-  -d, --debug   Use debug mode
+Usage: run.js (-p|--player &lt;player name&gt;) [-d|--debug]
+  Play the game as &lt;player name&gt;
 
-Missing required arguments: p
-The player name is required
+Available options:
+  -p,--player &lt;player name&gt;
+                           The player's name &lt;String&gt;
+  -d,--debug               Use debug mode
+  -h,--help                Show this help text
 </code></pre>
-<p>Provide the player name using the <code>-p</code> option:</p>
-<pre><code class="language-text">spago run -a &quot;-p Phil&quot;
+<p>To provide command line arguments, you can either call <code>spago run</code> with the <code>-a</code> option to pass additional arguments directly to your application, or you can call <code>spago bundle-app</code>, which will create an index.js file that can be run directly with <code>node</code>.<br />
+For example, to provide the player name using the <code>-p</code> option:</p>
+<pre><code class="language-text">$ spago run -a &quot;-p Phil&quot;
+&gt;
+</code></pre>
+<pre><code class="language-text">$ spago bundle-app 
+$ node index.js -p Phil
 &gt;
 </code></pre>
 <p>From the prompt, you can enter commands like <code>look</code>, <code>inventory</code>, <code>take</code>, <code>use</code>, <code>north</code>, <code>south</code>, <code>east</code>, and <code>west</code>. There is also a <code>debug</code> command, which can be used to print the game state when the <code>--debug</code> command line option is provided.</p>
@@ -750,7 +754,7 @@ pickUp item = do
 <p>The remainder of the <code>Game</code> module defines a set of similar actions, each using only the actions defined by the <code>MonadState</code>, <code>MonadReader</code> and <code>MonadWriter</code> type classes.</p>
 <h2 id="running-the-computation"><a class="header" href="#running-the-computation">Running the Computation</a></h2>
 <p>Since our game logic runs in the <code>RWS</code> monad, it is necessary to run the computation in order to respond to the user's commands.</p>
-<p>The front-end of our game is built using two packages: <code>yargs</code>, which provides an applicative interface to the <code>yargs</code> command line parsing library, and <code>node-readline</code>, which wraps NodeJS' <code>readline</code> module, allowing us to write interactive console-based applications.</p>
+<p>The front-end of our game is built using two packages: <code>optparse</code>, which provides applicative command line parsing, and <code>node-readline</code>, which wraps NodeJS' <code>readline</code> module, allowing us to write interactive console-based applications.</p>
 <p>The interface to our game logic is provided by the function <code>game</code> in the <code>Game</code> module:</p>
 <pre><code class="language-haskell">game :: Array String -&gt; Game Unit
 </code></pre>
@@ -811,31 +815,49 @@ lineHandler currentState input = do
 </li>
 </ol>
 <h2 id="handling-command-line-options"><a class="header" href="#handling-command-line-options">Handling Command Line Options</a></h2>
-<p>The final piece of the application is responsible for parsing command line options and creating the <code>GameEnvironment</code> configuration record. For this, we use the <code>yargs</code> package.</p>
-<p><code>yargs</code> is an example of <em>applicative command line option parsing</em>. Recall that an applicative functor allows us to lift functions of arbitrary arity over a type constructor representing some type of side-effect. In the case of the <code>yargs</code> package, the functor we are interested in is the <code>Y</code> functor, which adds the side-effect of reading from command line options. It provides the following handler:</p>
-<pre><code class="language-haskell">runY :: forall a. YargsSetup -&gt; Y (Effect a) -&gt; Effect a
+<p>The final piece of the application is responsible for parsing command line options and creating the <code>GameEnvironment</code> configuration record. For this, we use the <code>optparse</code> package.</p>
+<p><code>optparse</code> is an example of <em>applicative command line option parsing</em>. Recall that an applicative functor allows us to lift functions of arbitrary arity over a type constructor representing some type of side-effect. In the case of the <code>optparse</code> package, the functor we are interested in is the <code>Parser</code> functor (imported from the optparse module <code>Options.Applicative</code>, not to be confused with our <code>Parser</code> that we defined in the <code>Split</code> module), which adds the side-effect of reading from command line options. It provides the following handler:</p>
+<pre><code class="language-haskell">customExecParser :: forall a. ParserPrefs → ParserInfo a → Effect a
 </code></pre>
-<p>This is best illustrated by example. The application's <code>main</code> function is defined using <code>runY</code> as follows:</p>
-<pre><code class="language-haskell">main = runY (usage &quot;$0 -p &lt;player name&gt;&quot;) $ map runGame env
+<p>This is best illustrated by example. The application's <code>main</code> function is defined using <code>customExecParser</code> as follows:</p>
+<pre><code class="language-haskell">main = OP.customExecParser prefs argParser &gt;&gt;= runGame 
 </code></pre>
-<p>The first argument is used to configure the <code>yargs</code> library. In our case, we simply provide a usage message, but the <code>Node.Yargs.Setup</code> module provides several other options.</p>
-<p>The second argument uses the <code>map</code> function to lift the <code>runGame</code> function over the <code>Y</code> type constructor. The argument <code>env</code> is constructed in a <code>where</code> declaration using the applicative operators <code>&lt;$&gt;</code> and <code>&lt;*&gt;</code>:</p>
-<pre><code class="language-haskell">  where
-  env :: Y GameEnvironment
-  env = gameEnvironment
-          &lt;$&gt; yarg &quot;p&quot; [&quot;player&quot;]
-                   (Just &quot;Player name&quot;)
-                   (Right &quot;The player name is required&quot;)
-                   false
-          &lt;*&gt; flag &quot;d&quot; [&quot;debug&quot;]
-                   (Just &quot;Use debug mode&quot;)
+<p>The first argument is used to configure the <code>optparse</code> library. In our case, we simply configure it to show the help message when the application is run without any arguments (instead of showing a &quot;missing argument&quot; error) by using <code>OP.prefs OP.showHelpOnEmpty</code>, but the <code>Options.Applicative.Builder</code> module provides several other options.</p>
+<p>The second argument is the complete description of our parser program:</p>
+<pre><code class="language-haskell">  argParser :: OP.ParserInfo GameEnvironment
+  argParser = OP.info (env &lt;**&gt; OP.helper) parserOptions
+
+  parserOptions = fold 
+    [ OP.fullDesc
+    , OP.progDesc &quot;Play the game as &lt;player name&gt;&quot;
+    , OP.header &quot;Monadic Adventures! A game to learn monad transformers&quot; 
+    ]
 </code></pre>
-<p>Here, the <code>gameEnvironment</code> function, which has the type <code>PlayerName -&gt; Boolean -&gt; GameEnvironment</code>, is lifted over <code>Y</code>. The two arguments specify how to read the player name and debug flag from the command line options. The first argument describes the player name option, which is specified by the <code>-p</code> or <code>--player</code> options, and the second describes the debug mode flag, which is turned on using the <code>-d</code> or <code>--debug</code> options.</p>
-<p>This demonstrates two basic functions defined in the <code>Node.Yargs.Applicative</code> module: <code>yarg</code>, which defines a command line option which takes an optional argument (of type <code>String</code>, <code>Number</code> or <code>Boolean</code>), and <code>flag</code> which defines a command line flag of type <code>Boolean</code>.</p>
+<p>Here <code>OP.info</code> combines a <code>Parser</code> with a set of options for how the help message is formatted. <code>env &lt;**&gt; OP.helper</code> takes any command line argument <code>Parser</code> named <code>env</code> and adds a <code>--help</code> option to it automatically. Options for the help message are of type <code>InfoMod</code>, which is a monoid, so we can use the <code>fold</code> function to add several options together. </p>
+<p>The interesting part of our parser is constructing the <code>GameEnvironment</code>:</p>
+<pre><code class="language-haskell">  env :: OP.Parser GameEnvironment
+  env = gameEnvironment &lt;$&gt; player &lt;*&gt; debug
+
+  player :: OP.Parser String
+  player = OP.strOption $ fold 
+    [ OP.long &quot;player&quot;
+    , OP.short 'p'
+    , OP.metavar &quot;&lt;player name&gt;&quot;
+    , OP.help &quot;The player's name &lt;String&gt;&quot;
+    ]
+
+  debug :: OP.Parser Boolean
+  debug = OP.switch $ fold 
+    [ OP.long &quot;debug&quot;
+    , OP.short 'd'
+    , OP.help &quot;Use debug mode&quot;
+    ]
+</code></pre>
+<p><code>player</code> and <code>debug</code> are both <code>Parser</code>s, so we can use our applicative operators <code>&lt;$&gt;</code> and <code>&lt;*&gt;</code> to lift our <code>gameEnvironment</code> function, which has the type <code>PlayerName -&gt; Boolean -&gt; GameEnvironment</code> over <code>Parser</code>. <code>OP.strOption</code> constructs a command line option that expects a string value, and is configured via a collection of <code>Mod</code>s folded together. <code>OP.flag</code> works similarly, but doesn't expect an associated value. <code>optparse</code> offers extensive <a href="https://pursuit.purescript.org/packages/purescript-optparse">documentation</a> on different modifiers available to build various command line parsers.</p>
 <p>Notice how we were able to use the notation afforded by the applicative operators to give a compact, declarative specification of our command line interface. In addition, it is simple to add new command line arguments, simply by adding a new function argument to <code>runGame</code>, and then using <code>&lt;*&gt;</code> to lift <code>runGame</code> over an additional argument in the definition of <code>env</code>.</p>
 <h2 id="exercises-6"><a class="header" href="#exercises-6">Exercises</a></h2>
 <ol>
-<li>(Medium) Add a new Boolean-valued property <code>cheatMode</code> to the <code>GameEnvironment</code> record. Add a new command line flag <code>-c</code> to the <code>yargs</code> configuration which enables cheat mode. The <code>cheat</code> command from the previous exercise should be disallowed if cheat mode is not enabled.</li>
+<li>(Medium) Add a new Boolean-valued property <code>cheatMode</code> to the <code>GameEnvironment</code> record. Add a new command line flag <code>-c</code> to the <code>optparse</code> configuration which enables cheat mode. The <code>cheat</code> command from the previous exercise should be disallowed if cheat mode is not enabled.</li>
 </ol>
 <h2 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h2>
 <p>This chapter was a practical demonstration of the techniques we've learned so far, using monad transformers to build a pure specification of our game, and the <code>Effect</code> monad to build a front-end using the console.</p>
