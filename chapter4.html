@@ -556,7 +556,7 @@ true
 &gt; ls root
 [/bin/,/etc/,/home/]
 </code></pre>
-<p>The <code>Test.Solutions</code> module defines functions which use the <code>Data.Path</code> API. You do not need to modify the <code>Data.Path</code> module, or understand its implementation. We will work entirely in the <code>Test.Solutions</code> module.</p>
+<p>The <code>Test.Examples</code> module defines functions which use the <code>Data.Path</code> API. You do not need to modify the <code>Data.Path</code> module, or understand its implementation. We will work entirely in the <code>Test.Examples</code> module.</p>
 <h2 id="listing-all-files"><a class="header" href="#listing-all-files">Listing All Files</a></h2>
 <p>Let's write a function which performs a deep enumeration of all files inside a directory. This function will have the following type:</p>
 <pre><code class="language-haskell">allFiles :: Path -&gt; Array Path
@@ -567,7 +567,7 @@ true
 </code></pre>
 <p><em>Note</em>: the cons operator <code>:</code> actually has poor performance on immutable arrays, so it is not recommended in general. Performance can be improved by using other data structures, such as linked lists and sequences.</p>
 <p>Let's try this function in PSCi:</p>
-<pre><code class="language-text">&gt; import Test.Solutions
+<pre><code class="language-text">&gt; import Test.Examples
 &gt; import Data.Path
 
 &gt; allFiles root
