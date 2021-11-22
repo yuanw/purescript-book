@@ -702,7 +702,9 @@ ctr &lt;- getElementById &quot;container&quot; $ toNonElementParentNode doc
 ctr &lt;- getElementById &quot;container&quot; $ toNonElementParentNode doc
 </code></pre>
 <p>Or consolidated even further to:</p>
-<pre><code class="language-hs">ctr &lt;- getElementById &quot;container&quot; =&lt;&lt; (map toNonElementParentNode $ document =&lt;&lt; window)
+<pre><code class="language-hs">ctr &lt;- getElementById &quot;container&quot; &lt;&lt;&lt; toNonElementParentNode =&lt;&lt; document =&lt;&lt; window
+-- or, equivalently:
+ctr &lt;- window &gt;&gt;= document &gt;&gt;= toNonElementParentNode &gt;&gt;&gt; getElementById &quot;container&quot;
 </code></pre>
 <p>It is a matter of personal preference whether the intermediate <code>w</code> and <code>doc</code> variables aid in readability.</p>
 <p>Let's dig into our AddressBook <code>reactComponent</code>. We'll start with a simplified component, and then build up to the actual code in <code>Main.purs</code>.</p>
