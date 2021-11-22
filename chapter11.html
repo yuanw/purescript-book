@@ -563,7 +563,7 @@ split = do
   s &lt;- get
   tell [&quot;The state is &quot; &lt;&gt; show s]
   case s of
-    &quot;&quot; -&gt; throwError &quot;Empty string&quot;
+    &quot;&quot; -&gt; throwError [&quot;Empty string&quot;]
     _ -&gt; do
       put (drop 1 s)
       pure (take 1 s)
@@ -600,13 +600,11 @@ some :: forall f a. Alternative f =&gt; Lazy (f (Array a)) =&gt; f a -&gt; f (Ar
 <p>Here, the input string <code>&quot;test&quot;</code> has been repeatedly split to return an array of four single-character strings, the leftover state is empty, and the log shows that we applied the <code>split</code> combinator four times.</p>
 <h2 id="monad-comprehensions"><a class="header" href="#monad-comprehensions">Monad Comprehensions</a></h2>
 <p>The <code>Control.MonadPlus</code> module defines a subclass of the <code>Alternative</code> type class, called <code>MonadPlus</code>. <code>MonadPlus</code> captures those type constructors which are both monads and instances of <code>Alternative</code>:</p>
-<pre><code class="language-haskell">class (Monad m, Alternative m) &lt;= MonadZero m
-
-class MonadZero m &lt;= MonadPlus m
+<pre><code class="language-haskell">class (Monad m, Alternative m) &lt;= MonadPlus m
 </code></pre>
 <p>In particular, our <code>Parser</code> monad is an instance of <code>MonadPlus</code>.</p>
 <p>When we covered array comprehensions earlier in the book, we introduced the <code>guard</code> function, which could be used to filter out unwanted results. In fact, the <code>guard</code> function is more general, and can be used for any monad which is an instance of <code>MonadPlus</code>:</p>
-<pre><code class="language-haskell">guard :: forall m. MonadZero m =&gt; Boolean -&gt; m Unit
+<pre><code class="language-haskell">guard :: forall m. Alternative m =&gt; Boolean -&gt; m Unit
 </code></pre>
 <p>The <code>&lt;|&gt;</code> operator allows us to backtrack in case of failure. To see how this is useful, let's define a variant of the <code>split</code> combinator which only matches upper case characters:</p>
 <pre><code class="language-haskell">upper :: Parser String
@@ -729,12 +727,12 @@ pickUp item = do
 <pre><code class="language-haskell">    Just items | item `S.member` items -&gt; do
 </code></pre>
 <p>In this case, we can use <code>put</code> to update the game state, and <code>tell</code> to add a message to the log:</p>
-<pre><code class="language-haskell">      let newItems = M.update (Just &lt;&lt;&lt; S.delete item) state.player state.items
-          newInventory = S.insert item state.inventory
-      put $ GameState state { items     = newItems
-                            , inventory = newInventory
-                            }
-      tell (L.singleton (&quot;You now have the &quot; &lt;&gt; show item))
+<pre><code class="language-haskell">          let newItems = M.update (Just &lt;&lt;&lt; S.delete item) state.player state.items
+              newInventory = S.insert item state.inventory
+          put $ GameState state { items     = newItems
+                                , inventory = newInventory
+                                }
+          tell (L.singleton (&quot;You now have the &quot; &lt;&gt; show item))
 </code></pre>
 <p>Note that there is no need to <code>lift</code> either of the two computations here, because there are appropriate instances for both <code>MonadState</code> and <code>MonadWriter</code> for our <code>Game</code> monad transformer stack.</p>
 <p>The argument to <code>put</code> uses a record update to modify the game state's <code>items</code> and <code>inventory</code> fields. We use the <code>update</code> function from <code>Data.Map</code> which modifies a value at a particular key. In this case, we modify the set of items at the player's current location, using the <code>delete</code> function to remove the specified item from the set. <code>inventory</code> is also updated, using <code>insert</code> to add the new item to the player's inventory set.</p>
@@ -745,7 +743,7 @@ pickUp item = do
 <pre><code class="language-haskell">  GameEnvironment env &lt;- ask
   if env.debugMode
     then do
-      state &lt;- get
+      state :: GameState &lt;- get
       tell (L.singleton (show state))
     else tell (L.singleton &quot;Not running in debug mode.&quot;)
 </code></pre>
@@ -784,24 +782,24 @@ runGame env = do
   interface &lt;- RL.createConsoleInterface RL.noCompletion
 </code></pre>
 <p>The first step is to set the prompt at the console. We pass the <code>interface</code> handle, and provide the prompt string and indentation level:</p>
-<pre><code class="language-haskell">  RL.setPrompt &quot;&gt; &quot; 2 interface
+<pre><code class="language-haskell">  RL.setPrompt &quot;&gt; &quot; interface
 </code></pre>
 <p>In our case, we are interested in implementing the line handler function. Our line handler is defined using a helper function in a <code>let</code> declaration, as follows:</p>
-<pre><code class="language-haskell">lineHandler :: GameState -&gt; String -&gt; Effect Unit
-lineHandler currentState input = do
-  case runRWS (game (split (wrap &quot; &quot;) input)) env currentState of
-    RWSResult state _ written -&gt; do
-      for_ written log
-      RL.setLineHandler interface $ lineHandler state
-  RL.prompt interface
-  pure unit
+<pre><code class="language-haskell">    lineHandler :: GameState -&gt; String -&gt; Effect Unit
+    lineHandler currentState input = do
+      case runRWS (game (split (wrap &quot; &quot;) input)) env currentState of
+        RWSResult state _ written -&gt; do
+          for_ written log
+          RL.setLineHandler (lineHandler state) $ interface
+      RL.prompt interface
+      pure unit
 </code></pre>
 <p>The <code>let</code> binding is closed over both the game configuration, named <code>env</code>, and the console handle, named <code>interface</code>.</p>
 <p>Our handler takes an additional first argument, the game state. This is required since we need to pass the game state to <code>runRWS</code> to run the game's logic.</p>
 <p>The first thing this action does is to break the user input into words using the <code>split</code> function from the <code>Data.String</code> module. It then uses <code>runRWS</code> to run the <code>game</code> action (in the <code>RWS</code> monad), passing the game environment and current game state.</p>
 <p>Having run the game logic, which is a pure computation, we need to print any log messages to the screen and show the user a prompt for the next command. The <code>for_</code> action is used to traverse the log (of type <code>List String</code>) and print its entries to the console. Finally, <code>setLineHandler</code> is used to update the line handler function to use the updated game state, and the prompt is displayed again using the <code>prompt</code> action.</p>
 <p>The <code>runGame</code> function finally attaches the initial line handler to the console interface, and displays the initial prompt:</p>
-<pre><code class="language-haskell">  RL.setLineHandler interface $ lineHandler initialGameState
+<pre><code class="language-haskell">  RL.setLineHandler (lineHandler initialGameState) interface
   RL.prompt interface
 </code></pre>
 <h2 id="exercises-5"><a class="header" href="#exercises-5">Exercises</a></h2>
