@@ -3948,7 +3948,7 @@ foreign import square :: Number -&gt; Number
 &gt; :kind Fn2
 Type -&gt; Type -&gt; Type -&gt; Type
 </code></pre>
-<p><code>Fn2</code> takes three type arguments. <code>Fn2 a b c</code> is a type representing an uncurried function of two arguments of types <code>a</code> and <code>b</code>, that returns a value of type <code>c</code>. We used it to import <code>diagonalUncurried</code> from the foriegn module.</p>
+<p><code>Fn2</code> takes three type arguments. <code>Fn2 a b c</code> is a type representing an uncurried function of two arguments of types <code>a</code> and <code>b</code>, that returns a value of type <code>c</code>. We used it to import <code>diagonalUncurried</code> from the foreign module.</p>
 <p>We can then call it with <code>runFn2</code> which takes the uncurried function then the arguments.</p>
 <pre><code class="language-text">$ spago repl
 
