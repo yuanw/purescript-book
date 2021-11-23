@@ -857,7 +857,7 @@ formField name placeholder value setValue =
 <p>The <code>onChange</code> attribute allows us to describe how to respond to user input. We use the <code>handler</code> function, which has the following type:</p>
 <pre><code class="language-hs">handler :: forall a. EventFn SyntheticEvent a -&gt; (a -&gt; Effect Unit) -&gt; EventHandler
 </code></pre>
-<p>For the first argument to <code>handler</code> we use we use <code>targetValue</code>, which provides the value of the text within the HTML <code>input</code> element. It matches the signature expected by <code>handler</code> where the type variable <code>a</code> in this case is <code>Maybe String</code>:</p>
+<p>For the first argument to <code>handler</code> we use <code>targetValue</code>, which provides the value of the text within the HTML <code>input</code> element. It matches the signature expected by <code>handler</code> where the type variable <code>a</code> in this case is <code>Maybe String</code>:</p>
 <pre><code class="language-hs">targetValue :: EventFn SyntheticEvent (Maybe String)
 </code></pre>
 <p>In JavaScript, the <code>input</code> element's <code>onChange</code> event is actually accompanied by a <code>String</code> value, but since strings in JavaScript can be null, <code>Maybe</code> is used for safety.</p>
