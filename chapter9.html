@@ -279,7 +279,7 @@ unit
 <p>We can also combine parallel computations with sequential portions of code, by using applicative combinators in a do notation block, or vice versa, using <code>parallel</code> and <code>sequential</code> to change type constructors where appropriate.</p>
 <p>To demonstrate the difference between sequential and parallel execution, we'll create an array of 100 10-millisecond delays, then execute those delays with both techniques.
 You'll notice in the repl that <code>seqDelay</code> is much slower than <code>parDelay</code>.
-Note that parallel execution is enabled by simply by replacing <code>sequence_</code> with <code>parSequence_</code>.</p>
+Note that parallel execution is enabled by simply replacing <code>sequence_</code> with <code>parSequence_</code>.</p>
 <pre><code class="language-hs">import Prelude
 
 import Control.Parallel (parSequence_)
