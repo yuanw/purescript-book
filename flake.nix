@@ -38,6 +38,11 @@
           git.hooks.enable = true;
           git.hooks.pre-commit.text = "${pkgs.treefmt}/bin/treefmt";
                 commands = [
+                    {
+              name = "node";
+              category = "javascript";
+              package = "nodejs";
+            }
                   {
               name = "spago";
               category = "purescript";
