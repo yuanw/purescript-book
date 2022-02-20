@@ -9,30 +9,31 @@ import Partial.Unsafe (unsafePartial)
 gcd :: Int -> Int -> Int
 gcd n 0 = n
 gcd 0 m = m
-gcd n m = if n > m
-            then gcd (n - m) m
-            else gcd n (m - n)
+gcd n m =
+  if n > m then gcd (n - m) m
+  else gcd n (m - n)
 
 fromString :: String -> Boolean
 fromString "true" = true
-fromString _      = false
+fromString _ = false
 
 toString :: Boolean -> String
-toString true  = "true"
+toString true = "true"
 toString false = "false"
 
 gcdV2 :: Int -> Int -> Int
 gcdV2 n 0 = n
 gcdV2 0 n = n
-gcdV2 n m | n > m     = gcdV2 (n - m) m
-          | otherwise = gcdV2 n (m - n)
+gcdV2 n m
+  | n > m = gcdV2 (n - m) m
+  | otherwise = gcdV2 n (m - n)
 
 isEmpty :: forall a. Array a -> Boolean
 isEmpty [] = true
 isEmpty _ = false
 
 takeFive :: Array Int -> Int
-takeFive [0, 1, a, b, _] = a * b
+takeFive [ 0, 1, a, b, _ ] = a * b
 takeFive _ = 0
 
 showPerson :: { first :: String, last :: String } -> String
@@ -44,8 +45,8 @@ showPersonV2 { first, last } = last <> ", " <> first
 unknownPerson :: { first :: String, last :: String }
 unknownPerson = { first, last }
   where
-    first = "Jane"
-    last  = "Doe"
+  first = "Jane"
+  last = "Doe"
 
 type Address = { street :: String, city :: String }
 
@@ -56,16 +57,16 @@ livesInLA { address: { city: "Los Angeles" } } = true
 livesInLA _ = false
 
 sortPair :: Array Int -> Array Int
-sortPair arr@[x, y]
+sortPair arr@[ x, y ]
   | x <= y = arr
-  | otherwise = [y, x]
+  | otherwise = [ y, x ]
 sortPair arr = arr
 
 lzs :: Array Int -> Array Int
 lzs [] = []
 lzs xs = case sum xs of
-           0 -> xs
-           _ -> lzs (fromMaybe [] $ tail xs)
+  0 -> xs
+  _ -> lzs (fromMaybe [] $ tail xs)
 
 partialFunction :: Boolean -> Boolean
 partialFunction = unsafePartial \true -> true

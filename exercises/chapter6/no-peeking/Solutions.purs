@@ -12,11 +12,11 @@ import Data.Monoid (power)
 import Data.Newtype (class Newtype, over2, wrap)
 
 -- ANCHOR: Point
-newtype Point
-      = Point
-      { x :: Number
-      , y :: Number
-      }
+newtype Point = Point
+  { x :: Number
+  , y :: Number
+  }
+
 -- ANCHOR_END: Point
 
 instance showPoint :: Show Point where
@@ -24,11 +24,11 @@ instance showPoint :: Show Point where
     "(" <> show p.x <> ", " <> show p.y <> ")"
 
 -- ANCHOR: Complex
-newtype Complex
-  = Complex
+newtype Complex = Complex
   { real :: Number
   , imaginary :: Number
   }
+
 -- ANCHOR_END: Complex
 
 instance showComplex :: Show Complex where
@@ -54,14 +54,14 @@ derive instance newtypeComplex :: Newtype Complex _
 instance semiringComplex :: Semiring Complex where
   add = over2 Complex add
   mul = over2 Complex
-          \ { real: r1, imaginary: i1 }
-            { real: r2, imaginary: i2 }
-          ->
-            { real:      r1 * r2 - i1 * i2
-            , imaginary: r1 * i2 + r2 * i1
-            }
+    \{ real: r1, imaginary: i1 }
+     { real: r2, imaginary: i2 } ->
+      { real: r1 * r2 - i1 * i2
+      , imaginary: r1 * i2 + r2 * i1
+      }
   zero = wrap zero
   one = wrap { real: one, imaginary: zero }
+
 {-
 -- Without Newtype
 instance semiringComplex :: Semiring Complex where
@@ -89,16 +89,18 @@ instance ringComplex :: Ring Complex where
 
 -- ANCHOR: Shape
 data Shape
-      = Circle Point Number
-      | Rectangle Point Number Number
-      | Line Point Point
-      | Text Point String
+  = Circle Point Number
+  | Rectangle Point Number Number
+  | Line Point Point
+  | Text Point String
+
 -- ANCHOR_END: Shape
 
 derive instance genericShape :: Generic Shape _
 
 instance showShape :: Show Shape where
   show = genericShow
+
 {-
 -- Manual solution
 instance showShape :: Show Shape where
@@ -110,10 +112,12 @@ instance showShape :: Show Shape where
 
 -- ANCHOR: NonEmpty
 data NonEmpty a = NonEmpty a (Array a)
+
 -- ANCHOR_END: NonEmpty
 
 instance eqNonEmpty :: Eq a => Eq (NonEmpty a) where
   eq (NonEmpty e1 a1) (NonEmpty e2 a2) = e1 == e2 && a1 == a2
+
 {-
 -- Derived solution
 derive instance eqNonEmpty :: Eq a => Eq (NonEmpty a)
@@ -133,7 +137,8 @@ instance functorNonEmpty :: Functor NonEmpty where
 -}
 
 -- ANCHOR: Extended
-data Extended a = Infinite | Finite a 
+data Extended a = Infinite | Finite a
+
 -- ANCHOR_END: Extended
 
 derive instance eqExtended :: Eq a => Eq (Extended a)
@@ -150,6 +155,7 @@ instance ordExtended :: Ord a => Ord (Extended a) where
   compare Infinite (Finite _) = GT
   compare (Finite _) Infinite = LT
   compare (Finite v1) (Finite v2) = compare v1 v2
+
 {-
 -- Note that it would have been possible to derive Ord if
 -- the constructor order was reversed, although using implicit
@@ -165,11 +171,12 @@ instance foldableNonEmpty :: Foldable NonEmpty where
 
 -- ANCHOR: OneMore
 data OneMore f a = OneMore a (f a)
+
 -- ANCHOR_END: OneMore
 
 -- ANCHOR: OneMore_Foldable
 instance foldableOneMore :: Foldable f => Foldable (OneMore f) where
--- ANCHOR_END: OneMore_Foldable
+  -- ANCHOR_END: OneMore_Foldable
   foldr func st (OneMore val more) = func val lastB
     where
     lastB = foldr func st more
@@ -196,26 +203,30 @@ unsafeMaximum arr = case maximum arr of
 
 -- ANCHOR: Action
 class Monoid m <= Action m a where
-      act :: m -> a -> a
+  act :: m -> a -> a
+
 -- ANCHOR_END: Action
 
 -- ANCHOR: Multiply
 newtype Multiply = Multiply Int
+
 -- ANCHOR_END: Multiply
 
 -- ANCHOR: semigroupMultiply
 instance semigroupMultiply :: Semigroup Multiply where
-      append (Multiply n) (Multiply m) = Multiply (n * m)
+  append (Multiply n) (Multiply m) = Multiply (n * m)
+
 -- ANCHOR_END: semigroupMultiply
 
 -- ANCHOR: monoidMultiply
 instance monoidMultiply :: Monoid Multiply where
-      mempty = Multiply 1
+  mempty = Multiply 1
+
 -- ANCHOR_END: monoidMultiply
 
 -- ANCHOR: Multiply_Action
 instance actionMultiplyInt :: Action Multiply Int where
--- ANCHOR_END: Multiply_Action
+  -- ANCHOR_END: Multiply_Action
   act (Multiply n) m = n * m
 
 {-
@@ -254,7 +265,7 @@ derive newtype instance eqMultiply :: Eq Multiply
 
 -- ANCHOR: actionMultiplyString
 instance actionMultiplyString :: Action Multiply String where
--- ANCHOR_END: actionMultiplyString
+  -- ANCHOR_END: actionMultiplyString
   act (Multiply n) s = power s n
 
 instance actionArray :: Action m a => Action m (Array a) where
@@ -262,6 +273,7 @@ instance actionArray :: Action m a => Action m (Array a) where
 
 -- ANCHOR: Self
 newtype Self m = Self m
+
 -- ANCHOR_END: Self
 
 instance actionSelf :: Monoid m => Action m (Self m) where
@@ -280,11 +292,13 @@ arrayHasDuplicates arr =
 
 -- ANCHOR: Hour
 newtype Hour = Hour Int
+
 -- ANCHOR_END: Hour
 
 -- ANCHOR: eqHour
 instance eqHour :: Eq Hour where
-      eq (Hour n) (Hour m) = mod n 12 == mod m 12
+  eq (Hour n) (Hour m) = mod n 12 == mod m 12
+
 -- ANCHOR_END: eqHour
 
 instance hashHour :: Hashable Hour where

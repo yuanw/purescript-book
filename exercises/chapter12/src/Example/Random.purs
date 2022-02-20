@@ -7,8 +7,15 @@ import Effect.Random (random)
 import Data.Array ((..))
 import Data.Foldable (for_)
 import Data.Maybe (Maybe(..))
-import Graphics.Canvas (strokePath, fillPath, arc, setStrokeStyle,
-                        setFillStyle, getContext2D, getCanvasElementById)
+import Graphics.Canvas
+  ( strokePath
+  , fillPath
+  , arc
+  , setStrokeStyle
+  , setFillStyle
+  , getContext2D
+  , getCanvasElementById
+  )
 import Math as Math
 import Partial.Unsafe (unsafePartial)
 
@@ -25,13 +32,14 @@ main = void $ unsafePartial do
     y <- random
     r <- random
 
-    let path = arc ctx
-         { x     : x * 600.0
-         , y     : y * 600.0
-         , radius: r * 50.0
-         , start : 0.0
-         , end   : Math.tau
-         }
+    let
+      path = arc ctx
+        { x: x * 600.0
+        , y: y * 600.0
+        , radius: r * 50.0
+        , start: 0.0
+        , end: Math.tau
+        }
 
     fillPath ctx path
     strokePath ctx path

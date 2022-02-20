@@ -23,8 +23,8 @@ isInBook firstName lastName = not null <<< filter filterEntry
   where
   filterEntry :: Entry -> Boolean
   filterEntry entry =
-     entry.firstName == firstName &&
-     entry.lastName  == lastName
+    entry.firstName == firstName &&
+      entry.lastName == lastName
 
 removeDuplicates :: AddressBook -> AddressBook
 -- Equivalent: removeDuplicates book = nubByEq entriesAreDuplicated book
@@ -33,4 +33,4 @@ removeDuplicates = nubByEq entriesAreDuplicated
   entriesAreDuplicated :: Entry -> Entry -> Boolean
   entriesAreDuplicated e1 e2 =
     e1.firstName == e2.firstName &&
-    e1.lastName  == e2.lastName
+      e1.lastName == e2.lastName

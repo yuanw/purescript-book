@@ -24,7 +24,8 @@ main :: Effect Unit
 main =
   runTest do
     runChapterExamples
-    {-  Move this block comment starting point to enable more tests
+
+{-  Move this block comment starting point to enable more tests
     suite "Exercise Group - Applicative and Effects" do
       suite "Exercise - Numeric operators that work with Maybe" do
         suite "addMaybe" do

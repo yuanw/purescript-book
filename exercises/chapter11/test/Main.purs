@@ -28,7 +28,7 @@ main :: Effect Unit
 main =
   runTest do
     test "" success
-    {-  Move this block comment starting point to enable more tests
+{-  Move this block comment starting point to enable more tests
     suite "Exercises Group - The State Monad" do
       suite "testParens" do
         let

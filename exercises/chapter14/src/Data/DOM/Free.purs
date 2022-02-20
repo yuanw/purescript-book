@@ -17,7 +17,8 @@ module Data.DOM.Free
   , width
   , height
 
-  , attribute, (:=)
+  , attribute
+  , (:=)
   , text
   , elem
 
@@ -33,9 +34,9 @@ import Data.Foldable (for_)
 import Data.Maybe (Maybe(..))
 
 newtype Element = Element
-  { name         :: String
-  , attribs      :: Array Attribute
-  , content      :: Maybe (Content Unit)
+  { name :: String
+  , attribs :: Array Attribute
+  , content :: Maybe (Content Unit)
   }
 
 data ContentF a
@@ -49,17 +50,17 @@ instance functorContentF :: Functor ContentF where
 type Content = Free ContentF
 
 newtype Attribute = Attribute
-  { key          :: String
-  , value        :: String
+  { key :: String
+  , value :: String
   }
 
 newtype AttributeKey a = AttributeKey String
 
 element :: String -> Array Attribute -> Maybe (Content Unit) -> Element
 element name attribs content = Element
-  { name:      name
-  , attribs:   attribs
-  , content:   content
+  { name: name
+  , attribs: attribs
+  , content: content
   }
 
 text :: String -> Content Unit
@@ -112,35 +113,35 @@ height = AttributeKey "height"
 render :: Element -> String
 render = execWriter <<< renderElement
   where
-    renderElement :: Element -> Writer String Unit
-    renderElement (Element e) = do
-        tell "<"
-        tell e.name
-        for_ e.attribs $ \x -> do
-          tell " "
-          renderAttribute x
-        renderContent e.content
-      where
-        renderAttribute :: Attribute -> Writer String Unit
-        renderAttribute (Attribute x) = do
-          tell x.key
-          tell "=\""
-          tell x.value
-          tell "\""
+  renderElement :: Element -> Writer String Unit
+  renderElement (Element e) = do
+    tell "<"
+    tell e.name
+    for_ e.attribs $ \x -> do
+      tell " "
+      renderAttribute x
+    renderContent e.content
+    where
+    renderAttribute :: Attribute -> Writer String Unit
+    renderAttribute (Attribute x) = do
+      tell x.key
+      tell "=\""
+      tell x.value
+      tell "\""
 
-        renderContent :: Maybe (Content Unit) -> Writer String Unit
-        renderContent Nothing = tell " />"
-        renderContent (Just content) = do
-          tell ">"
-          runFreeM renderContentItem content
-          tell "</"
-          tell e.name
-          tell ">"
+    renderContent :: Maybe (Content Unit) -> Writer String Unit
+    renderContent Nothing = tell " />"
+    renderContent (Just content) = do
+      tell ">"
+      runFreeM renderContentItem content
+      tell "</"
+      tell e.name
+      tell ">"
 
-        renderContentItem :: forall a. ContentF (Content a) -> Writer String (Content a)
-        renderContentItem (TextContent s rest) = do
-          tell s
-          pure rest
-        renderContentItem (ElementContent e' rest) = do
-          renderElement e'
-          pure rest
+    renderContentItem :: forall a. ContentF (Content a) -> Writer String (Content a)
+    renderContentItem (TextContent s rest) = do
+      tell s
+      pure rest
+    renderContentItem (ElementContent e' rest) = do
+      renderElement e'
+      pure rest

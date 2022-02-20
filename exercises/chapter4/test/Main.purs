@@ -18,7 +18,8 @@ main :: Effect Unit
 main =
   runTest do
     runChapterExamples
-    {-  Move this block comment starting point to enable more tests
+
+{-  Move this block comment starting point to enable more tests
     suite "Exercise Group - Recursion" do
       suite "Exercise - isEven" do
         test "0 is even" do
@@ -220,16 +221,17 @@ runChapterExamples =
         , "factorsV3" /\ factorsV3
         ]
       n /\ xs <-
-        [ 1 /\ [[1,1]]
-        , 2 /\ [[1,2]]
-        , 3 /\ [[1,3]]
-        , 4 /\ [[1,4],[2,2]]
-        , 10 /\ [[1,10],[2,5]]
-        , 100 /\ [[1,100],[2,50],[4,25],[5,20],[10,10]]
+        [ 1 /\ [ [ 1, 1 ] ]
+        , 2 /\ [ [ 1, 2 ] ]
+        , 3 /\ [ [ 1, 3 ] ]
+        , 4 /\ [ [ 1, 4 ], [ 2, 2 ] ]
+        , 10 /\ [ [ 1, 10 ], [ 2, 5 ] ]
+        , 100 /\ [ [ 1, 100 ], [ 2, 50 ], [ 4, 25 ], [ 5, 20 ], [ 10, 10 ] ]
         ]
       pure $ test (name <> " " <> show n) do
         Assert.equal (sort $ map sort xs)
-          $ sort $ map sort f n
+          $ sort
+          $ map sort f n
     test "factorialTailRec" do
       Assert.equal 120
         $ factorialTailRec 5 1
@@ -239,11 +241,11 @@ runChapterExamples =
     test "allFiles" do
       Assert.equal allFileAndDirectoryNames
         $ filename
-        <$> allFiles root
+            <$> allFiles root
     test "allFiles'" do
       Assert.equal allFileAndDirectoryNames
         $ filename
-        <$> allFiles' root
+            <$> allFiles' root
 
 allFileAndDirectoryNames :: Array (String)
 allFileAndDirectoryNames =

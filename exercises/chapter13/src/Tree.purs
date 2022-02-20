@@ -15,9 +15,10 @@ instance arbTree :: (Arbitrary a, Ord a) => Arbitrary (Tree a) where
 instance coarbTree :: (Coarbitrary a) => Coarbitrary (Tree a) where
   coarbitrary Leaf = identity
   coarbitrary (Branch l a r) =
-    coarbitrary l <<<
-    coarbitrary a <<<
-    coarbitrary r
+    coarbitrary l
+      <<< coarbitrary a
+      <<<
+        coarbitrary r
 
 insert :: forall a. (Ord a) => a -> Tree a -> Tree a
 insert a Leaf = Branch Leaf a Leaf
@@ -28,11 +29,11 @@ member :: forall a. (Ord a) => a -> Tree a -> Boolean
 member _ Leaf = false
 member a (Branch _ a1 _) | a == a1 = true
 member a (Branch l a1 _) | a < a1 = a `member` l
-member a (Branch _ _  r) = a `member` r
+member a (Branch _ _ r) = a `member` r
 
 toArray :: forall a. Tree a -> Array a
 toArray Leaf = []
-toArray (Branch l a r) = toArray l <> [a] <> toArray r
+toArray (Branch l a r) = toArray l <> [ a ] <> toArray r
 
 fromArray :: forall a. (Ord a) => Array a -> Tree a
 fromArray = foldr insert Leaf

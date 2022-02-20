@@ -1,0 +1,8 @@
+[formatter.nix]
+command = "nixfmt"
+includes = ["*.nix"]
+
+[formatter.purescript]
+command = "purs-tidy"
+options = ["format-in-place"]
+includes = ["*.purs"]

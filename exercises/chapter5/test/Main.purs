@@ -33,7 +33,8 @@ main :: Effect Unit
 main =
   runTest do
     runChapterExamples
-    {-  Move this block comment starting point to enable more tests
+
+{-  Move this block comment starting point to enable more tests
     suite "Exercise Group - Simple Pattern Matching" do
       test "Exercise - factorial" do
         Assert.equal 1
@@ -150,27 +151,27 @@ runChapterExamples =
         $ gcdV2 60 100
     test "isEmpty" do
       Assert.equal false
-        $ isEmpty [2, 3]
+        $ isEmpty [ 2, 3 ]
     test "takeFive" do
       Assert.equal 6
-        $ takeFive [0, 1, 2, 3, 4]
+        $ takeFive [ 0, 1, 2, 3, 4 ]
     test "showPerson" do
       Assert.equal "Lovelace, Ada"
-        $ showPerson {first: "Ada", last: "Lovelace"}
+        $ showPerson { first: "Ada", last: "Lovelace" }
     test "showPersonV2" do
       Assert.equal "Lovelace, Ada"
-        $ showPersonV2 {first: "Ada", last: "Lovelace"}
+        $ showPersonV2 { first: "Ada", last: "Lovelace" }
     test "unknownPerson" do
-      Assert.equal {first: "Jane", last: "Doe"} unknownPerson
+      Assert.equal { first: "Jane", last: "Doe" } unknownPerson
     test "livesInLA" do
       Assert.equal true
-        $ livesInLA {name: "Suraj", address: {street: "123 Main St", city: "Los Angeles"}}
+        $ livesInLA { name: "Suraj", address: { street: "123 Main St", city: "Los Angeles" } }
     test "sortPair" do
-      Assert.equal [1, 2]
-        $ sortPair [2, 1]
+      Assert.equal [ 1, 2 ]
+        $ sortPair [ 2, 1 ]
     test "lzs" do
-      Assert.equal [-1, -2, 3]
-        $ lzs [1, -1, -2, 3]
+      Assert.equal [ -1, -2, 3 ]
+        $ lzs [ 1, -1, -2, 3 ]
     test "partialFunction" do
       Assert.equal true
         $ partialFunction true

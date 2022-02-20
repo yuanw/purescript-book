@@ -16,7 +16,8 @@ module Data.DOM.Phantom
   , width
   , height
 
-  , attribute, (:=)
+  , attribute
+  , (:=)
   , text
   , elem
 
@@ -29,9 +30,9 @@ import Data.Maybe (Maybe(..))
 import Data.String (joinWith)
 
 newtype Element = Element
-  { name         :: String
-  , attribs      :: Array Attribute
-  , content      :: Maybe (Array Content)
+  { name :: String
+  , attribs :: Array Attribute
+  , content :: Maybe (Array Content)
   }
 
 data Content
@@ -39,17 +40,17 @@ data Content
   | ElementContent Element
 
 newtype Attribute = Attribute
-  { key          :: String
-  , value        :: String
+  { key :: String
+  , value :: String
   }
 
 newtype AttributeKey a = AttributeKey String
 
 element :: String -> Array Attribute -> Maybe (Array Content) -> Element
 element name attribs content = Element
-  { name:      name
-  , attribs:   attribs
-  , content:   content
+  { name: name
+  , attribs: attribs
+  , content: content
   }
 
 text :: String -> Content
@@ -101,19 +102,23 @@ height = AttributeKey "height"
 
 render :: Element -> String
 render (Element e) =
-    "<" <> e.name <>
-    " " <> joinWith " " (map renderAttribute e.attribs) <>
-    renderContent e.content
+  "<" <> e.name
+    <> " "
+    <> joinWith " " (map renderAttribute e.attribs)
+    <>
+      renderContent e.content
   where
-    renderAttribute :: Attribute -> String
-    renderAttribute (Attribute x) = x.key <> "=\"" <> x.value <> "\""
+  renderAttribute :: Attribute -> String
+  renderAttribute (Attribute x) = x.key <> "=\"" <> x.value <> "\""
 
-    renderContent :: Maybe (Array Content) -> String
-    renderContent Nothing = " />"
-    renderContent (Just content) =
-        ">" <> joinWith "" (map renderContentItem content) <>
-        "</" <> e.name <> ">"
-      where
-        renderContentItem :: Content -> String
-        renderContentItem (TextContent s) = s
-        renderContentItem (ElementContent e') = render e'
+  renderContent :: Maybe (Array Content) -> String
+  renderContent Nothing = " />"
+  renderContent (Just content) =
+    ">" <> joinWith "" (map renderContentItem content)
+      <> "</"
+      <> e.name
+      <> ">"
+    where
+    renderContentItem :: Content -> String
+    renderContentItem (TextContent s) = s
+    renderContentItem (ElementContent e') = render e'

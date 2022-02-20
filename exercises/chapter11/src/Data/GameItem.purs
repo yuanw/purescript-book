@@ -7,8 +7,8 @@ import Data.Maybe (Maybe(..))
 data GameItem = Candle | Matches
 
 instance showGameItem :: Show GameItem where
-  show Candle         = "Candle"
-  show Matches        = "Matches"
+  show Candle = "Candle"
+  show Matches = "Matches"
 
 derive instance eqGameItem :: Eq GameItem
 derive instance ordGameItem :: Ord GameItem

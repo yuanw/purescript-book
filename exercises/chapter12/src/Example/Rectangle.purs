@@ -4,8 +4,13 @@ import Prelude
 
 import Effect (Effect)
 import Data.Maybe (Maybe(..))
-import Graphics.Canvas (rect, fillPath, setFillStyle, getContext2D,
-                        getCanvasElementById)
+import Graphics.Canvas
+  ( rect
+  , fillPath
+  , setFillStyle
+  , getContext2D
+  , getCanvasElementById
+  )
 import Partial.Unsafe (unsafePartial)
 
 main :: Effect Unit

@@ -25,7 +25,8 @@ main :: Effect Unit
 main =
   runTest do
     runChapterExamples
-    {-  Move this block comment starting point to enable more tests
+
+{-  Move this block comment starting point to enable more tests
     suite "Exercise Group - Calling JavaScript" do
       suite "Exercise - volumeFn" do
         test "1 2 3" do

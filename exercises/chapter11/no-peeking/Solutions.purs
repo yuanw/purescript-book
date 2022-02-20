@@ -78,15 +78,14 @@ sumArrayWriter = traverse_ \n -> do
 collatz :: Int -> Tuple Int (Array Int)
 collatz c = runWriter $ cltz 0 c
   where
-    cltz :: Int -> Int -> Writer (Array Int) Int
-    cltz i 1 = do
-      tell [ 1 ]
-      pure i
-    cltz i n = do
-      tell [ n ]
-      if mod n 2 == 0
-        then cltz (i + 1) (n / 2)
-        else cltz (i + 1) ((3 * n) + 1)
+  cltz :: Int -> Int -> Writer (Array Int) Int
+  cltz i 1 = do
+    tell [ 1 ]
+    pure i
+  cltz i n = do
+    tell [ n ]
+    if mod n 2 == 0 then cltz (i + 1) (n / 2)
+    else cltz (i + 1) ((3 * n) + 1)
 
 --
 
@@ -103,13 +102,13 @@ type Parser = StateT String (WriterT Log (ExceptT Errors Identity))
 string :: String -> Parser String
 string prefix = do
   st <- get
-  lift $ tell ["The state is " <> st]
+  lift $ tell [ "The state is " <> st ]
   case stripPrefix (Pattern prefix) st of
     Just rest -> do
       put rest
       pure prefix
     _ -> do
-      lift $ lift $ throwError ["Could not parse"]
+      lift $ lift $ throwError [ "Could not parse" ]
 
 --
 
@@ -128,7 +127,7 @@ indent' = local $ (+) 1
 render' :: Doc' -> String
 render' doct = joinWith "\n" $ unwrap $ runReaderT (execWriterT doct) 0
 
-asFollowedByBs ::  Parser String
+asFollowedByBs :: Parser String
 asFollowedByBs = do
   as <- some $ string "a"
   bs <- some $ string "b"

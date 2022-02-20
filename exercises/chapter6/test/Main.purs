@@ -17,7 +17,8 @@ main :: Effect Unit
 main =
   runTest do
     runChapterExamples
-    {-  Move this block comment starting point to enable more tests
+
+{-  Move this block comment starting point to enable more tests
     suite "Show Me!" do
       test "Show Point" do
         Assert.equal "(1.0, 2.0)"

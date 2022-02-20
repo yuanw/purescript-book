@@ -8,10 +8,13 @@ newtype Coords = Coords
   }
 
 instance showCoords :: Show Coords where
-  show (Coords p) = "Coords " <>
-                    "{ x: " <> show p.x <>
-                    ", y: " <> show p.y <>
-                    " }"
+  show (Coords p) = "Coords "
+    <> "{ x: "
+    <> show p.x
+    <> ", y: "
+    <> show p.y
+    <>
+      " }"
 
 derive instance eqCoords :: Eq Coords
 derive instance ordCoords :: Ord Coords

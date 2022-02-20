@@ -107,7 +107,7 @@ mkAddressBookApp =
       validateAndSave = do
         log "Running validators"
         case validatePerson' person of
-          Left  errs        -> alert $ "There are " <> show (length errs) <> " validation errors."
+          Left errs -> alert $ "There are " <> show (length errs) <> " validation errors."
           Right validPerson -> do
             setItem "person" $ stringify $ encodeJson validPerson
             log "Saved"
@@ -130,11 +130,13 @@ mkAddressBookApp =
           { className: "container"
           , children:
               renderValidationErrors errors
-                <> [ D.div
+                <>
+                  [ D.div
                       { className: "row"
                       , children:
                           [ D.form_
-                              $ [ D.h3_ [ D.text "Basic Information" ]
+                              $
+                                [ D.h3_ [ D.text "Basic Information" ]
                                 , formField "First Name" "First Name" person.firstName \s ->
                                     setPerson _ { firstName = s }
                                 , formField "Last Name" "Last Name" person.lastName \s ->
@@ -148,7 +150,7 @@ mkAddressBookApp =
                                     setPerson _ { homeAddress { state = s } }
                                 , D.h3_ [ D.text "Contact Information" ]
                                 ]
-                              <> renderPhoneNumbers
+                                  <> renderPhoneNumbers
                           ]
                       }
                   ]
@@ -158,8 +160,8 @@ mkAddressBookApp =
 processItem :: Json -> Either String Person
 processItem item = do
   jsonString <- lmap (\e -> "No string in local storage: " <> printJsonDecodeError e) $ decodeJson item
-  j          <- lmap (      "Cannot parse JSON string: "   <> _)                      $ jsonParser jsonString
-  lmap               (\e -> "Cannot decode Person: "       <> printJsonDecodeError e) $ decodeJson j
+  j <- lmap ("Cannot parse JSON string: " <> _) $ jsonParser jsonString
+  lmap (\e -> "Cannot decode Person: " <> printJsonDecodeError e) $ decodeJson j
 
 main :: Effect Unit
 main = do
@@ -178,10 +180,10 @@ main = do
       -- Retrieve person from local storage
       item <- getItem "person"
       initialPerson <- case processItem item of
-        Left  err -> do
+        Left err -> do
           alert $ "Error: " <> err <> ". Loading examplePerson"
           pure examplePerson
-        Right p   -> pure p
+        Right p -> pure p
       let
         -- Create JSX node from react component.
         app = element addressBookApp { initialPerson }

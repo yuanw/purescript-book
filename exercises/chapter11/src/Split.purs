@@ -21,9 +21,9 @@ type Parser = StateT String (WriterT Log (ExceptT Errors Identity))
 split :: Parser String
 split = do
   s <- get
-  tell ["The state is " <> show s]
+  tell [ "The state is " <> show s ]
   case s of
-    "" -> throwError ["Empty string"]
+    "" -> throwError [ "Empty string" ]
     _ -> do
       put (drop 1 s)
       pure (take 1 s)
@@ -31,10 +31,10 @@ split = do
 eof :: Parser Unit
 eof = do
   s <- get
-  tell ["The state is " <> show s]
+  tell [ "The state is " <> show s ]
   case s of
     "" -> pure unit
-    _ -> throwError ["Expected end-of-file"]
+    _ -> throwError [ "Expected end-of-file" ]
 
 upper :: Parser String
 upper = do

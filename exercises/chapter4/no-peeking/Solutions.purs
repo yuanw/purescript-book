@@ -11,19 +11,17 @@ import Test.Examples
 
 isEven :: Int -> Boolean
 isEven n =
-  if n < 0
-    then isEven (-n)
-    else if n == 0
-      then true
-      else not (isEven (n - 1))
+  if n < 0 then isEven (-n)
+  else if n == 0 then true
+  else not (isEven (n - 1))
 
 oneIfEven :: Int -> Int
 oneIfEven n = if isEven n then 1 else 0
 
 countEven :: Array Int -> Int
 countEven xs =
-    if null xs then 0
-    else oneIfEven (fromMaybe 1 $ head xs ) + countEven (fromMaybe [] $ tail xs)
+  if null xs then 0
+  else oneIfEven (fromMaybe 1 $ head xs) + countEven (fromMaybe [] $ tail xs)
 
 squared :: Array Number -> Array Number
 squared arr = map (\n -> n * n) arr
@@ -108,11 +106,14 @@ whereIs path fileName = head $ do
   pure path'
 
 largestSmallest :: Path -> Array Path
-largestSmallest path = foldl loop [] (onlyFiles path) where
+largestSmallest path = foldl loop [] (onlyFiles path)
+  where
   loop :: Array Path -> Path -> Array Path
-  loop [largest, smallest] current | size current < size smallest = [largest, current]
-                                   | size current > size largest  = [current, smallest]
-                                   | otherwise                    = [largest, smallest]
-  loop [last] current              | size current < size last     = [current, last]
-                                   | otherwise                    = [last, current]
-  loop arr current                                                = current : arr
+  loop [ largest, smallest ] current
+    | size current < size smallest = [ largest, current ]
+    | size current > size largest = [ current, smallest ]
+    | otherwise = [ largest, smallest ]
+  loop [ last ] current
+    | size current < size last = [ current, last ]
+    | otherwise = [ last, current ]
+  loop arr current = current : arr

@@ -37,13 +37,13 @@
           imports = [ (pkgs.devshell.extraModulesDir + "/git/hooks.nix") ];
           git.hooks.enable = true;
           git.hooks.pre-commit.text = "${pkgs.treefmt}/bin/treefmt";
-                commands = [
-                    {
+          commands = [
+            {
               name = "node";
               category = "javascript";
               package = "nodejs";
             }
-                  {
+            {
               name = "spago";
               category = "purescript";
               package = "spago";
@@ -63,8 +63,8 @@
               category = "purescript";
               package = "spago2nix";
             }
-                  ];
-                packages = [
+          ];
+          packages = [
             pkgs.nodePackages.purescript-language-server
             pkgs.nodePackages.pscid
 

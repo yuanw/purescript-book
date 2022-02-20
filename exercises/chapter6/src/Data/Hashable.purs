@@ -48,7 +48,7 @@ instance hashInt :: Hashable Int where
 
 instance hashBoolean :: Hashable Boolean where
   hash false = hashCode 0
-  hash true  = hashCode 1
+  hash true = hashCode 1
 
 instance hashArray :: Hashable a => Hashable (Array a) where
   hash = foldl combineHashes (hashCode 0) <<< map hash

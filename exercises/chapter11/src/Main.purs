@@ -36,7 +36,7 @@ runGame env = do
   pure unit
 
 main :: Effect Unit
-main = OP.customExecParser prefs argParser >>= runGame 
+main = OP.customExecParser prefs argParser >>= runGame
   where
 
   argParser :: OP.ParserInfo GameEnvironment
@@ -46,7 +46,7 @@ main = OP.customExecParser prefs argParser >>= runGame
   env = gameEnvironment <$> player <*> debug
 
   player :: OP.Parser String
-  player = OP.strOption $ fold 
+  player = OP.strOption $ fold
     [ OP.long "player"
     , OP.short 'p'
     , OP.metavar "<player name>"
@@ -54,15 +54,15 @@ main = OP.customExecParser prefs argParser >>= runGame
     ]
 
   debug :: OP.Parser Boolean
-  debug = OP.switch $ fold 
+  debug = OP.switch $ fold
     [ OP.long "debug"
     , OP.short 'd'
     , OP.help "Use debug mode"
     ]
 
   prefs = OP.prefs OP.showHelpOnEmpty
-  parserOptions = fold 
+  parserOptions = fold
     [ OP.fullDesc
     , OP.progDesc "Play the game as <player name>"
-    , OP.header "Monadic Adventures! A game to learn monad transformers" 
+    , OP.header "Monadic Adventures! A game to learn monad transformers"
     ]

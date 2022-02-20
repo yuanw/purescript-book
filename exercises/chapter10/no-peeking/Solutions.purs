@@ -41,15 +41,15 @@ foreign import valuesOfMapJson :: Json -> Json
 valuesOfMap :: Map String Int -> Either JsonDecodeError (Set Int)
 valuesOfMap = encodeJson >>> valuesOfMapJson >>> decodeJson
 
-valuesOfMapGeneric ::
-  forall k v.
-  EncodeJson k =>
-  EncodeJson v =>
-  DecodeJson v =>
-  Ord k =>
-  Ord v =>
-  Map k v ->
-  Either JsonDecodeError (Set v)
+valuesOfMapGeneric
+  :: forall k v
+   . EncodeJson k
+  => EncodeJson v
+  => DecodeJson v
+  => Ord k
+  => Ord v
+  => Map k v
+  -> Either JsonDecodeError (Set v)
 valuesOfMapGeneric = encodeJson >>> valuesOfMapJson >>> decodeJson
 
 foreign import quadraticRootsSetJson :: Json -> Json
@@ -59,15 +59,14 @@ quadraticRootsSet = encodeJson >>> quadraticRootsSetJson >>> decodeJson
 
 foreign import quadraticRootsSafeJson :: Json -> Json
 
-newtype WrapPair a
-  = WrapPair (Pair a)
+newtype WrapPair a = WrapPair (Pair a)
 
 instance decodeJsonWrapPair :: DecodeJson a => DecodeJson (WrapPair a) where
   decodeJson j = do
     decoded <- decodeJson j
     case decoded of
       [ a, b ] -> map WrapPair $ lift2 Pair (decodeJson a) (decodeJson b)
-      [ ] -> Left $ AtIndex 0 MissingValue
+      [] -> Left $ AtIndex 0 MissingValue
       [ a ] -> Left $ AtIndex 1 MissingValue
       _ -> Left $ AtIndex 2 $ UnexpectedValue j
 

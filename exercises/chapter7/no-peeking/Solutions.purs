@@ -61,8 +61,8 @@ validateAddressImproved :: Address -> V Errors Address
 validateAddressImproved a =
   address
     <$> matches "Street" nonEmptyRegex a.street
-    <*> matches "City"   nonEmptyRegex a.city
-    <*> matches "State"  stateRegex    a.state
+    <*> matches "City" nonEmptyRegex a.city
+    <*> matches "State" stateRegex a.state
 
 {-| Exercise Group 3 -}
 -- Exercise 1
@@ -146,12 +146,12 @@ traversePostOrder f (Branch t1 v t2) = ado
   in Branch mt1 mv mt2
 
 -- Exercise 5
-type PersonOptionalAddress
-  = { firstName :: String
-    , lastName :: String
-    , homeAddress :: Maybe Address
-    , phones :: Array PhoneNumber
-    }
+type PersonOptionalAddress =
+  { firstName :: String
+  , lastName :: String
+  , homeAddress :: Maybe Address
+  , phones :: Array PhoneNumber
+  }
 
 personOptionalAddress :: String -> String -> Maybe Address -> Array PhoneNumber -> PersonOptionalAddress
 personOptionalAddress firstName lastName homeAddress phones = { firstName, lastName, homeAddress, phones }

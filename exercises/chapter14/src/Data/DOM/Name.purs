@@ -20,7 +20,8 @@ module Data.DOM.Name
   , height
   , name
 
-  , attribute, (:=)
+  , attribute
+  , (:=)
   , text
   , elem
   , newName
@@ -38,9 +39,9 @@ import Data.Foldable (for_)
 import Data.Maybe (Maybe(..))
 
 newtype Element = Element
-  { name         :: String
-  , attribs      :: Array Attribute
-  , content      :: Maybe (Content Unit)
+  { name :: String
+  , attribs :: Array Attribute
+  , content :: Maybe (Content Unit)
   }
 
 newtype Name = Name String
@@ -58,8 +59,8 @@ instance functorContentF :: Functor ContentF where
 type Content = Free ContentF
 
 newtype Attribute = Attribute
-  { key          :: String
-  , value        :: String
+  { key :: String
+  , value :: String
   }
 
 newtype AttributeKey a = AttributeKey String
@@ -136,40 +137,40 @@ type Interp = WriterT String (State Int)
 render :: Element -> String
 render = \e -> evalState (execWriterT (renderElement e)) 0
   where
-    renderElement :: Element -> Interp Unit
-    renderElement (Element e) = do
-        tell "<"
-        tell e.name
-        for_ e.attribs $ \x -> do
-          tell " "
-          renderAttribute x
-        renderContent e.content
-      where
-        renderAttribute :: Attribute -> Interp Unit
-        renderAttribute (Attribute x) = do
-          tell x.key
-          tell "=\""
-          tell x.value
-          tell "\""
+  renderElement :: Element -> Interp Unit
+  renderElement (Element e) = do
+    tell "<"
+    tell e.name
+    for_ e.attribs $ \x -> do
+      tell " "
+      renderAttribute x
+    renderContent e.content
+    where
+    renderAttribute :: Attribute -> Interp Unit
+    renderAttribute (Attribute x) = do
+      tell x.key
+      tell "=\""
+      tell x.value
+      tell "\""
 
-        renderContent :: Maybe (Content Unit) -> Interp Unit
-        renderContent Nothing = tell " />"
-        renderContent (Just content) = do
-          tell ">"
-          runFreeM renderContentItem content
-          tell "</"
-          tell e.name
-          tell ">"
+    renderContent :: Maybe (Content Unit) -> Interp Unit
+    renderContent Nothing = tell " />"
+    renderContent (Just content) = do
+      tell ">"
+      runFreeM renderContentItem content
+      tell "</"
+      tell e.name
+      tell ">"
 
-        renderContentItem :: forall a. ContentF (Content a) -> Interp (Content a)
-        renderContentItem (TextContent s rest) = do
-          tell s
-          pure rest
-        renderContentItem (ElementContent e' rest) = do
-          renderElement e'
-          pure rest
-        renderContentItem (NewName k) = do
-          n <- get
-          let fresh = Name $ "name" <> show n
-          put $ n + 1
-          pure (k fresh)
+    renderContentItem :: forall a. ContentF (Content a) -> Interp (Content a)
+    renderContentItem (TextContent s rest) = do
+      tell s
+      pure rest
+    renderContentItem (ElementContent e' rest) = do
+      renderElement e'
+      pure rest
+    renderContentItem (NewName k) = do
+      n <- get
+      let fresh = Name $ "name" <> show n
+      put $ n + 1
+      pure (k fresh)

@@ -4,9 +4,17 @@ import Prelude
 
 import Effect (Effect)
 import Data.Maybe (Maybe(..))
-import Graphics.Canvas (closePath, lineTo, moveTo, fillPath,
-                        setFillStyle, arc, rect, getContext2D,
-                        getCanvasElementById)
+import Graphics.Canvas
+  ( closePath
+  , lineTo
+  , moveTo
+  , fillPath
+  , setFillStyle
+  , arc
+  , rect
+  , getContext2D
+  , getCanvasElementById
+  )
 import Math as Math
 import Partial.Unsafe (unsafePartial)
 

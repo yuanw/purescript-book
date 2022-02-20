@@ -34,10 +34,10 @@ curriedSum = curriedAdd 3 10
 
 foreign import cumulativeSums :: Array Int -> Array Int
 
-type Complex
-  = { real :: Number
-    , imag :: Number
-    }
+type Complex =
+  { real :: Number
+  , imag :: Number
+  }
 
 foreign import addComplex :: Complex -> Complex -> Complex
 
@@ -57,11 +57,11 @@ isEmpty = isUndefined <<< undefinedHead
 
 foreign import unsafeHead :: forall a. Array a -> a
 
-type Quadratic
-  = { a :: Number
-    , b :: Number
-    , c :: Number
-    }
+type Quadratic =
+  { a :: Number
+  , b :: Number
+  , c :: Number
+  }
 
 foreign import boldImpl :: forall a. (a -> String) -> a -> String
 
